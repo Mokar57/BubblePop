@@ -16,6 +16,8 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private bool randomPatrolOrder = false;
     [SerializeField] private float patrolSpeed = 2f;
     [SerializeField] private bool showPatrolPath = true;
+    [SerializeField] private float waypointTimeout = 10f; // Timeout for reaching waypoint
+    [SerializeField] private float timeoutWaitDuration = 2f; // Wait time after timeout before next waypoint
     
     [Header("Vision Settings")]
     [SerializeField] private float visionRange = 8f;
@@ -53,13 +55,17 @@ public class EnemyAI : MonoBehaviour
     private bool isPatrolling = false;
     private Vector3 targetVisionDirection;
     private bool isRotatingVision = false;
+    private float waypointStartTime = 0f; // Time when started moving to current waypoint
+    private bool isWaitingAfterTimeout = false;
+    private float timeoutWaitTimer = 0f;
     
     public enum AIState
     {
         Patrolling,
         Chasing,
         WaitingAtWaypoint,
-        SearchingLastKnown
+        SearchingLastKnown,
+        WaitingAfterTimeout
     }
     
     [SerializeField] private AIState currentState = AIState.Patrolling;
@@ -138,6 +144,7 @@ public class EnemyAI : MonoBehaviour
         currentWaypointIndex = 0;
         isPatrolling = true;
         isWaitingAtWaypoint = false;
+        isWaitingAfterTimeout = false; // Reset timeout wait state
         
         // Set speed for patrolling
         if (agent != null)
@@ -156,6 +163,8 @@ public class EnemyAI : MonoBehaviour
         {
             agent.SetDestination(targetWaypoint.Position);
             currentState = AIState.Patrolling;
+            waypointStartTime = Time.time; // Start timeout timer
+            isWaitingAfterTimeout = false;
         }
     }
     
@@ -164,7 +173,18 @@ public class EnemyAI : MonoBehaviour
         if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null)
             return;
         
-        if (isWaitingAtWaypoint)
+        if (isWaitingAfterTimeout)
+        {
+            // Handle waiting after timeout
+            timeoutWaitTimer -= Time.deltaTime;
+            
+            if (timeoutWaitTimer <= 0f)
+            {
+                // Move to next waypoint after timeout wait
+                NextWaypoint();
+            }
+        }
+        else if (isWaitingAtWaypoint)
         {
             // Handle waiting at waypoint
             waypointWaitTimer -= Time.deltaTime;
@@ -191,6 +211,22 @@ public class EnemyAI : MonoBehaviour
         }
         else
         {
+            // Check timeout for reaching waypoint
+            if (Time.time - waypointStartTime > waypointTimeout)
+            {
+                // Timeout reached, can't reach waypoint
+                Debug.Log($"Enemy timeout: Cannot reach waypoint {currentWaypointIndex}. Moving to next waypoint.");
+                
+                // Start timeout wait period
+                isWaitingAfterTimeout = true;
+                timeoutWaitTimer = timeoutWaitDuration;
+                currentState = AIState.WaitingAfterTimeout;
+                
+                // Stop current movement
+                agent.ResetPath();
+                return;
+            }
+            
             // Check if reached current waypoint
             if (currentWaypointIndex < patrolWaypoints.Count)
             {
@@ -255,6 +291,7 @@ public class EnemyAI : MonoBehaviour
         }
         
         isWaitingAtWaypoint = false;
+        isWaitingAfterTimeout = false; // Reset timeout wait state
         MoveToCurrentWaypoint();
     }
     
@@ -316,7 +353,7 @@ public class EnemyAI : MonoBehaviour
         }
         
         // Update vision direction based on current state
-        if (currentState != AIState.WaitingAtWaypoint)
+        if (currentState != AIState.WaitingAtWaypoint && currentState != AIState.WaitingAfterTimeout)
         {
             UpdateVisionDirection();
         }
@@ -326,6 +363,7 @@ public class EnemyAI : MonoBehaviour
         {
             case AIState.Patrolling:
             case AIState.WaitingAtWaypoint:
+            case AIState.WaitingAfterTimeout:
                 UpdatePatrol();
                 break;
                 
@@ -374,6 +412,7 @@ public class EnemyAI : MonoBehaviour
             agent.speed = patrolSpeed;
             isPatrolling = true;
             isWaitingAtWaypoint = false;
+            isWaitingAfterTimeout = false; // Reset timeout wait state
             currentState = AIState.Patrolling;
             MoveToCurrentWaypoint();
         }
@@ -752,5 +791,36 @@ public class EnemyAI : MonoBehaviour
             lastSeenTime = Time.time;
             lastKnownTargetPosition = target.position;
         }
+    }
+    
+    // Waypoint timeout methods
+    public void SetWaypointTimeout(float timeout)
+    {
+        waypointTimeout = Mathf.Max(1f, timeout);
+    }
+    
+    public void SetTimeoutWaitDuration(float duration)
+    {
+        timeoutWaitDuration = Mathf.Max(0f, duration);
+    }
+    
+    public float GetWaypointTimeout()
+    {
+        return waypointTimeout;
+    }
+    
+    public float GetTimeoutWaitDuration()
+    {
+        return timeoutWaitDuration;
+    }
+    
+    public bool IsWaitingAfterTimeout()
+    {
+        return isWaitingAfterTimeout;
+    }
+    
+    public AIState GetCurrentState()
+    {
+        return currentState;
     }
 }
