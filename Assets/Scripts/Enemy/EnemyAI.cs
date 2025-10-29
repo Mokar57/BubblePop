@@ -1,11 +1,21 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class EnemyAI : MonoBehaviour
 {
     [Header("Target Settings")]
     [SerializeField] private Transform target;
     [SerializeField] private bool autoFindPlayer = true;
+    
+    [Header("Patrol Settings")]
+    [SerializeField] private bool enablePatrol = true;
+    [SerializeField] private List<Waypoint> patrolWaypoints = new List<Waypoint>();
+    [SerializeField] private bool loopPatrol = true;
+    [SerializeField] private float waypointReachDistance = 1f;
+    [SerializeField] private bool randomPatrolOrder = false;
+    [SerializeField] private float patrolSpeed = 2f;
+    [SerializeField] private bool showPatrolPath = true;
     
     [Header("Vision Settings")]
     [SerializeField] private float visionRange = 8f;
@@ -36,6 +46,24 @@ public class EnemyAI : MonoBehaviour
     private Vector3 currentVisionDirection;
     private Vector3 lastPosition;
     
+    // Patrol system variables
+    private int currentWaypointIndex = 0;
+    private bool isWaitingAtWaypoint = false;
+    private float waypointWaitTimer = 0f;
+    private bool isPatrolling = false;
+    private Vector3 targetVisionDirection;
+    private bool isRotatingVision = false;
+    
+    public enum AIState
+    {
+        Patrolling,
+        Chasing,
+        WaitingAtWaypoint,
+        SearchingLastKnown
+    }
+    
+    [SerializeField] private AIState currentState = AIState.Patrolling;
+    
     private void Start()
     {
         InitializeAgent();
@@ -43,7 +71,16 @@ public class EnemyAI : MonoBehaviour
         
         // Initialize vision direction to current transform up (forward in 2D)
         currentVisionDirection = transform.up;
+        targetVisionDirection = currentVisionDirection;
         lastPosition = transform.position;
+        
+        // Initialize patrol system
+        if (enablePatrol && patrolWaypoints.Count > 0)
+        {
+            currentState = AIState.Patrolling;
+            isPatrolling = true;
+            StartPatrol();
+        }
     }
     
     private void InitializeAgent()
@@ -94,34 +131,320 @@ public class EnemyAI : MonoBehaviour
         }
     }
     
+    private void StartPatrol()
+    {
+        if (patrolWaypoints.Count == 0) return;
+        
+        currentWaypointIndex = 0;
+        isPatrolling = true;
+        isWaitingAtWaypoint = false;
+        
+        // Set speed for patrolling
+        if (agent != null)
+            agent.speed = patrolSpeed;
+        
+        MoveToCurrentWaypoint();
+    }
+    
+    private void MoveToCurrentWaypoint()
+    {
+        if (patrolWaypoints.Count == 0 || currentWaypointIndex >= patrolWaypoints.Count)
+            return;
+        
+        Waypoint targetWaypoint = patrolWaypoints[currentWaypointIndex];
+        if (targetWaypoint != null && agent != null)
+        {
+            agent.SetDestination(targetWaypoint.Position);
+            currentState = AIState.Patrolling;
+        }
+    }
+    
+    private void UpdatePatrol()
+    {
+        if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null)
+            return;
+        
+        if (isWaitingAtWaypoint)
+        {
+            // Handle waiting at waypoint
+            waypointWaitTimer -= Time.deltaTime;
+            
+            // Smoothly rotate vision towards target direction
+            if (isRotatingVision)
+            {
+                currentVisionDirection = Vector3.Slerp(currentVisionDirection, targetVisionDirection, 
+                    rotationSpeed * Time.deltaTime / 90f);
+                
+                // Check if rotation is complete
+                if (Vector3.Angle(currentVisionDirection, targetVisionDirection) < 5f)
+                {
+                    currentVisionDirection = targetVisionDirection;
+                    isRotatingVision = false;
+                }
+            }
+            
+            if (waypointWaitTimer <= 0f)
+            {
+                // Move to next waypoint
+                NextWaypoint();
+            }
+        }
+        else
+        {
+            // Check if reached current waypoint
+            if (currentWaypointIndex < patrolWaypoints.Count)
+            {
+                Waypoint currentWaypoint = patrolWaypoints[currentWaypointIndex];
+                if (currentWaypoint != null)
+                {
+                    float distanceToWaypoint = Vector3.Distance(transform.position, currentWaypoint.Position);
+                    
+                    if (distanceToWaypoint <= waypointReachDistance)
+                    {
+                        // Reached waypoint, start waiting
+                        isWaitingAtWaypoint = true;
+                        waypointWaitTimer = currentWaypoint.WaitTime;
+                        currentState = AIState.WaitingAtWaypoint;
+                        
+                        // Set target vision direction
+                        targetVisionDirection = currentWaypoint.WaitDirection;
+                        isRotatingVision = true;
+                        
+                        // Stop moving
+                        agent.ResetPath();
+                    }
+                }
+            }
+        }
+    }
+    
+    private void NextWaypoint()
+    {
+        if (patrolWaypoints.Count == 0) return;
+        
+        if (randomPatrolOrder)
+        {
+            // Random waypoint selection
+            int newIndex;
+            do
+            {
+                newIndex = Random.Range(0, patrolWaypoints.Count);
+            } while (newIndex == currentWaypointIndex && patrolWaypoints.Count > 1);
+            
+            currentWaypointIndex = newIndex;
+        }
+        else
+        {
+            // Sequential waypoint selection
+            currentWaypointIndex++;
+            
+            if (currentWaypointIndex >= patrolWaypoints.Count)
+            {
+                if (loopPatrol)
+                {
+                    currentWaypointIndex = 0;
+                }
+                else
+                {
+                    // Stop patrolling
+                    isPatrolling = false;
+                    currentState = AIState.Patrolling; // Stay in patrol state but don't move
+                    return;
+                }
+            }
+        }
+        
+        isWaitingAtWaypoint = false;
+        MoveToCurrentWaypoint();
+    }
+    
     private void Update()
     {
         if (target == null)
         {
             FindTarget();
-            return;
         }
         
         if (agent == null) return;
         
-        // Update vision direction based on movement
-        UpdateVisionDirection();
-        
         // Check if target is visible
-        bool canSeeTarget = CanSeeTarget();
+        bool canSeeTarget = target != null && CanSeeTarget();
         
+        // Handle state transitions
         if (canSeeTarget)
         {
-            hasSeenTarget = true;
+            // Player spotted - switch to chase mode
+            if (currentState != AIState.Chasing)
+            {
+                currentState = AIState.Chasing;
+                hasSeenTarget = true;
+                agent.speed = speed; // Use chase speed
+                isPatrolling = false;
+                isWaitingAtWaypoint = false;
+            }
+            
             lastSeenTime = Time.time;
             lastKnownTargetPosition = target.position;
         }
-        
-        // Update destination periodically for better performance
-        if (Time.time - lastUpdateTime >= updateRate)
+        else if (hasSeenTarget && currentState == AIState.Chasing)
         {
-            UpdateDestination();
-            lastUpdateTime = Time.time;
+            // Lost sight of target
+            if (persistentChase)
+            {
+                // Continue chasing forever until too far
+                float distanceToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
+                if (distanceToTarget > maxChaseDistance)
+                {
+                    // Return to patrol
+                    ReturnToPatrol();
+                }
+            }
+            else
+            {
+                // Go to last known position
+                currentState = AIState.SearchingLastKnown;
+            }
+        }
+        else if (currentState == AIState.SearchingLastKnown)
+        {
+            // Check if reached last known position
+            if (Vector3.Distance(transform.position, lastKnownTargetPosition) <= stopDistance)
+            {
+                // Return to patrol after searching
+                ReturnToPatrol();
+            }
+        }
+        
+        // Update vision direction based on current state
+        if (currentState != AIState.WaitingAtWaypoint)
+        {
+            UpdateVisionDirection();
+        }
+        
+        // Update behavior based on current state
+        switch (currentState)
+        {
+            case AIState.Patrolling:
+            case AIState.WaitingAtWaypoint:
+                UpdatePatrol();
+                break;
+                
+            case AIState.Chasing:
+                if (Time.time - lastUpdateTime >= updateRate)
+                {
+                    UpdateChaseDestination();
+                    lastUpdateTime = Time.time;
+                }
+                break;
+                
+            case AIState.SearchingLastKnown:
+                if (Time.time - lastUpdateTime >= updateRate)
+                {
+                    UpdateSearchDestination();
+                    lastUpdateTime = Time.time;
+                }
+                break;
+        }
+    }
+    
+    private void ReturnToPatrol()
+    {
+        hasSeenTarget = false;
+        
+        if (enablePatrol && patrolWaypoints.Count > 0)
+        {
+            // Find closest waypoint to return to
+            float closestDistance = float.MaxValue;
+            int closestWaypointIndex = 0;
+            
+            for (int i = 0; i < patrolWaypoints.Count; i++)
+            {
+                if (patrolWaypoints[i] != null)
+                {
+                    float distance = Vector3.Distance(transform.position, patrolWaypoints[i].Position);
+                    if (distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestWaypointIndex = i;
+                    }
+                }
+            }
+            
+            currentWaypointIndex = closestWaypointIndex;
+            agent.speed = patrolSpeed;
+            isPatrolling = true;
+            isWaitingAtWaypoint = false;
+            currentState = AIState.Patrolling;
+            MoveToCurrentWaypoint();
+        }
+        else
+        {
+            // No patrol points, just stop
+            agent.ResetPath();
+            currentState = AIState.Patrolling;
+        }
+    }
+    
+    private void UpdateChaseDestination()
+    {
+        if (target == null || agent == null) return;
+        
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        
+        if (hasSeenTarget)
+        {
+            Vector3 destinationPosition;
+            
+            if (persistentChase)
+            {
+                // Once spotted, chase forever (unless too far away)
+                if (distanceToTarget <= maxChaseDistance)
+                {
+                    destinationPosition = target.position;
+                    lastKnownTargetPosition = target.position;
+                    lastSeenTime = Time.time;
+                }
+                else
+                {
+                    // Target is too far away, return to patrol
+                    ReturnToPatrol();
+                    return;
+                }
+            }
+            else
+            {
+                if (CanSeeTarget())
+                {
+                    // Can still see target
+                    destinationPosition = target.position;
+                    lastKnownTargetPosition = target.position;
+                    lastSeenTime = Time.time;
+                }
+                else
+                {
+                    // Lost sight, go to last known position
+                    destinationPosition = lastKnownTargetPosition;
+                }
+            }
+            
+            // Update destination if target moved significantly
+            if (distanceToTarget > stopDistance && Vector3.Distance(destinationPosition, lastTargetPosition) > 0.5f)
+            {
+                agent.SetDestination(destinationPosition);
+                lastTargetPosition = destinationPosition;
+            }
+        }
+    }
+    
+    private void UpdateSearchDestination()
+    {
+        if (agent == null) return;
+        
+        // Move to last known position
+        if (Vector3.Distance(lastKnownTargetPosition, lastTargetPosition) > 0.5f)
+        {
+            agent.SetDestination(lastKnownTargetPosition);
+            lastTargetPosition = lastKnownTargetPosition;
         }
     }
     
