@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using System.Collections.Generic;
 
-public class EnemyAI : MonoBehaviour
+public class EnemyAI : MonoBehaviour, ISpeedBoostable
 {
     [Header("Target Settings")]
     [SerializeField] private Transform target;
@@ -39,6 +39,11 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private float acceleration = 8f;
     [SerializeField] private float angularSpeed = 120f;
     
+    // Speed boost variables
+    private float originalSpeed;
+    private float speedBoostMultiplier = 1f;
+    private bool isSpeedBoosted = false;
+    
     private NavMeshAgent agent;
     private float lastUpdateTime;
     private Vector3 lastTargetPosition;
@@ -72,6 +77,9 @@ public class EnemyAI : MonoBehaviour
     
     private void Start()
     {
+        // Store original speed for speed boost functionality
+        originalSpeed = speed;
+        
         InitializeAgent();
         FindTarget();
         
@@ -596,7 +604,14 @@ public class EnemyAI : MonoBehaviour
             return false;
         
         // Check if there are obstacles between enemy and target
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, obstacleLayerMask);
+        // Make sure we don't raycast against the enemy itself or the target
+        int enemyLayer = gameObject.layer;
+        int targetLayer = target.gameObject.layer;
+        
+        // Create a temporary layermask that excludes enemy and target layers
+        int tempMask = obstacleLayerMask & ~(1 << enemyLayer) & ~(1 << targetLayer);
+        
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, tempMask);
         
         // If raycast hits something, target is blocked
         return hit.collider == null;
@@ -823,4 +838,45 @@ public class EnemyAI : MonoBehaviour
     {
         return currentState;
     }
+    
+    #region ISpeedBoostable Implementation
+    
+    public void ApplySpeedBoost(float multiplier)
+    {
+        if (!isSpeedBoosted)
+        {
+            speedBoostMultiplier = multiplier;
+            isSpeedBoosted = true;
+            
+            // Update agent speed
+            float newSpeed = originalSpeed * speedBoostMultiplier;
+            if (agent != null)
+            {
+                agent.speed = newSpeed;
+            }
+            
+            Debug.Log($"{gameObject.name} speed boosted! Original: {originalSpeed}, New: {newSpeed}");
+        }
+    }
+    
+    public void RemoveSpeedBoost()
+    {
+        if (isSpeedBoosted)
+        {
+            speedBoostMultiplier = 1f;
+            isSpeedBoosted = false;
+            
+            // Restore original speed
+            if (agent != null)
+            {
+                agent.speed = originalSpeed;
+            }
+            
+            Debug.Log($"{gameObject.name} speed boost removed. Speed restored to: {originalSpeed}");
+        }
+    }
+    
+    public bool IsSpeedBoosted => isSpeedBoosted;
+    
+    #endregion
 }
