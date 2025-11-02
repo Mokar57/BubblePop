@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 using System.Collections.Generic;
 
 public class EnemyAI : MonoBehaviour, ISpeedBoostable
@@ -34,15 +35,39 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [SerializeField] private bool persistentChase = true; // Once spotted, chase forever until manually reset
     [SerializeField] private float maxChaseDistance = 50f; // Maximum distance before giving up chase (if persistentChase is true)
     
+    [Header("Proximity Detection")]
+    [SerializeField] private float proximityDetectionRange = 5f; // Range to detect player without vision
+    [SerializeField] private float proximityTriggerTime = 1f; // Time player must stay in range to trigger chase (default 1 second)
+    [SerializeField] private bool enableProximityDetection = true; // Enable/disable proximity detection
+    [SerializeField] private bool enableContactDetection = true; // Enable/disable contact detection
+    
     [Header("Movement Settings")]
     [SerializeField] private float speed = 3.5f;
     [SerializeField] private float acceleration = 8f;
     [SerializeField] private float angularSpeed = 120f;
     
+    [Header("Health Settings")]
+    [SerializeField] private float maxHealth = 100f;
+    [SerializeField] private float currentHealth;
+    
+    [Header("Death Effects")]
+    [SerializeField] private GameObject speedBoostZonePrefab;
+    [SerializeField] private Color damageColor = Color.red;
+    [SerializeField] private float flashDuration = 0.1f;
+    
     // Speed boost variables
     private float originalSpeed;
     private float speedBoostMultiplier = 1f;
     private bool isSpeedBoosted = false;
+    
+    // Health variables
+    private bool isDead = false;
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+    
+    // Events
+    public System.Action<float> OnHealthChanged;
+    public System.Action OnEnemyDeath;
     
     private NavMeshAgent agent;
     private float lastUpdateTime;
@@ -64,6 +89,11 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private bool isWaitingAfterTimeout = false;
     private float timeoutWaitTimer = 0f;
     
+    // Proximity detection variables
+    private float proximityTimer = 0f; // Timer for how long player has been in proximity
+    private bool playerInProximity = false; // Is player currently in proximity range
+    private bool proximityTriggered = false; // Has proximity detection triggered chase mode
+    
     public enum AIState
     {
         Patrolling,
@@ -79,6 +109,12 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     {
         // Store original speed for speed boost functionality
         originalSpeed = speed;
+        
+        // Initialize health
+        currentHealth = maxHealth;
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+            originalColor = spriteRenderer.color;
         
         InitializeAgent();
         FindTarget();
@@ -309,16 +345,23 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         {
             FindTarget();
         }
-        
+
         if (agent == null) return;
-        
+
         // Check if target is visible
         bool canSeeTarget = target != null && CanSeeTarget();
         
-        // Handle state transitions
-        if (canSeeTarget)
+        // Check proximity detection
+        bool proximityDetected = false;
+        if (enableProximityDetection && target != null)
         {
-            // Player spotted - switch to chase mode
+            proximityDetected = CheckProximityDetection();
+        }
+
+        // Handle state transitions
+        if (canSeeTarget || proximityDetected)
+        {
+            // Player spotted or proximity triggered - switch to chase mode
             if (currentState != AIState.Chasing)
             {
                 currentState = AIState.Chasing;
@@ -326,8 +369,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 agent.speed = speed; // Use chase speed
                 isPatrolling = false;
                 isWaitingAtWaypoint = false;
+                
+                if (proximityDetected && !canSeeTarget)
+                {
+                    Debug.Log($"{gameObject.name}: Player detected by proximity! Starting chase mode.");
+                }
             }
-            
+
             lastSeenTime = Time.time;
             lastKnownTargetPosition = target.position;
         }
@@ -359,13 +407,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 ReturnToPatrol();
             }
         }
-        
+
         // Update vision direction based on current state
         if (currentState != AIState.WaitingAtWaypoint && currentState != AIState.WaitingAfterTimeout)
         {
             UpdateVisionDirection();
         }
-        
+
         // Update behavior based on current state
         switch (currentState)
         {
@@ -396,6 +444,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private void ReturnToPatrol()
     {
         hasSeenTarget = false;
+        proximityTriggered = false; // Reset proximity detection
+        proximityTimer = 0f;
+        playerInProximity = false;
         
         if (enablePatrol && patrolWaypoints.Count > 0)
         {
@@ -617,6 +668,98 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         return hit.collider == null;
     }
     
+    private bool CheckProximityDetection()
+    {
+        if (!enableProximityDetection || target == null)
+        {
+            proximityTimer = 0f;
+            playerInProximity = false;
+            return false;
+        }
+        
+        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        
+        // Check if player is within proximity range (but not in vision)
+        if (distanceToTarget <= proximityDetectionRange && !CanSeeTarget())
+        {
+            if (!playerInProximity)
+            {
+                // Player just entered proximity
+                playerInProximity = true;
+                proximityTimer = 0f;
+                Debug.Log($"{gameObject.name}: Player entered proximity range. Starting timer...");
+            }
+            
+            // Increment timer
+            proximityTimer += Time.deltaTime;
+            
+            // Check if enough time has passed
+            if (proximityTimer >= proximityTriggerTime && !proximityTriggered)
+            {
+                proximityTriggered = true;
+                Debug.Log($"{gameObject.name}: Proximity detection triggered after {proximityTimer:F2} seconds!");
+                return true;
+            }
+        }
+        else
+        {
+            // Player left proximity range or is visible
+            if (playerInProximity)
+            {
+                Debug.Log($"{gameObject.name}: Player left proximity range after {proximityTimer:F2} seconds.");
+            }
+            
+            playerInProximity = false;
+            proximityTimer = 0f;
+        }
+        
+        return proximityTriggered && currentState == AIState.Chasing;
+    }
+    
+    // Contact detection methods
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!enableContactDetection) return;
+        
+        // Check if the colliding object is the player
+        if (other.transform == target || other.CompareTag("Player") || other.GetComponent<PlayerControls>() != null)
+        {
+            Debug.Log($"{gameObject.name}: Player contact detected via trigger! Starting chase mode.");
+            TriggerChaseMode("contact");
+        }
+    }
+    
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (!enableContactDetection) return;
+        
+        // Check if the colliding object is the player
+        if (collision.transform == target || collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponent<PlayerControls>() != null)
+        {
+            Debug.Log($"{gameObject.name}: Player contact detected via collision! Starting chase mode.");
+            TriggerChaseMode("contact");
+        }
+    }
+    
+    private void TriggerChaseMode(string reason)
+    {
+        if (target == null) return;
+        
+        // Force chase mode
+        currentState = AIState.Chasing;
+        hasSeenTarget = true;
+        proximityTriggered = true; // Set this to true to maintain consistency
+        agent.speed = speed; // Use chase speed
+        isPatrolling = false;
+        isWaitingAtWaypoint = false;
+        
+        // Update last known position
+        lastSeenTime = Time.time;
+        lastKnownTargetPosition = target.position;
+        
+        Debug.Log($"{gameObject.name}: Chase mode triggered by {reason}!");
+    }
+    
     private void OnDrawGizmosSelected()
     {
         if (!drawVisionCone) return;
@@ -663,6 +806,29 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireSphere(transform.position, followDistance);
+        }
+        
+        // Draw proximity detection range
+        if (enableProximityDetection)
+        {
+            Gizmos.color = playerInProximity ? Color.orange : Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, proximityDetectionRange);
+            
+            // Draw timer indicator if player is in proximity
+            if (playerInProximity)
+            {
+                float progress = proximityTimer / proximityTriggerTime;
+                Gizmos.color = Color.Lerp(Color.yellow, Color.red, progress);
+                
+                // Draw progress arc
+                for (int i = 0; i < Mathf.RoundToInt(progress * 20); i++)
+                {
+                    float angle = (360f / 20f) * i;
+                    Vector3 direction = Quaternion.AngleAxis(angle, Vector3.forward) * Vector3.up;
+                    Vector3 point = transform.position + direction * (proximityDetectionRange + 0.5f);
+                    Gizmos.DrawCube(point, Vector3.one * 0.1f);
+                }
+            }
         }
         
         // Draw stop distance
@@ -784,6 +950,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public void ResetChase()
     {
         hasSeenTarget = false;
+        proximityTriggered = false;
+        proximityTimer = 0f;
+        playerInProximity = false;
         if (agent != null)
             agent.ResetPath();
     }
@@ -806,6 +975,68 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             lastSeenTime = Time.time;
             lastKnownTargetPosition = target.position;
         }
+    }
+    
+    // Proximity detection methods
+    public void SetProximityDetectionRange(float range)
+    {
+        proximityDetectionRange = Mathf.Max(0f, range);
+    }
+    
+    public void SetProximityTriggerTime(float time)
+    {
+        proximityTriggerTime = Mathf.Max(0.1f, time);
+    }
+    
+    public void SetProximityDetectionEnabled(bool enabled)
+    {
+        enableProximityDetection = enabled;
+        if (!enabled)
+        {
+            proximityTimer = 0f;
+            playerInProximity = false;
+            proximityTriggered = false;
+        }
+    }
+    
+    public void SetContactDetectionEnabled(bool enabled)
+    {
+        enableContactDetection = enabled;
+    }
+    
+    public float GetProximityDetectionRange()
+    {
+        return proximityDetectionRange;
+    }
+    
+    public float GetProximityTriggerTime()
+    {
+        return proximityTriggerTime;
+    }
+    
+    public bool IsProximityDetectionEnabled()
+    {
+        return enableProximityDetection;
+    }
+    
+    public bool IsContactDetectionEnabled()
+    {
+        return enableContactDetection;
+    }
+    
+    public bool IsPlayerInProximity()
+    {
+        return playerInProximity;
+    }
+    
+    public float GetProximityTimer()
+    {
+        return proximityTimer;
+    }
+    
+    public bool IsProximityTriggered()
+    {
+        return proximityTriggered;
     }
     
     // Waypoint timeout methods
@@ -877,6 +1108,84 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     }
     
     public bool IsSpeedBoosted => isSpeedBoosted;
+    
+    #endregion
+    
+    #region Health System
+    
+    public void TakeDamage(float damage)
+    {
+        if (isDead) return;
+        
+        currentHealth -= damage;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Visual feedback
+        StartCoroutine(DamageFlash());
+        
+        // Trigger event
+        OnHealthChanged?.Invoke(currentHealth);
+        
+        // Check for death
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+    
+    public void Heal(float amount)
+    {
+        if (isDead) return;
+        
+        currentHealth += amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Trigger event
+        OnHealthChanged?.Invoke(currentHealth);
+    }
+    
+    private void Die()
+    {
+        if (isDead) return;
+        
+        isDead = true;
+        
+        // Spawn SpeedBoostZone at death location
+        if (speedBoostZonePrefab != null)
+        {
+            Instantiate(speedBoostZonePrefab, transform.position, Quaternion.identity);
+            Debug.Log($"{gameObject.name} died and spawned SpeedBoostZone at {transform.position}");
+        }
+        else
+        {
+            Debug.LogWarning($"{gameObject.name} died but no SpeedBoostZone prefab assigned!");
+        }
+        
+        // Trigger death event
+        OnEnemyDeath?.Invoke();
+        
+        // Disable components
+        if (agent != null)
+            agent.enabled = false;
+        
+        // Destroy the enemy after a short delay to allow for any death effects
+        Destroy(gameObject, 0.1f);
+    }
+    
+    private System.Collections.IEnumerator DamageFlash()
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = damageColor;
+            yield return new WaitForSeconds(flashDuration);
+            spriteRenderer.color = originalColor;
+        }
+    }
+    
+    // Public getters
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+    public bool IsDead => isDead;
     
     #endregion
 }
