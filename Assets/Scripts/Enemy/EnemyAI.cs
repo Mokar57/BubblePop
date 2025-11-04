@@ -17,8 +17,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [SerializeField] private bool randomPatrolOrder = false;
     [SerializeField] private float patrolSpeed = 2f;
     [SerializeField] private bool showPatrolPath = true;
-    [SerializeField] private float waypointTimeout = 10f; // Timeout for reaching waypoint
+    [SerializeField] private float waypointTimeout = 30f; // Increased timeout to give velocity detection priority
     [SerializeField] private float timeoutWaitDuration = 2f; // Wait time after timeout before next waypoint
+    
+    [Header("Stuck Detection")]
+    [SerializeField] private float stuckVelocityThreshold = 0.5f; // Speed threshold to consider as stuck
+    [SerializeField] private float stuckCheckDuration = 3f; // How long to wait before considering stuck
+    [SerializeField] private float stuckWaitDuration = 2f; // How long to wait after being stuck before moving to next waypoint
     
     [Header("Vision Settings")]
     [SerializeField] private float visionRange = 8f;
@@ -89,6 +94,12 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private bool isWaitingAfterTimeout = false;
     private float timeoutWaitTimer = 0f;
     
+    // Stuck detection variables
+    private float stuckTimer = 0f; // Timer for how long velocity has been below threshold
+    private bool isStuck = false; // Is the enemy currently stuck
+    private bool isWaitingAfterStuck = false; // Is waiting after being stuck
+    private float stuckWaitTimer = 0f; // Timer for waiting after being stuck
+    
     // Proximity detection variables
     private float proximityTimer = 0f; // Timer for how long player has been in proximity
     private bool playerInProximity = false; // Is player currently in proximity range
@@ -100,7 +111,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         Chasing,
         WaitingAtWaypoint,
         SearchingLastKnown,
-        WaitingAfterTimeout
+        WaitingAfterTimeout,
+        WaitingAfterStuck
     }
     
     [SerializeField] private AIState currentState = AIState.Patrolling;
@@ -189,6 +201,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         isPatrolling = true;
         isWaitingAtWaypoint = false;
         isWaitingAfterTimeout = false; // Reset timeout wait state
+        isWaitingAfterStuck = false; // Reset stuck wait state
+        isStuck = false; // Reset stuck state
+        stuckTimer = 0f; // Reset stuck timer
         
         // Set speed for patrolling
         if (agent != null)
@@ -209,6 +224,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             currentState = AIState.Patrolling;
             waypointStartTime = Time.time; // Start timeout timer
             isWaitingAfterTimeout = false;
+            isWaitingAfterStuck = false; // Reset stuck wait state
+            isStuck = false; // Reset stuck state
+            stuckTimer = 0f; // Reset stuck timer
         }
     }
     
@@ -217,7 +235,18 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null)
             return;
         
-        if (isWaitingAfterTimeout)
+        if (isWaitingAfterStuck)
+        {
+            // Handle waiting after being stuck
+            stuckWaitTimer -= Time.deltaTime;
+            
+            if (stuckWaitTimer <= 0f)
+            {
+                // Move to next waypoint after stuck wait
+                NextWaypoint();
+            }
+        }
+        else if (isWaitingAfterTimeout)
         {
             // Handle waiting after timeout
             timeoutWaitTimer -= Time.deltaTime;
@@ -255,23 +284,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         }
         else
         {
-            // Check timeout for reaching waypoint
-            if (Time.time - waypointStartTime > waypointTimeout)
-            {
-                // Timeout reached, can't reach waypoint
-                Debug.Log($"Enemy timeout: Cannot reach waypoint {currentWaypointIndex}. Moving to next waypoint.");
-                
-                // Start timeout wait period
-                isWaitingAfterTimeout = true;
-                timeoutWaitTimer = timeoutWaitDuration;
-                currentState = AIState.WaitingAfterTimeout;
-                
-                // Stop current movement
-                agent.ResetPath();
-                return;
-            }
-            
-            // Check if reached current waypoint
+            // First check if reached current waypoint (normal waypoint reaching)
             if (currentWaypointIndex < patrolWaypoints.Count)
             {
                 Waypoint currentWaypoint = patrolWaypoints[currentWaypointIndex];
@@ -292,8 +305,66 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                         
                         // Stop moving
                         agent.ResetPath();
+                        
+                        // Reset stuck state
+                        isStuck = false;
+                        stuckTimer = 0f;
+                        return;
                     }
                 }
+            }
+            
+            // Check velocity-based stuck detection (PRIORITY)
+            float currentVelocity = agent.velocity.magnitude;
+            
+            if (currentVelocity < stuckVelocityThreshold)
+            {
+                // Velocity is below threshold, increment stuck timer
+                stuckTimer += Time.deltaTime;
+                
+                if (stuckTimer >= stuckCheckDuration && !isStuck)
+                {
+                    // Enemy is stuck!
+                    isStuck = true;
+                    
+                    // Enemy is truly stuck, start stuck wait period
+                    Debug.Log($"Enemy stuck: Velocity below {stuckVelocityThreshold} for {stuckCheckDuration} seconds. Cannot reach waypoint {currentWaypointIndex}. Waiting before moving to next waypoint.");
+                    
+                    isWaitingAfterStuck = true;
+                    stuckWaitTimer = stuckWaitDuration;
+                    currentState = AIState.WaitingAfterStuck;
+                    
+                    // Stop current movement
+                    agent.ResetPath();
+                    return;
+                }
+            }
+            else
+            {
+                // Velocity is above threshold, reset stuck timer
+                stuckTimer = 0f;
+                isStuck = false;
+            }
+            
+            // Check timeout for reaching waypoint (FALLBACK - only if not moving fast enough)
+            // Only apply timeout if enemy is moving slowly or not at all
+            if (currentVelocity < stuckVelocityThreshold && Time.time - waypointStartTime > waypointTimeout)
+            {
+                // Timeout reached and moving slowly, can't reach waypoint
+                Debug.Log($"Enemy timeout: Cannot reach waypoint {currentWaypointIndex} after {waypointTimeout} seconds while moving slowly. Moving to next waypoint.");
+                
+                // Start timeout wait period
+                isWaitingAfterTimeout = true;
+                timeoutWaitTimer = timeoutWaitDuration;
+                currentState = AIState.WaitingAfterTimeout;
+                
+                // Stop current movement
+                agent.ResetPath();
+                
+                // Reset stuck state
+                isStuck = false;
+                stuckTimer = 0f;
+                return;
             }
         }
     }
@@ -336,6 +407,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         
         isWaitingAtWaypoint = false;
         isWaitingAfterTimeout = false; // Reset timeout wait state
+        isWaitingAfterStuck = false; // Reset stuck wait state
+        isStuck = false; // Reset stuck state
+        stuckTimer = 0f; // Reset stuck timer
         MoveToCurrentWaypoint();
     }
     
@@ -369,6 +443,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 agent.speed = speed; // Use chase speed
                 isPatrolling = false;
                 isWaitingAtWaypoint = false;
+                isWaitingAfterStuck = false; // Reset stuck wait state
+                isStuck = false; // Reset stuck state
+                stuckTimer = 0f; // Reset stuck timer
                 
                 if (proximityDetected && !canSeeTarget)
                 {
@@ -420,6 +497,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             case AIState.Patrolling:
             case AIState.WaitingAtWaypoint:
             case AIState.WaitingAfterTimeout:
+            case AIState.WaitingAfterStuck:
                 UpdatePatrol();
                 break;
                 
@@ -472,6 +550,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             isPatrolling = true;
             isWaitingAtWaypoint = false;
             isWaitingAfterTimeout = false; // Reset timeout wait state
+            isWaitingAfterStuck = false; // Reset stuck wait state
+            isStuck = false; // Reset stuck state
+            stuckTimer = 0f; // Reset stuck timer
             currentState = AIState.Patrolling;
             MoveToCurrentWaypoint();
         }
@@ -752,6 +833,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         agent.speed = speed; // Use chase speed
         isPatrolling = false;
         isWaitingAtWaypoint = false;
+        isWaitingAfterStuck = false; // Reset stuck wait state
+        isStuck = false; // Reset stuck state
+        stuckTimer = 0f; // Reset stuck timer
         
         // Update last known position
         lastSeenTime = Time.time;
