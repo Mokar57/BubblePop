@@ -320,6 +320,37 @@ MonoBehaviour:
   player: {fileID: 1251267644}
   offset: {x: 0, y: 0, z: -1}
   focusSpeed: 5
+--- !u!1 &705590493
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 705590494}
+  m_Layer: 0
+  m_Name: FirePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &705590494
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705590493}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1214584866}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &786045312
 GameObject:
   m_ObjectHideFlags: 0
@@ -586,6 +617,8 @@ GameObject:
   - component: {fileID: 1214584864}
   - component: {fileID: 1214584863}
   - component: {fileID: 1214584862}
+  - component: {fileID: 1214584867}
+  - component: {fileID: 1214584868}
   m_Layer: 0
   m_Name: Gun
   m_TagString: Untagged
@@ -636,7 +669,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 7
+  m_Constraints: 4
 --- !u!61 &1214584864
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -750,9 +783,67 @@ Transform:
   m_LocalPosition: {x: -0.72, y: -3.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
-  m_Children: []
+  m_Children:
+  - {fileID: 705590494}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1214584867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1214584861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7102e20787e0e864498a18cbe7a2682b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pistolName: Pistol
+  pistolColor: {r: 1, g: 1, b: 1, a: 1}
+  projectilePrefab: {fileID: 8696534751382374328, guid: ccab4126e4966cf418aeaed09a1f5b75, type: 3}
+  firePoint: {fileID: 705590494}
+  fireRate: 0.5
+  projectileSpeed: 10
+  projectileDamage: 50
+--- !u!114 &1214584868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1214584861}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 798711b5425ecd9449d558aeea87fccd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bounceForce: 5
+  slowdownDuration: 1
+  slowdownCurve:
+    m_Curve:
+    - time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  rb: {fileID: 0}
+  hasCollided: 0
+  originalVelocity: {x: 0, y: 0}
 --- !u!1 &1251267644
 GameObject:
   m_ObjectHideFlags: 0
@@ -767,6 +858,7 @@ GameObject:
   - component: {fileID: 1251267645}
   - component: {fileID: 1251267649}
   - component: {fileID: 1251267650}
+  - component: {fileID: 1251267651}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -792,6 +884,7 @@ MonoBehaviour:
   secondaryHoldPosition: {fileID: 1055235599}
   currentPrimaryItem: {fileID: 0}
   currentSecondaryItem: {fileID: 0}
+  throwForce: 10
 --- !u!50 &1251267646
 Rigidbody2D:
   serializedVersion: 5
@@ -949,6 +1042,24 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &1251267651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251267644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89a3ff3876bf73b48854dc858d925713, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 10
+  currentHealth: 0
+  damageColor: {r: 1, g: 0, b: 0, a: 1}
+  flashDuration: 0.1
+  healthBar: {fileID: 0}
+  healthText: {fileID: 0}
 --- !u!1 &1290111263
 GameObject:
   m_ObjectHideFlags: 0
@@ -5603,6 +5714,7 @@ GameObject:
   - component: {fileID: 1994555074}
   - component: {fileID: 1994555073}
   - component: {fileID: 1994555072}
+  - component: {fileID: 1994555077}
   m_Layer: 0
   m_Name: Bat
   m_TagString: Untagged
@@ -5653,7 +5765,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 7
+  m_Constraints: 4
 --- !u!61 &1994555074
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5770,6 +5882,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1994555077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1994555071}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 178882dd860e1504cbf3deb6c091eae3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  batName: Baseball Bat
+  batColor: {r: 1, g: 1, b: 1, a: 1}
+  attackRange: 1
+  attackDamage: 50
+  attackCooldown: 1
+  attackAngle: 60
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1 &2048279377
 GameObject:
   m_ObjectHideFlags: 0
@@ -5815,7 +5948,7 @@ GameObject:
   - component: {fileID: 2146012139}
   m_Layer: 0
   m_Name: Duvar
-  m_TagString: Untagged
+  m_TagString: Wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

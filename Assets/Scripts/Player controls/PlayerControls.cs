@@ -35,6 +35,18 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         Vector2 direction = new Vector2(mousePosition.x - transform.position.x, mousePosition.y - transform.position.y);
         
         transform.up = direction;
+        
+        // Sol tık attack inputu
+        if (Input.GetMouseButtonDown(0))
+        {
+            PerformAttack();
+        }
+        
+        // Sağ tık item fırlatma inputu
+        if (Input.GetMouseButtonDown(1))
+        {
+            ThrowCurrentItem();
+        }
     }
     
 
@@ -85,7 +97,110 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
     
     #endregion
     
+    #region Attack System
+    
+    private void PerformAttack()
+    {
+        // Şu anda tuttuğu silahı kontrol et
+        GameObject currentWeapon = GetCurrentWeapon();
+        if (currentWeapon == null) return;
+        
+        // Weapon type'ına göre attack gerçekleştir
+        PickupableItem weaponPickup = currentWeapon.GetComponent<PickupableItem>();
+        if (weaponPickup == null) return;
+        
+        if (weaponPickup.holdType == ItemHoldType.Primary)
+        {
+            // Primary weapon - Projectile attack
+            PerformProjectileAttack(currentWeapon);
+        }
+        else if (weaponPickup.holdType == ItemHoldType.Secondary)
+        {
+            // Secondary weapon - Melee attack
+            PerformMeleeAttack(currentWeapon);
+        }
+    }
+    
+    private void PerformProjectileAttack(GameObject weapon)
+    {
+        PistolItem pistol = weapon.GetComponent<PistolItem>();
+        if (pistol != null)
+        {
+            pistol.Fire(transform.position, transform.up);
+        }
+    }
+    
+    private void PerformMeleeAttack(GameObject weapon)
+    {
+        BaseballBatItem bat = weapon.GetComponent<BaseballBatItem>();
+        if (bat != null)
+        {
+            bat.Attack(transform.position, transform.up);
+        }
+    }
+    
+    #endregion
+    
     #region Item Pickup System
+    
+    [Header("Item Throwing Settings")]
+    public float throwForce = 10f;
+    
+    public void ThrowCurrentItem()
+    {
+        GameObject currentWeapon = GetCurrentWeapon();
+        if (currentWeapon == null) return;
+        
+        // Item'ı fırlatmadan önce tüm özelliklerini koru
+        ThrowItemAtDirection(currentWeapon, transform.up);
+        
+        // Item fırlatıldıktan sonra player'ın elinden çıkar
+        if (currentPrimaryItem == currentWeapon)
+            currentPrimaryItem = null;
+        else if (currentSecondaryItem == currentWeapon)
+            currentSecondaryItem = null;
+    }
+    
+    private void ThrowItemAtDirection(GameObject item, Vector2 direction)
+    {
+        // Item'ı parent'tan ayır
+        item.transform.SetParent(null);
+        
+        // Item'ın pozisyonunu player'ın mevcut pozisyonuna ayarla
+        item.transform.position = transform.position;
+        
+        // Rotation'ı korumak için değiştirme
+        // item.transform.rotation = Quaternion.identity;
+        
+        // Physics'i etkinleştir
+        Rigidbody2D itemRb = item.GetComponent<Rigidbody2D>();
+        if (itemRb != null)
+        {
+            itemRb.bodyType = RigidbodyType2D.Dynamic;
+            itemRb.angularVelocity = 0f;
+            
+            // İleriye doğru kuvvet uygula
+            itemRb.linearVelocity = direction.normalized * throwForce;
+        }
+        
+        // Collider'ı yeniden etkinleştir
+        Collider2D itemCollider = item.GetComponent<Collider2D>();
+        if (itemCollider != null)
+        {
+            itemCollider.enabled = true;
+        }
+        
+        // PickupableItem component'ini yeniden etkinleştir
+        PickupableItem pickupable = item.GetComponent<PickupableItem>();
+        if (pickupable != null)
+        {
+            pickupable.enabled = true;
+            pickupable.ResetPickupState();
+        }
+        
+        // Tüm item özellikleri korunmuş olarak kalacak (ammo, damage, vb.)
+        // Çünkü sadece transform ve physics özellikleri değiştiriliyor
+    }
     
     private void DropCurrentWeaponAtPosition(GameObject weapon, Vector3 dropPosition)
     {
@@ -174,6 +289,18 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         
         // Make the item a child of the player
         item.transform.SetParent(transform);
+        
+        // Preserve item's original sprite properties
+        SpriteRenderer itemRenderer = item.GetComponent<SpriteRenderer>();
+        if (itemRenderer != null)
+        {
+            // Ensure the item stays visible and keeps its original color
+            Color originalColor = itemRenderer.color;
+            if (originalColor.a > 0) // Only preserve if item was visible
+            {
+                itemRenderer.color = originalColor;
+            }
+        }
         
         // Position the item at the designated hold position
         Transform targetPosition = (holdType == ItemHoldType.Primary) ? primaryHoldPosition : secondaryHoldPosition;
