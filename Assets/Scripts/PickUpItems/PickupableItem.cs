@@ -112,6 +112,13 @@ public class PickupableItem : MonoBehaviour
             PlayerControls playerControls = player.GetComponent<PlayerControls>();
             if (playerControls != null)
             {
+                // Item toplandığında collider'ı trigger yap
+                Collider2D col = GetComponent<Collider2D>();
+                if (col != null)
+                {
+                    col.isTrigger = true;
+                }
+                
                 playerControls.PickupItem(this.gameObject, holdType);
                 
                 if (pickupIndicator != null)

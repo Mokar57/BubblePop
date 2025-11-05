@@ -179,16 +179,42 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
             itemRb.bodyType = RigidbodyType2D.Dynamic;
             itemRb.angularVelocity = 0f;
             
+            // Collision Detection'ı Continuous yap (Tilemap'ten geçmeyi önler)
+            itemRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            
+            // Interpolation ekle (daha düzgün hareket)
+            itemRb.interpolation = RigidbodyInterpolation2D.Interpolate;
+            
+            // Gravity scale'i kontrol et (eğer 0 ise düşmez)
+            if (itemRb.gravityScale == 0)
+                itemRb.gravityScale = 0; // Top-down oyunsa 0 kalabilir
+            
+            // Damping değerlerini sıfırla (önceki drop'tan kalan yüksek değerleri temizle)
+            itemRb.linearDamping = 0f;
+            itemRb.angularDamping = 0.05f;
+            
+            // Constraints - Z rotation dışında her şeyi serbest bırak
+            itemRb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            
             // İleriye doğru kuvvet uygula
             itemRb.linearVelocity = direction.normalized * throwForce;
         }
         
-        // Collider'ı yeniden etkinleştir
+        // Collider'ı yeniden etkinleştir ve IsTrigger'ı kapat (fiziksel çarpışma için)
         Collider2D itemCollider = item.GetComponent<Collider2D>();
         if (itemCollider != null)
         {
             itemCollider.enabled = true;
+            itemCollider.isTrigger = false; // Fiziksel çarpışma için trigger'ı kapat
         }
+        
+        // ThrownItem component'i ekle (çarpma ve yavaşlama için)
+        ThrownItem thrownComponent = item.GetComponent<ThrownItem>();
+        if (thrownComponent == null)
+        {
+            thrownComponent = item.AddComponent<ThrownItem>();
+        }
+        thrownComponent.Initialize();
         
         // PickupableItem component'ini yeniden etkinleştir
         PickupableItem pickupable = item.GetComponent<PickupableItem>();
@@ -224,8 +250,11 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
             itemRb.bodyType = RigidbodyType2D.Dynamic;
             // Reset angular velocity to prevent rotation
             itemRb.angularVelocity = 0f;
-            // Optional: Add small random velocity to prevent stacking
-            itemRb.linearVelocity = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            // Set velocity to zero so item stays in place
+            itemRb.linearVelocity = Vector2.zero;
+            // Add high drag to prevent sliding
+            itemRb.linearDamping = 10f;
+            itemRb.angularDamping = 10f;
         }
         
         // Re-enable collider
