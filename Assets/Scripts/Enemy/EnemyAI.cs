@@ -62,6 +62,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     
     // Speed boost variables
     private float originalSpeed;
+    private float originalPatrolSpeed;
     private float speedBoostMultiplier = 1f;
     private bool isSpeedBoosted = false;
     
@@ -121,6 +122,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     {
         // Store original speed for speed boost functionality
         originalSpeed = speed;
+        originalPatrolSpeed = patrolSpeed;
         
         // Initialize health
         currentHealth = maxHealth;
@@ -164,6 +166,34 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         agent.acceleration = acceleration;
         agent.angularSpeed = angularSpeed;
         agent.stoppingDistance = stopDistance;
+        
+        // Configure Rigidbody2D for trigger detection (if present)
+        ConfigureRigidbody2D();
+    }
+    
+    private void ConfigureRigidbody2D()
+    {
+        Rigidbody2D rb = GetComponent<Rigidbody2D>();
+        
+        if (rb != null)
+        {
+            // Set to Kinematic to prevent physics from affecting NavMeshAgent
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            
+            // Freeze all rotation to prevent spinning
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            
+            // Disable gravity (2D doesn't use it for kinematic anyway)
+            rb.gravityScale = 0f;
+            
+            // Set interpolation for smoother movement (optional)
+            rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+            
+            // Set collision detection to Continuous for better collision detection
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            
+            Debug.Log($"{gameObject.name}: Rigidbody2D configured for NavMeshAgent compatibility");
+        }
     }
     
     private void FindTarget()
@@ -1163,14 +1193,34 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             speedBoostMultiplier = multiplier;
             isSpeedBoosted = true;
             
-            // Update agent speed
+            // Update both normal speed and patrol speed
             float newSpeed = originalSpeed * speedBoostMultiplier;
+            float newPatrolSpeed = originalPatrolSpeed * speedBoostMultiplier;
+            
+            speed = newSpeed;
+            patrolSpeed = newPatrolSpeed;
+            
+            // Update agent speed based on current AI state
             if (agent != null)
             {
-                agent.speed = newSpeed;
+                if (currentState == AIState.Patrolling || 
+                    currentState == AIState.WaitingAtWaypoint || 
+                    currentState == AIState.WaitingAfterTimeout || 
+                    currentState == AIState.WaitingAfterStuck)
+                {
+                    // Use boosted patrol speed when patrolling
+                    agent.speed = newPatrolSpeed;
+                    Debug.Log($"{gameObject.name} speed boosted (Patrol)! Patrol Speed: {originalPatrolSpeed} -> {newPatrolSpeed}");
+                }
+                else
+                {
+                    // Use boosted normal speed when chasing or searching
+                    agent.speed = newSpeed;
+                    Debug.Log($"{gameObject.name} speed boosted (Chase)! Speed: {originalSpeed} -> {newSpeed}");
+                }
             }
             
-            Debug.Log($"{gameObject.name} speed boosted! Original: {originalSpeed}, New: {newSpeed}");
+            Debug.Log($"{gameObject.name} speed boosted! Speed: {originalSpeed} -> {newSpeed}, Patrol Speed: {originalPatrolSpeed} -> {newPatrolSpeed}");
         }
     }
     
@@ -1181,13 +1231,31 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             speedBoostMultiplier = 1f;
             isSpeedBoosted = false;
             
-            // Restore original speed
+            // Restore original speeds
+            speed = originalSpeed;
+            patrolSpeed = originalPatrolSpeed;
+            
             if (agent != null)
             {
-                agent.speed = originalSpeed;
+                // Set agent speed based on current AI state
+                if (currentState == AIState.Patrolling || 
+                    currentState == AIState.WaitingAtWaypoint || 
+                    currentState == AIState.WaitingAfterTimeout || 
+                    currentState == AIState.WaitingAfterStuck)
+                {
+                    // Use patrol speed when patrolling
+                    agent.speed = originalPatrolSpeed;
+                    Debug.Log($"{gameObject.name} speed boost removed. Agent speed restored to patrol speed: {originalPatrolSpeed}");
+                }
+                else
+                {
+                    // Use normal speed when chasing or searching
+                    agent.speed = originalSpeed;
+                    Debug.Log($"{gameObject.name} speed boost removed. Agent speed restored to chase speed: {originalSpeed}");
+                }
             }
             
-            Debug.Log($"{gameObject.name} speed boost removed. Speed restored to: {originalSpeed}");
+            Debug.Log($"{gameObject.name} speed boost removed. Speed: {originalSpeed}, Patrol Speed: {originalPatrolSpeed}");
         }
     }
     

@@ -17,11 +17,29 @@ public class PickupableItem : MonoBehaviour
     [Header("Visual Settings")]
     public GameObject pickupIndicator; // UI element to show "Press E to pick up"
     
+    [Header("Usage Settings")]
+    public int maxUsageCount = 10; // Maksimum kullanım sayısı
+    public Sprite depletedSprite; // Kullanım bittiğinde gösterilecek sprite
+    
+    private int currentUsageCount; // Mevcut kullanım sayısı
+    private bool isDepleted = false; // Kullanım tükendi mi?
+    private Sprite originalSprite; // Orijinal sprite'ı sakla
+    
     private bool playerInRange = false;
     private GameObject player;
 
     private void Start()
     {
+        // Initialize usage count
+        currentUsageCount = maxUsageCount;
+        
+        // Store original sprite
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            originalSprite = spriteRenderer.sprite;
+        }
+        
         // Hide pickup indicator at start
         if (pickupIndicator != null)
             pickupIndicator.SetActive(false);
@@ -32,7 +50,8 @@ public class PickupableItem : MonoBehaviour
         // Check if item is currently being held by checking if parent is not null
         bool isCurrentlyHeld = transform.parent != null;
         
-        if (playerInRange && !isCurrentlyHeld && Input.GetKeyDown(pickupKey))
+        // Tükenen item'ları alamaz
+        if (playerInRange && !isCurrentlyHeld && !isDepleted && Input.GetKeyDown(pickupKey))
         {
             PickupItem();
         }
@@ -142,5 +161,51 @@ public class PickupableItem : MonoBehaviour
         
         if (pickupIndicator != null)
             pickupIndicator.SetActive(false);
+    }
+    
+    // Usage count management methods
+    public void DecreaseUsage()
+    {
+        if (isDepleted) return;
+        
+        currentUsageCount--;
+        Debug.Log($"{itemName} usage decreased. Remaining: {currentUsageCount}/{maxUsageCount}");
+        
+        if (currentUsageCount <= 0)
+        {
+            currentUsageCount = 0;
+            MarkAsDepleted();
+        }
+    }
+    
+    private void MarkAsDepleted()
+    {
+        isDepleted = true;
+        Debug.Log($"{itemName} is now depleted!");
+        
+        // Sprite'ı değiştir
+        if (depletedSprite != null)
+        {
+            SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.sprite = depletedSprite;
+            }
+        }
+    }
+    
+    public bool IsDepleted()
+    {
+        return isDepleted;
+    }
+    
+    public int GetCurrentUsageCount()
+    {
+        return currentUsageCount;
+    }
+    
+    public int GetMaxUsageCount()
+    {
+        return maxUsageCount;
     }
 }

@@ -47,6 +47,14 @@ public class PistolItem : MonoBehaviour
     
     public void Fire(Vector3 playerPosition, Vector3 direction)
     {
+        // Kullanım hakkı kontrolü
+        PickupableItem pickupable = GetComponent<PickupableItem>();
+        if (pickupable != null && pickupable.IsDepleted())
+        {
+            Debug.Log($"{pistolName} has no ammo left!");
+            return;
+        }
+        
         // Fire rate kontrolü
         if (Time.time - lastFireTime < fireRate)
             return;
@@ -55,6 +63,12 @@ public class PistolItem : MonoBehaviour
         
         // Projectile oluştur
         CreateProjectile(playerPosition, direction);
+        
+        // Kullanım hakkını azalt
+        if (pickupable != null)
+        {
+            pickupable.DecreaseUsage();
+        }
     }
     
     private void CreateProjectile(Vector3 startPosition, Vector3 direction)

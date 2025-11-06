@@ -38,6 +38,14 @@ public class BaseballBatItem : MonoBehaviour
     
     public void Attack(Vector3 playerPosition, Vector3 direction)
     {
+        // Kullanım hakkı kontrolü
+        PickupableItem pickupable = GetComponent<PickupableItem>();
+        if (pickupable != null && pickupable.IsDepleted())
+        {
+            Debug.Log($"{batName} is broken and cannot be used!");
+            return;
+        }
+        
         // Cooldown kontrolü
         if (Time.time - lastAttackTime < attackCooldown)
             return;
@@ -78,10 +86,17 @@ public class BaseballBatItem : MonoBehaviour
         if (enemiesHit > 0)
         {
             Debug.Log($"Baseball bat attack hit {enemiesHit} enemies!");
+            
+            // Düşman vurduysa kullanım hakkını azalt
+            PickupableItem pickupable = GetComponent<PickupableItem>();
+            if (pickupable != null)
+            {
+                pickupable.DecreaseUsage();
+            }
         }
         else
         {
-            Debug.Log("Baseball bat attack hit no enemies");
+            Debug.Log("Baseball bat attack hit no enemies - usage not decreased");
         }
     }
     

@@ -8,6 +8,7 @@ public class SpeedBoostZone : MonoBehaviour
     [SerializeField] private float speedMultiplier = 1.5f;
     [SerializeField] private float zoneDuration = 10f;
     [SerializeField] private Color zoneColor = new Color(0f, 1f, 0f, 0.3f);
+    [SerializeField] private LayerMask affectedLayers = ~0; // Hangi layer'lardaki objeleri etkileyeceğiz (default: hepsi)
     
     [Header("Effects")]
     [SerializeField] private GameObject zoneEffect;
@@ -127,6 +128,13 @@ public class SpeedBoostZone : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         Debug.Log($"Object entered zone: {other.name} on layer {LayerMask.LayerToName(other.gameObject.layer)}");
+        
+        // Layer kontrolü yap
+        if (((1 << other.gameObject.layer) & affectedLayers) == 0)
+        {
+            Debug.Log($"{other.name} is not on an affected layer");
+            return;
+        }
         
         ISpeedBoostable speedBoostable = other.GetComponent<ISpeedBoostable>();
         if (speedBoostable != null)

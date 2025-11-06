@@ -151,6 +151,18 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         GameObject currentWeapon = GetCurrentWeapon();
         if (currentWeapon == null) return;
         
+        // Fırlatılan silahı hemen depleted yap
+        PickupableItem pickupable = currentWeapon.GetComponent<PickupableItem>();
+        if (pickupable != null)
+        {
+            // Kullanım sayısını 0'a çek ki depleted olsun
+            while (!pickupable.IsDepleted())
+            {
+                pickupable.DecreaseUsage();
+            }
+            Debug.Log($"{pickupable.itemName} thrown and marked as depleted!");
+        }
+        
         // Item'ı fırlatmadan önce tüm özelliklerini koru
         ThrowItemAtDirection(currentWeapon, transform.up);
         
