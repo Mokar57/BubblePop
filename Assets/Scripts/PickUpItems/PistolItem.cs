@@ -51,7 +51,6 @@ public class PistolItem : MonoBehaviour
         PickupableItem pickupable = GetComponent<PickupableItem>();
         if (pickupable != null && pickupable.IsDepleted())
         {
-            Debug.Log($"{pistolName} has no ammo left!");
             return;
         }
         
@@ -61,8 +60,11 @@ public class PistolItem : MonoBehaviour
         
         lastFireTime = Time.time;
         
+        // Sahibi bul (parent)
+        GameObject owner = transform.parent != null ? transform.parent.gameObject : null;
+        
         // Projectile oluştur
-        CreateProjectile(playerPosition, direction);
+        CreateProjectile(playerPosition, direction, owner);
         
         // Kullanım hakkını azalt
         if (pickupable != null)
@@ -71,7 +73,7 @@ public class PistolItem : MonoBehaviour
         }
     }
     
-    private void CreateProjectile(Vector3 startPosition, Vector3 direction)
+    private void CreateProjectile(Vector3 startPosition, Vector3 direction, GameObject owner)
     {
         Vector3 spawnPosition = firePoint != null ? firePoint.position : startPosition;
         
@@ -87,18 +89,17 @@ public class PistolItem : MonoBehaviour
                 projectile.speed = projectileSpeed;
                 projectile.damage = projectileDamage;
                 projectile.SetDirection(direction);
+                projectile.SetOwner(owner);
             }
         }
         else
         {
             // Basit bir projectile oluştur (prefab yoksa)
-            CreateBasicProjectile(spawnPosition, direction);
+            CreateBasicProjectile(spawnPosition, direction, owner);
         }
-        
-        Debug.Log("Pistol fired!");
     }
     
-    private void CreateBasicProjectile(Vector3 startPosition, Vector3 direction)
+    private void CreateBasicProjectile(Vector3 startPosition, Vector3 direction, GameObject owner)
     {
         // Basit bir projectile oluştur
         GameObject projectileObj = new GameObject("Bullet");
@@ -129,5 +130,6 @@ public class PistolItem : MonoBehaviour
         projectile.speed = projectileSpeed;
         projectile.damage = projectileDamage;
         projectile.SetDirection(direction);
+        projectile.SetOwner(owner);
     }
 }

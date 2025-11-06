@@ -85,7 +85,6 @@ public class EnemyItemSeeker : MonoBehaviour
             bool success = targetItem.TryPickupByEnemy(itemHolder);
             if (success)
             {
-                Debug.Log($"Enemy picked up {targetItem.itemName}");
                 StopSeekingItem();
             }
             else
@@ -121,8 +120,6 @@ public class EnemyItemSeeker : MonoBehaviour
         {
             enemyAI.enabled = true;
         }
-        
-        Debug.Log("Enemy stopped seeking item");
     }
     
     /// <summary>
@@ -201,8 +198,6 @@ public class EnemyItemSeeker : MonoBehaviour
         {
             enemyAI.enabled = false;
         }
-        
-        Debug.Log($"Enemy started seeking {item.itemName} at distance {Vector2.Distance(transform.position, item.transform.position)}");
     }
     
     /// <summary>

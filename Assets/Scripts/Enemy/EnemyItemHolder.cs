@@ -310,7 +310,6 @@ public class EnemyItemHolder : MonoBehaviour
             {
                 pickupable.DecreaseUsage();
             }
-            Debug.Log($"Enemy threw {pickupable.itemName} and marked as depleted!");
         }
         
         // Item'ı fırlat
@@ -371,6 +370,7 @@ public class EnemyItemHolder : MonoBehaviour
             thrownComponent = item.AddComponent<ThrownItem>();
         }
         thrownComponent.Initialize();
+        thrownComponent.SetThrower(gameObject); // Fırlatan enemy'yi set et
         
         // PickupableItem component'ini yeniden etkinleştir
         PickupableItem pickupable = item.GetComponent<PickupableItem>();

@@ -127,46 +127,30 @@ public class SpeedBoostZone : MonoBehaviour
     
     private void OnTriggerEnter2D(Collider2D other)
     {
-        Debug.Log($"Object entered zone: {other.name} on layer {LayerMask.LayerToName(other.gameObject.layer)}");
-        
         // Layer kontrolü yap
         if (((1 << other.gameObject.layer) & affectedLayers) == 0)
         {
-            Debug.Log($"{other.name} is not on an affected layer");
             return;
         }
         
         ISpeedBoostable speedBoostable = other.GetComponent<ISpeedBoostable>();
         if (speedBoostable != null)
         {
-            Debug.Log($"Found ISpeedBoostable component on {other.name}");
             if (!entitiesInZone.Contains(speedBoostable))
             {
                 entitiesInZone.Add(speedBoostable);
                 speedBoostable.ApplySpeedBoost(speedMultiplier);
-                Debug.Log($"{other.name} entered speed boost zone! Speed multiplier: {speedMultiplier}");
             }
-            else
-            {
-                Debug.Log($"{other.name} already in zone");
-            }
-        }
-        else
-        {
-            Debug.Log($"No ISpeedBoostable component found on {other.name}");
         }
     }
     
     private void OnTriggerExit2D(Collider2D other)
     {
-        Debug.Log($"Object exited zone: {other.name}");
-        
         ISpeedBoostable speedBoostable = other.GetComponent<ISpeedBoostable>();
         if (speedBoostable != null && entitiesInZone.Contains(speedBoostable))
         {
             entitiesInZone.Remove(speedBoostable);
             speedBoostable.RemoveSpeedBoost();
-            Debug.Log($"{other.name} exited speed boost zone!");
         }
     }
     

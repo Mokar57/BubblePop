@@ -191,8 +191,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             
             // Set collision detection to Continuous for better collision detection
             rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-            
-            Debug.Log($"{gameObject.name}: Rigidbody2D configured for NavMeshAgent compatibility");
         }
     }
     
@@ -204,7 +202,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             if (player != null)
             {
                 target = player.transform;
-                Debug.Log("Enemy found player: " + player.name);
             }
             else
             {
@@ -213,7 +210,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 if (playerScript != null)
                 {
                     target = playerScript.transform;
-                    Debug.Log("Enemy found player by script: " + playerScript.name);
                 }
                 else
                 {
@@ -358,8 +354,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                     isStuck = true;
                     
                     // Enemy is truly stuck, start stuck wait period
-                    Debug.Log($"Enemy stuck: Velocity below {stuckVelocityThreshold} for {stuckCheckDuration} seconds. Cannot reach waypoint {currentWaypointIndex}. Waiting before moving to next waypoint.");
-                    
                     isWaitingAfterStuck = true;
                     stuckWaitTimer = stuckWaitDuration;
                     currentState = AIState.WaitingAfterStuck;
@@ -381,7 +375,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             if (currentVelocity < stuckVelocityThreshold && Time.time - waypointStartTime > waypointTimeout)
             {
                 // Timeout reached and moving slowly, can't reach waypoint
-                Debug.Log($"Enemy timeout: Cannot reach waypoint {currentWaypointIndex} after {waypointTimeout} seconds while moving slowly. Moving to next waypoint.");
                 
                 // Start timeout wait period
                 isWaitingAfterTimeout = true;
@@ -476,11 +469,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 isWaitingAfterStuck = false; // Reset stuck wait state
                 isStuck = false; // Reset stuck state
                 stuckTimer = 0f; // Reset stuck timer
-                
-                if (proximityDetected && !canSeeTarget)
-                {
-                    Debug.Log($"{gameObject.name}: Player detected by proximity! Starting chase mode.");
-                }
             }
 
             lastSeenTime = Time.time;
@@ -798,7 +786,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 // Player just entered proximity
                 playerInProximity = true;
                 proximityTimer = 0f;
-                Debug.Log($"{gameObject.name}: Player entered proximity range. Starting timer...");
             }
             
             // Increment timer
@@ -808,18 +795,12 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             if (proximityTimer >= proximityTriggerTime && !proximityTriggered)
             {
                 proximityTriggered = true;
-                Debug.Log($"{gameObject.name}: Proximity detection triggered after {proximityTimer:F2} seconds!");
                 return true;
             }
         }
         else
         {
             // Player left proximity range or is visible
-            if (playerInProximity)
-            {
-                Debug.Log($"{gameObject.name}: Player left proximity range after {proximityTimer:F2} seconds.");
-            }
-            
             playerInProximity = false;
             proximityTimer = 0f;
         }
@@ -835,7 +816,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         // Check if the colliding object is the player
         if (other.transform == target || other.CompareTag("Player") || other.GetComponent<PlayerControls>() != null)
         {
-            Debug.Log($"{gameObject.name}: Player contact detected via trigger! Starting chase mode.");
             TriggerChaseMode("contact");
         }
     }
@@ -847,7 +827,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         // Check if the colliding object is the player
         if (collision.transform == target || collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponent<PlayerControls>() != null)
         {
-            Debug.Log($"{gameObject.name}: Player contact detected via collision! Starting chase mode.");
             TriggerChaseMode("contact");
         }
     }
@@ -870,8 +849,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         // Update last known position
         lastSeenTime = Time.time;
         lastKnownTargetPosition = target.position;
-        
-        Debug.Log($"{gameObject.name}: Chase mode triggered by {reason}!");
     }
     
     private void OnDrawGizmosSelected()
@@ -1210,17 +1187,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 {
                     // Use boosted patrol speed when patrolling
                     agent.speed = newPatrolSpeed;
-                    Debug.Log($"{gameObject.name} speed boosted (Patrol)! Patrol Speed: {originalPatrolSpeed} -> {newPatrolSpeed}");
                 }
                 else
                 {
                     // Use boosted normal speed when chasing or searching
                     agent.speed = newSpeed;
-                    Debug.Log($"{gameObject.name} speed boosted (Chase)! Speed: {originalSpeed} -> {newSpeed}");
                 }
             }
-            
-            Debug.Log($"{gameObject.name} speed boosted! Speed: {originalSpeed} -> {newSpeed}, Patrol Speed: {originalPatrolSpeed} -> {newPatrolSpeed}");
         }
     }
     
@@ -1245,17 +1218,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 {
                     // Use patrol speed when patrolling
                     agent.speed = originalPatrolSpeed;
-                    Debug.Log($"{gameObject.name} speed boost removed. Agent speed restored to patrol speed: {originalPatrolSpeed}");
                 }
                 else
                 {
                     // Use normal speed when chasing or searching
                     agent.speed = originalSpeed;
-                    Debug.Log($"{gameObject.name} speed boost removed. Agent speed restored to chase speed: {originalSpeed}");
                 }
             }
-            
-            Debug.Log($"{gameObject.name} speed boost removed. Speed: {originalSpeed}, Patrol Speed: {originalPatrolSpeed}");
         }
     }
     
@@ -1306,7 +1275,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         if (speedBoostZonePrefab != null)
         {
             Instantiate(speedBoostZonePrefab, transform.position, Quaternion.identity);
-            Debug.Log($"{gameObject.name} died and spawned SpeedBoostZone at {transform.position}");
         }
         else
         {

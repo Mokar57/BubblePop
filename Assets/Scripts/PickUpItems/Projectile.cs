@@ -12,6 +12,7 @@ public class Projectile : MonoBehaviour
     
     private Rigidbody2D rb;
     private Vector2 direction;
+    private GameObject owner; // Kim ateş etti
     
     private void Start()
     {
@@ -36,8 +37,19 @@ public class Projectile : MonoBehaviour
         }
     }
     
+    public void SetOwner(GameObject newOwner)
+    {
+        owner = newOwner;
+    }
+    
     private void OnTriggerEnter2D(Collider2D other)
     {
+        // Kendi sahibine hasar verme
+        if (owner != null && other.gameObject == owner)
+        {
+            return; // Sahibine çarptıysa ignore et
+        }
+        
         // Enemy'ye çarptığında hasar ver
         if (other.CompareTag("Enemy") || other.GetComponent<EnemyAI>() != null)
         {
@@ -45,7 +57,21 @@ public class Projectile : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(damage);
-                Debug.Log($"Projectile hit enemy for {damage} damage!");
+            }
+            
+            // Hit effect oluştur
+            CreateHitEffect();
+            
+            // Projectile'ı yok et
+            Destroy(gameObject);
+        }
+        // Player'a çarptığında hasar ver
+        else if (other.CompareTag("Player") || other.GetComponent<PlayerControls>() != null)
+        {
+            PlayerControls player = other.GetComponent<PlayerControls>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
             }
             
             // Hit effect oluştur
@@ -57,8 +83,6 @@ public class Projectile : MonoBehaviour
         // Duvara çarptığında yok ol
         else if (other.CompareTag("Wall") || other.gameObject.layer == LayerMask.NameToLayer("Wall"))
         {
-            Debug.Log("Projectile hit wall and destroyed");
-            
             // Hit effect oluştur
             CreateHitEffect();
             

@@ -7,6 +7,7 @@ public class ThrownItem : MonoBehaviour
     private bool hasHitTarget = false;
     private bool isSlowingDown = false;
     private bool hasDecreasedUsage = false; // Kullanım hakkını bir kere azalt
+    private GameObject thrower; // Kim fırlattı
     
     [Header("Bounce Settings")]
     public float bounceForce = 0.3f; // Sekme kuvveti (orijinal hızın yüzdesi)
@@ -25,10 +26,21 @@ public class ThrownItem : MonoBehaviour
         hasDecreasedUsage = false;
     }
     
+    public void SetThrower(GameObject newThrower)
+    {
+        thrower = newThrower;
+    }
+    
     private void OnCollisionEnter2D(Collision2D collision)
     {
         // Eğer zaten yavaşlama başladıysa, tekrar işlem yapma
         if (isSlowingDown) return;
+        
+        // Fırlatan kişiye hasar verme
+        if (thrower != null && collision.gameObject == thrower)
+        {
+            return; // Ignore collision with thrower
+        }
         
         bool hitValidTarget = false;
         
@@ -39,7 +51,18 @@ public class ThrownItem : MonoBehaviour
             if (enemy != null)
             {
                 enemy.TakeDamage(damageAmount);
-                Debug.Log($"Thrown item hit {collision.gameObject.name} for {damageAmount} damage!");
+            }
+            
+            hitValidTarget = true;
+            BounceAndSlowDown(collision);
+        }
+        // Player'a çarptığında hasar ver
+        else if (collision.gameObject.CompareTag("Player"))
+        {
+            PlayerControls player = collision.gameObject.GetComponent<PlayerControls>();
+            if (player != null)
+            {
+                player.TakeDamage(damageAmount);
             }
             
             hitValidTarget = true;

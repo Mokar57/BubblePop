@@ -196,7 +196,6 @@ public class PickupableItem : MonoBehaviour
         if (isDepleted) return;
         
         currentUsageCount--;
-        Debug.Log($"{itemName} usage decreased. Remaining: {currentUsageCount}/{maxUsageCount}");
         
         if (currentUsageCount <= 0)
         {
@@ -208,7 +207,6 @@ public class PickupableItem : MonoBehaviour
     private void MarkAsDepleted()
     {
         isDepleted = true;
-        Debug.Log($"{itemName} is now depleted!");
         
         // Sprite'ı değiştir
         if (depletedSprite != null)

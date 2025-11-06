@@ -13,6 +13,23 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
 
     private Vector2 moveDirection;
     
+    [Header("Health Settings")]
+    public float maxHealth = 100f;
+    private float currentHealth;
+    
+    [Header("Death Effects")]
+    public Color damageColor = Color.red;
+    public float flashDuration = 0.1f;
+    
+    // Health variables
+    private bool isDead = false;
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+    
+    // Events
+    public System.Action<float> OnHealthChanged;
+    public System.Action OnPlayerDeath;
+    
     [Header("Item Pickup System")]
     public Transform primaryHoldPosition;   // Önde tutulacak eşyalar için (tabanca)
     public Transform secondaryHoldPosition; // Yanda tutulacak eşyalar için (beyzbol sopası)
@@ -23,6 +40,16 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
     {
         // Store original speed for speed boost functionality
         originalMoveSpeed = moveSpeed;
+        
+        // Initialize health
+        currentHealth = maxHealth;
+        
+        // Get sprite renderer for damage flash
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
     }
     
     private void Update()
@@ -77,8 +104,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         {
             speedBoostMultiplier = multiplier;
             isSpeedBoosted = true;
-            
-            Debug.Log($"Player speed boosted! Original: {originalMoveSpeed}, Multiplier: {multiplier}");
         }
     }
     
@@ -88,8 +113,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         {
             speedBoostMultiplier = 1f;
             isSpeedBoosted = false;
-            
-            Debug.Log($"Player speed boost removed. Speed restored to: {originalMoveSpeed}");
         }
     }
     
@@ -160,7 +183,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
             {
                 pickupable.DecreaseUsage();
             }
-            Debug.Log($"{pickupable.itemName} thrown and marked as depleted!");
         }
         
         // Item'ı fırlatmadan önce tüm özelliklerini koru
@@ -227,6 +249,7 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
             thrownComponent = item.AddComponent<ThrownItem>();
         }
         thrownComponent.Initialize();
+        thrownComponent.SetThrower(gameObject); // Fırlatan kişiyi set et
         
         // PickupableItem component'ini yeniden etkinleştir
         PickupableItem pickupable = item.GetComponent<PickupableItem>();
@@ -440,6 +463,86 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         else
             return null;
     }
+    
+    #endregion
+    
+    #region Health System
+    
+    public void TakeDamage(float damage)
+    {
+        if (isDead) return;
+        
+        currentHealth -= damage;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Visual feedback
+        StartCoroutine(DamageFlash());
+        
+        // Trigger event
+        OnHealthChanged?.Invoke(currentHealth);
+        
+        // Check for death
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+    
+    public void Heal(float amount)
+    {
+        if (isDead) return;
+        
+        currentHealth += amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        
+        // Trigger event
+        OnHealthChanged?.Invoke(currentHealth);
+    }
+    
+    private void Die()
+    {
+        if (isDead) return;
+        
+        isDead = true;
+        
+        // Trigger death event
+        OnPlayerDeath?.Invoke();
+        
+        // Disable player controls
+        this.enabled = false;
+        
+        // Stop movement
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+        
+        // Optional: Change sprite color or play death animation
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = new Color(0.5f, 0.5f, 0.5f, 0.5f); // Gray out
+        }
+        
+        Debug.Log("Player Died!");
+        
+        // You can add game over logic here
+        // For example: Restart level, show game over screen, etc.
+    }
+    
+    private System.Collections.IEnumerator DamageFlash()
+    {
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = damageColor;
+            yield return new WaitForSeconds(flashDuration);
+            spriteRenderer.color = originalColor;
+        }
+    }
+    
+    // Public getters
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+    public bool IsDead => isDead;
     
     #endregion
 }

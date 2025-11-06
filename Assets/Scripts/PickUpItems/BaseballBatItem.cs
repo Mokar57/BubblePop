@@ -42,7 +42,6 @@ public class BaseballBatItem : MonoBehaviour
         PickupableItem pickupable = GetComponent<PickupableItem>();
         if (pickupable != null && pickupable.IsDepleted())
         {
-            Debug.Log($"{batName} is broken and cannot be used!");
             return;
         }
         
@@ -52,11 +51,14 @@ public class BaseballBatItem : MonoBehaviour
         
         lastAttackTime = Time.time;
         
+        // Sahibi bul (parent)
+        GameObject owner = transform.parent != null ? transform.parent.gameObject : null;
+        
         // Alan hasarı ver
-        PerformAreaAttack(playerPosition, direction);
+        PerformAreaAttack(playerPosition, direction, owner);
     }
     
-    private void PerformAreaAttack(Vector3 centerPosition, Vector3 direction)
+    private void PerformAreaAttack(Vector3 centerPosition, Vector3 direction, GameObject owner)
     {
         // Yakındaki tüm collider'ları bul
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(centerPosition, attackRange, enemyLayerMask);
@@ -65,8 +67,8 @@ public class BaseballBatItem : MonoBehaviour
         
         foreach (Collider2D hitCollider in hitColliders)
         {
-            // Player'ı kendini vurmasın
-            if (hitCollider.CompareTag("Player") || hitCollider.name.Contains("Player"))
+            // Sahibine hasar verme
+            if (owner != null && hitCollider.gameObject == owner)
                 continue;
             
             // Enemy mi kontrol et
@@ -78,25 +80,30 @@ public class BaseballBatItem : MonoBehaviour
                 {
                     enemy.TakeDamage(attackDamage);
                     enemiesHit++;
-                    Debug.Log($"Baseball bat hit enemy for {attackDamage} damage!");
+                }
+            }
+            
+            // Player mi kontrol et
+            PlayerControls player = hitCollider.GetComponent<PlayerControls>();
+            if (player != null)
+            {
+                // Açı kontrolü yap (isteğe bağlı)
+                if (IsInAttackAngle(centerPosition, direction, hitCollider.transform.position))
+                {
+                    player.TakeDamage(attackDamage);
+                    enemiesHit++;
                 }
             }
         }
         
         if (enemiesHit > 0)
         {
-            Debug.Log($"Baseball bat attack hit {enemiesHit} enemies!");
-            
             // Düşman vurduysa kullanım hakkını azalt
             PickupableItem pickupable = GetComponent<PickupableItem>();
             if (pickupable != null)
             {
                 pickupable.DecreaseUsage();
             }
-        }
-        else
-        {
-            Debug.Log("Baseball bat attack hit no enemies - usage not decreased");
         }
     }
     
