@@ -4,6 +4,7 @@ using System.Collections;
 public class ThrownItem : MonoBehaviour
 {
     private Rigidbody2D rb;
+    private Collider2D itemCollider;
     private bool hasHitTarget = false;
     private bool isSlowingDown = false;
     private bool hasDecreasedUsage = false; // Kullanım hakkını bir kere azalt
@@ -21,9 +22,13 @@ public class ThrownItem : MonoBehaviour
     public void Initialize()
     {
         rb = GetComponent<Rigidbody2D>();
+        itemCollider = GetComponent<Collider2D>();
         hasHitTarget = false;
         isSlowingDown = false;
         hasDecreasedUsage = false;
+        
+        // Fırlatıldığında collider'ı sadece Player layer'ına ayarla
+        SetColliderLayerMask("Player");
     }
     
     public void SetThrower(GameObject newThrower)
@@ -130,11 +135,37 @@ public class ThrownItem : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.angularVelocity = 0f;
         
+        // Hız sıfırlandığında collider'ı Nothing'e ayarla
+        SetColliderLayerMask("Nothing");
+        
         // Kaymaması için damping'i artır
         rb.linearDamping = 10f;
         rb.angularDamping = 10f;
         
         // Bu component'i kaldır çünkü artık gerekli değil
         Destroy(this);
+    }
+    
+    /// <summary>
+    /// Collider'ın Include Layers'ını ayarlar
+    /// </summary>
+    private void SetColliderLayerMask(string layerName)
+    {
+        if (itemCollider == null) return;
+        
+        if (layerName == "Nothing")
+        {
+            // Nothing - hiçbir layer ile çarpışmaz
+            itemCollider.includeLayers = 0;
+        }
+        else if (layerName == "Player")
+        {
+            // Sadece Player layer'ı ile çarpışır
+            int playerLayer = LayerMask.NameToLayer("Player");
+            if (playerLayer != -1)
+            {
+                itemCollider.includeLayers = 1 << playerLayer;
+            }
+        }
     }
 }

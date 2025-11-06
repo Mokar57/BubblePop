@@ -16,6 +16,9 @@ public class EnemyItemIntegration : MonoBehaviour
     [Header("Melee Settings")]
     [SerializeField] private float meleeRange = 2f; // Yakın dövüş menzili
     
+    [Header("Line of Sight Settings")]
+    [SerializeField] private LayerMask obstacleMask = -1; // Engelleri belirleyen layer mask (duvarlar vs.)
+    
     private EnemyAI enemyAI;
     private EnemyItemHolder itemHolder;
     private Transform target;
@@ -35,9 +38,6 @@ public class EnemyItemIntegration : MonoBehaviour
     
     private void Update()
     {
-        if (!useItemsInCombat || !itemHolder.HasWeapon())
-            return;
-        
         // Target'ı bul (player'ı ara)
         if (target == null)
         {
@@ -45,6 +45,29 @@ public class EnemyItemIntegration : MonoBehaviour
             if (player != null)
                 target = player.transform;
         }
+        
+        // Silahın kullanım hakkını kontrol et ve bittiğinde fırlat
+        if (itemHolder.HasWeapon())
+        {
+            GameObject currentWeapon = itemHolder.GetCurrentWeapon();
+            if (currentWeapon != null)
+            {
+                PickupableItem weaponItem = currentWeapon.GetComponent<PickupableItem>();
+                if (weaponItem != null && weaponItem.IsDepleted())
+                {
+                    // Kullanım hakkı biten silahı player'a fırlat
+                    ThrowDepletedWeaponAtTarget();
+                    return; // Silahı fırlattıktan sonra saldırı yapma
+                }
+            }
+        }
+        
+        if (!useItemsInCombat || !itemHolder.HasWeapon())
+            return;
+        
+        // Enemy sadece Chasing modundayken saldırsın
+        if (enemyAI.GetCurrentState() != EnemyAI.AIState.Chasing)
+            return;
         
         if (target == null)
             return;
@@ -63,22 +86,19 @@ public class EnemyItemIntegration : MonoBehaviour
             
             if (item != null)
             {
-                // Enemy'nin görüş yönünü kullanarak saldır
-                Vector3 visionDirection = enemyAI.GetVisionDirection();
-                Vector3 attackDirection = (target.position - transform.position).normalized;
-                
-                // Görüş yönü ile hedef arasındaki açıyı kontrol et (isteğe bağlı)
-                float angleToTarget = Vector3.Angle(visionDirection, attackDirection);
-                
                 // Primary weapon (tabanca) - uzaktan
+                // Sadece player görüş açısındaysa VE arada engel yoksa ateş et
                 if (item.holdType == ItemHoldType.Primary && distanceToTarget <= attackRange)
                 {
-                    // Hedef görüş açısında mı kontrol et (opsiyonel - yorumu kaldırabilirsin)
-                    // if (angleToTarget <= 45f) // Sadece 45 derece içindeyken ateş et
-                    itemHolder.PerformAttack(target.position);
-                    lastAttackTime = Time.time;
+                    // Hem EnemyAI görüş kontrolünü hem de kendi line of sight kontrolümüzü yap
+                    if (enemyAI.CanSeeTargetPublic() && HasLineOfSight(target.position))
+                    {
+                        itemHolder.PerformAttack(target.position);
+                        lastAttackTime = Time.time;
+                    }
                 }
                 // Secondary weapon (sopa) - yakından
+                // Melee silahlar için de sadece Chasing modundayken saldır
                 else if (item.holdType == ItemHoldType.Secondary && distanceToTarget <= meleeRange)
                 {
                     itemHolder.PerformAttack(target.position);
@@ -95,6 +115,63 @@ public class EnemyItemIntegration : MonoBehaviour
         {
             itemHolder.DropAllItems();
         }
+    }
+    
+    /// <summary>
+    /// Kullanım hakkı biten silahı target'a doğru fırlatır
+    /// </summary>
+    private void ThrowDepletedWeaponAtTarget()
+    {
+        if (target != null)
+        {
+            // Player'ın mevcut pozisyonuna doğru fırlat
+            Vector2 targetPosition = target.position;
+            
+            // Player'ın hareketini tahmin et (eğer Rigidbody2D varsa)
+            Rigidbody2D targetRb = target.GetComponent<Rigidbody2D>();
+            if (targetRb != null)
+            {
+                // Player'ın velocity'sine göre gelecekteki pozisyonunu tahmin et
+                float predictionTime = 0.5f; // 0.5 saniye sonrasını tahmin et
+                targetPosition += targetRb.linearVelocity * predictionTime;
+            }
+            
+            // Hedef pozisyona doğru yön hesapla
+            Vector2 throwDirection = (targetPosition - (Vector2)transform.position).normalized;
+            itemHolder.ThrowCurrentItem(throwDirection);
+        }
+        else
+        {
+            // Target yoksa görüş yönüne fırlat
+            Vector2 throwDirection = enemyAI.GetVisionDirection();
+            itemHolder.ThrowCurrentItem(throwDirection);
+        }
+    }
+    
+    /// <summary>
+    /// Hedef ile arada engel olup olmadığını kontrol eder (raycast ile)
+    /// </summary>
+    private bool HasLineOfSight(Vector3 targetPosition)
+    {
+        Vector2 directionToTarget = (targetPosition - transform.position).normalized;
+        float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
+        
+        // Enemy ve target layer'larını hariç tut
+        int enemyLayer = gameObject.layer;
+        int targetLayer = target != null ? target.gameObject.layer : -1;
+        
+        // Obstacle mask'ten enemy ve target layer'larını çıkar
+        int raycastMask = obstacleMask;
+        if (enemyLayer >= 0)
+            raycastMask &= ~(1 << enemyLayer);
+        if (targetLayer >= 0)
+            raycastMask &= ~(1 << targetLayer);
+        
+        // Raycast ile engel kontrolü
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, raycastMask);
+        
+        // Eğer raycast bir şeye çarptıysa, engel var demektir
+        return hit.collider == null;
     }
     
     /// <summary>

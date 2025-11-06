@@ -282,6 +282,12 @@ public class EnemyItemHolder : MonoBehaviour
     /// </summary>
     private void PerformMeleeAttack(GameObject weapon, Vector2 direction)
     {
+        // Melee attack yaparken enemy'yi hedef yönüne döndür
+        if (enemyAI != null && direction.magnitude > 0.01f)
+        {
+            enemyAI.SetVisionDirection(direction.normalized);
+        }
+        
         BaseballBatItem bat = weapon.GetComponent<BaseballBatItem>();
         if (bat != null)
         {
