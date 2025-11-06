@@ -149,7 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitDirection: {x: -1, y: 0, z: 0}
-  waitTime: 10
+  waitTime: 2
   showDirection: 1
   directionArrowLength: 2
 --- !u!4 &302352194
@@ -320,6 +320,37 @@ MonoBehaviour:
   player: {fileID: 1251267644}
   offset: {x: 0, y: 0, z: -1}
   focusSpeed: 5
+--- !u!1 &581212273
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 581212274}
+  m_Layer: 8
+  m_Name: CloseRangeHand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &581212274
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 581212273}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.48316026, y: 0.52, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1778880952}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705590493
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,6 +556,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1025989653
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1025989654}
+  m_Layer: 8
+  m_Name: GunHand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1025989654
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025989653}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.016839981, y: 0.80655956, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1778880952}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1055235598
 GameObject:
   m_ObjectHideFlags: 0
@@ -618,8 +680,6 @@ GameObject:
   - component: {fileID: 1214584863}
   - component: {fileID: 1214584862}
   - component: {fileID: 1214584867}
-  - component: {fileID: 1214584868}
-  - component: {fileID: 1214584869}
   m_Layer: 10
   m_Name: Gun
   m_TagString: Untagged
@@ -643,6 +703,7 @@ MonoBehaviour:
   pickupRadius: 1
   pickupKey: 101
   holdType: 0
+  canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
   maxUsageCount: 4
   depletedSprite: {fileID: 4396103187042185274, guid: 6709760d0e848614bb65a9a39e98e178, type: 3}
@@ -783,7 +844,7 @@ Transform:
   m_GameObject: {fileID: 1214584861}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.6, y: -3.28, z: 0}
+  m_LocalPosition: {x: -2.59, y: -2.01, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -809,33 +870,6 @@ MonoBehaviour:
   fireRate: 0.5
   projectileSpeed: 10
   projectileDamage: 50
---- !u!114 &1214584868
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1214584861}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 798711b5425ecd9449d558aeea87fccd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1214584869
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1214584861}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f848d249c0c3fb44c87e6d2a4ad08ddf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bounceForce: 0.3
-  slowDownDuration: 1
-  damageAmount: 20
 --- !u!1 &1251267644
 GameObject:
   m_ObjectHideFlags: 0
@@ -3884,6 +3918,10 @@ GameObject:
   - component: {fileID: 1778880953}
   - component: {fileID: 1778880954}
   - component: {fileID: 1778880956}
+  - component: {fileID: 1778880957}
+  - component: {fileID: 1778880960}
+  - component: {fileID: 1778880959}
+  - component: {fileID: 1778880958}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -3934,7 +3972,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 14
+  m_SortingOrder: 15
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_FlipX: 0
@@ -3958,7 +3996,9 @@ Transform:
   m_LocalPosition: {x: 0.63642, y: 3.06872, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 1
-  m_Children: []
+  m_Children:
+  - {fileID: 1025989654}
+  - {fileID: 581212274}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1778880953
@@ -4011,7 +4051,7 @@ MonoBehaviour:
   enableContactDetection: 1
   speed: 6
   acceleration: 8
-  angularSpeed: 120
+  angularSpeed: 360
   maxHealth: 10
   currentHealth: 0
   speedBoostZonePrefab: {fileID: 3900286614151855705, guid: cb6cbc50c64bd8c468927223936cc291, type: 3}
@@ -4076,6 +4116,89 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!50 &1778880957
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778880950}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
+--- !u!114 &1778880958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778880950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67de63b14025db842a99620cf2090dba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  autoSeekItems: 1
+  seekRadius: 7
+  pickupRadius: 1
+  seekInterval: 2
+  itemLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  preferPrimaryItems: 1
+  onlySeekWhenUnarmed: 1
+  pauseAIDuringSeek: 1
+--- !u!114 &1778880959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778880950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36fdb596f160e1f4fbb9b333976c73d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackRange: 7
+  attackCooldown: 1
+  useItemsInCombat: 1
+  meleeRange: 1.5
+--- !u!114 &1778880960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778880950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee47e0d80d8633b43a5f47e601e737f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  primaryHoldPosition: {fileID: 1025989654}
+  secondaryHoldPosition: {fileID: 581212274}
+  currentPrimaryItem: {fileID: 0}
+  currentSecondaryItem: {fileID: 0}
+  throwForce: 10
+  canUseItems: 1
 --- !u!1 &1994555071
 GameObject:
   m_ObjectHideFlags: 0
@@ -4113,6 +4236,7 @@ MonoBehaviour:
   pickupRadius: 1
   pickupKey: 101
   holdType: 1
+  canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
   maxUsageCount: 1
   depletedSprite: {fileID: 3952322414003577344, guid: 03201951c3d75f748ae21d2563779c22, type: 3}
@@ -4253,7 +4377,7 @@ Transform:
   m_GameObject: {fileID: 1994555071}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.05, y: -3.1, z: 0}
+  m_LocalPosition: {x: -4.05, y: -4.91, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []

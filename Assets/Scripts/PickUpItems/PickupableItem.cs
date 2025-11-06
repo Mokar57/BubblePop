@@ -13,6 +13,7 @@ public class PickupableItem : MonoBehaviour
     public float pickupRadius = 2f;
     public KeyCode pickupKey = KeyCode.E;
     public ItemHoldType holdType = ItemHoldType.Primary;
+    public bool canBePickedByEnemies = true; // Enemy'ler bu item'ı alabilir mi?
     
     [Header("Visual Settings")]
     public GameObject pickupIndicator; // UI element to show "Press E to pick up"
@@ -144,6 +145,32 @@ public class PickupableItem : MonoBehaviour
                     pickupIndicator.SetActive(false);
             }
         }
+    }
+    
+    /// <summary>
+    /// Enemy'nin item'ı almasını sağlar (programatik olarak)
+    /// </summary>
+    public bool TryPickupByEnemy(EnemyItemHolder enemyHolder)
+    {
+        if (!canBePickedByEnemies || isDepleted) return false;
+        
+        // Check if item is currently being held
+        bool isCurrentlyHeld = transform.parent != null;
+        if (isCurrentlyHeld) return false;
+        
+        // Item toplandığında collider'ı trigger yap
+        Collider2D col = GetComponent<Collider2D>();
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
+        
+        enemyHolder.PickupItem(this.gameObject, holdType);
+        
+        if (pickupIndicator != null)
+            pickupIndicator.SetActive(false);
+            
+        return true;
     }
 
     private void OnDrawGizmosSelected()
