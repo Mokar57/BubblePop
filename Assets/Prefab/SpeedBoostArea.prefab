@@ -101,10 +101,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2e013723a73d2c43a3d59bff5b0c63e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  zoneRadius: 0.91
+  zoneRadius: 0.85
   speedMultiplier: 1.5
   zoneDuration: 100
   zoneColor: {r: 0, g: 1, b: 0, a: 0.3}
+  affectedLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
   zoneEffect: {fileID: 0}
   showZoneVisual: 1
 --- !u!58 &6030611306063733398
@@ -142,4 +145,4 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 1
+  m_Radius: 0.56

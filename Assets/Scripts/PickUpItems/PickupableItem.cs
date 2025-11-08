@@ -17,6 +17,8 @@ public class PickupableItem : MonoBehaviour
     
     [Header("Visual Settings")]
     public GameObject pickupIndicator; // UI element to show "Press E to pick up"
+    public Sprite spriteWhenHeld; // Silah tutuluyorken gösterilecek sprite
+    public Sprite spriteWhenDropped; // Silah yerde iken gösterilecek sprite
     
     [Header("Usage Settings")]
     public int maxUsageCount = 10; // Maksimum kullanım sayısı
@@ -25,6 +27,7 @@ public class PickupableItem : MonoBehaviour
     private int currentUsageCount; // Mevcut kullanım sayısı
     private bool isDepleted = false; // Kullanım tükendi mi?
     private Sprite originalSprite; // Orijinal sprite'ı sakla
+    private bool isHeld = false; // Silah tutuluyorken true olacak
     
     private bool playerInRange = false;
     private GameObject player;
@@ -39,17 +42,33 @@ public class PickupableItem : MonoBehaviour
         if (spriteRenderer != null)
         {
             originalSprite = spriteRenderer.sprite;
+            
+            // Eğer spriteWhenDropped atanmamışsa, orijinal sprite'ı kullan
+            if (spriteWhenDropped == null)
+            {
+                spriteWhenDropped = originalSprite;
+            }
         }
         
         // Hide pickup indicator at start
         if (pickupIndicator != null)
             pickupIndicator.SetActive(false);
+        
+        // Başlangıçta yerde olduğu için dropped sprite'ı kullan
+        UpdateSprite();
     }
 
     private void Update()
     {
         // Check if item is currently being held by checking if parent is not null
         bool isCurrentlyHeld = transform.parent != null;
+        
+        // Tutulma durumu değiştiyse sprite'ı güncelle
+        if (isCurrentlyHeld != isHeld)
+        {
+            isHeld = isCurrentlyHeld;
+            UpdateSprite();
+        }
         
         // Tükenen item'ları alamaz
         if (playerInRange && !isCurrentlyHeld && !isDepleted && Input.GetKeyDown(pickupKey))
@@ -186,6 +205,10 @@ public class PickupableItem : MonoBehaviour
         playerInRange = false;
         player = null;
         
+        // Silah bırakıldığında sprite'ı güncelle
+        isHeld = false;
+        UpdateSprite();
+        
         if (pickupIndicator != null)
             pickupIndicator.SetActive(false);
     }
@@ -232,5 +255,49 @@ public class PickupableItem : MonoBehaviour
     public int GetMaxUsageCount()
     {
         return maxUsageCount;
+    }
+    
+    /// <summary>
+    /// Silahın sprite'ını durumuna göre günceller
+    /// </summary>
+    private void UpdateSprite()
+    {
+        // Eğer silah tükendiyse depleted sprite kullan
+        if (isDepleted)
+            return;
+        
+        SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+            return;
+        
+        // Tutuluyorken ve tutulmuyor iken farklı sprite'lar kullan
+        if (isHeld && spriteWhenHeld != null)
+        {
+            spriteRenderer.sprite = spriteWhenHeld;
+        }
+        else if (!isHeld && spriteWhenDropped != null)
+        {
+            spriteRenderer.sprite = spriteWhenDropped;
+        }
+    }
+    
+    /// <summary>
+    /// Silahın tutulma durumunu manuel olarak ayarlamak için
+    /// </summary>
+    public void SetHeldState(bool held)
+    {
+        if (isHeld != held)
+        {
+            isHeld = held;
+            UpdateSprite();
+        }
+    }
+    
+    /// <summary>
+    /// Silahın tutulup tutulmadığını kontrol eder
+    /// </summary>
+    public bool IsHeld()
+    {
+        return isHeld;
     }
 }

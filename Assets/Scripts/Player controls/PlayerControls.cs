@@ -354,6 +354,13 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         // Make the item a child of the player
         item.transform.SetParent(transform);
         
+        // Silah tutulduğunda sprite'ı güncelle
+        PickupableItem pickupable = item.GetComponent<PickupableItem>();
+        if (pickupable != null)
+        {
+            pickupable.SetHeldState(true);
+        }
+        
         // Preserve item's original sprite properties
         SpriteRenderer itemRenderer = item.GetComponent<SpriteRenderer>();
         if (itemRenderer != null)

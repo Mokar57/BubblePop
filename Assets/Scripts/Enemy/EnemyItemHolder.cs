@@ -93,6 +93,13 @@ public class EnemyItemHolder : MonoBehaviour
         // Item'ı enemy'nin child'ı yap
         item.transform.SetParent(transform);
         
+        // Silah tutulduğunda sprite'ı güncelle
+        PickupableItem pickupable = item.GetComponent<PickupableItem>();
+        if (pickupable != null)
+        {
+            pickupable.SetHeldState(true);
+        }
+        
         // Item'ın sprite özelliklerini koru
         SpriteRenderer itemRenderer = item.GetComponent<SpriteRenderer>();
         if (itemRenderer != null)
@@ -140,7 +147,6 @@ public class EnemyItemHolder : MonoBehaviour
         }
         
         // PickupableItem component'ini devre dışı bırak (başkaları alamasın)
-        PickupableItem pickupable = item.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
             pickupable.enabled = false;
