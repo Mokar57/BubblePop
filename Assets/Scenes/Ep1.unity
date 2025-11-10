@@ -31309,6 +31309,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: spriteWhenHeld
+      value: 
+      objectReference: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -32894,7 +32898,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8784797368900934643, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: m_Name
-      value: Enemy
+      value: EnemyD
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -33302,6 +33306,7 @@ SceneRoots:
   - {fileID: 2111630240}
   - {fileID: 29231857}
   - {fileID: 1436256089}
+  - {fileID: 1734493894}
   - {fileID: 1653013532}
   - {fileID: 2142257062}
   - {fileID: 345980034}
@@ -33312,4 +33317,3 @@ SceneRoots:
   - {fileID: 1947099497}
   - {fileID: 1243958684}
   - {fileID: 768615450}
-  - {fileID: 1734493894}
