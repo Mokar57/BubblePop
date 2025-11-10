@@ -17,7 +17,7 @@ public class Waypoint : MonoBehaviour
     {
         // Draw waypoint position
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, 0.5f);
+        Gizmos.DrawWireSphere(transform.position, 0.2f);
         
         // Draw direction arrow if enabled
         if (showDirection)

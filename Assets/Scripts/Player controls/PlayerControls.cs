@@ -512,8 +512,11 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         
         isDead = true;
         
-        // Trigger death event
+        // Trigger local death event (backward compatibility)
         OnPlayerDeath?.Invoke();
+        
+        // Trigger global death event (decoupled system)
+        GameEvents.TriggerPlayerDeath();
         
         // Disable player controls
         this.enabled = false;
@@ -531,9 +534,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         }
         
         Debug.Log("Player Died!");
-        
-        // You can add game over logic here
-        // For example: Restart level, show game over screen, etc.
     }
     
     private System.Collections.IEnumerator DamageFlash()

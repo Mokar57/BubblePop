@@ -29,13 +29,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3932926569630947352}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.65, y: -4.7, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: 0.004331313, w: -0.99999064}
+  m_LocalPosition: {x: 2.614, y: -4.49, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -0.496}
 --- !u!212 &172368637337580688
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -80,7 +80,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 8
-  m_Sprite: {fileID: 1319224796088813746, guid: dae5212881a3f154594613a06e1108af, type: 3}
+  m_Sprite: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -125,17 +125,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.13721955, y: 0.12666321}
+  m_Offset: {x: -0.010169476, y: 0.0029871464}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.24269336, y: 0.2462887}
-    oldSize: {x: 0.552, y: 0.536}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1.072, y: 0.228}
     newSize: {x: 1.29, y: 1.98}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.14034295, y: 0.12157059}
+  m_Size: {x: 1.3486726, y: 0.15494022}
   m_EdgeRadius: 0
 --- !u!50 &6269874751224178585
 Rigidbody2D:
@@ -182,10 +182,10 @@ MonoBehaviour:
   holdType: 1
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
-  spriteWhenHeld: {fileID: 1319224796088813746, guid: dae5212881a3f154594613a06e1108af, type: 3}
+  spriteWhenHeld: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   spriteWhenDropped: {fileID: 0}
-  maxUsageCount: 1
-  depletedSprite: {fileID: 3952322414003577344, guid: 03201951c3d75f748ae21d2563779c22, type: 3}
+  maxUsageCount: 2
+  depletedSprite: {fileID: -5303914433169244003, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
 --- !u!114 &7420832005633306765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,10 +200,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   batName: Baseball Bat
   batColor: {r: 1, g: 1, b: 1, a: 1}
-  attackRange: 1
+  attackRange: 1.5
   attackDamage: 50
   attackCooldown: 1
-  attackAngle: 90
+  attackAngle: 135
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

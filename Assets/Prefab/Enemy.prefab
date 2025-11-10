@@ -352,7 +352,7 @@ MonoBehaviour:
   autoSeekItems: 1
   seekRadius: 7
   pickupRadius: 1
-  seekInterval: 2
+  seekInterval: 0.2
   itemLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

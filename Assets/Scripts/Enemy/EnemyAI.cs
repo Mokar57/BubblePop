@@ -13,7 +13,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [SerializeField] private bool enablePatrol = true;
     [SerializeField] private List<Waypoint> patrolWaypoints = new List<Waypoint>();
     [SerializeField] private bool loopPatrol = true;
-    [SerializeField] private float waypointReachDistance = 1f;
+    [SerializeField] private float waypointReachDistance = 0.1f; // Very small distance for precise waypoint reaching
     [SerializeField] private bool randomPatrolOrder = false;
     [SerializeField] private float patrolSpeed = 2f;
     [SerializeField] private bool showPatrolPath = true;
@@ -246,6 +246,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         Waypoint targetWaypoint = patrolWaypoints[currentWaypointIndex];
         if (targetWaypoint != null && agent != null)
         {
+            // Set stopping distance to 0 for precise waypoint reaching
+            agent.stoppingDistance = 0f;
             agent.SetDestination(targetWaypoint.Position);
             currentState = AIState.Patrolling;
             waypointStartTime = Time.time; // Start timeout timer
@@ -318,7 +320,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 {
                     float distanceToWaypoint = Vector3.Distance(transform.position, currentWaypoint.Position);
                     
-                    if (distanceToWaypoint <= waypointReachDistance)
+                    // Check if waypoint is reached - use very small distance or if agent has reached its destination
+                    if (distanceToWaypoint <= waypointReachDistance || (!agent.pathPending && agent.remainingDistance <= 0.01f))
                     {
                         // Reached waypoint, start waiting
                         isWaitingAtWaypoint = true;
@@ -329,7 +332,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                         targetVisionDirection = currentWaypoint.WaitDirection;
                         isRotatingVision = true;
                         
-                        // Stop moving
+                        // Stop moving and reset path
                         agent.ResetPath();
                         
                         // Reset stuck state
@@ -464,6 +467,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                 currentState = AIState.Chasing;
                 hasSeenTarget = true;
                 agent.speed = speed; // Use chase speed
+                agent.stoppingDistance = stopDistance; // Reset stopping distance for chasing
                 isPatrolling = false;
                 isWaitingAtWaypoint = false;
                 isWaitingAfterStuck = false; // Reset stuck wait state
@@ -565,6 +569,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             
             currentWaypointIndex = closestWaypointIndex;
             agent.speed = patrolSpeed;
+            agent.stoppingDistance = 0f; // Reset stopping distance for patrol
             isPatrolling = true;
             isWaitingAtWaypoint = false;
             isWaitingAfterTimeout = false; // Reset timeout wait state

@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: dae5212881a3f154594613a06e1108af
+guid: 87a25bbf49cf3b144ae99baa6ca7e9ee
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1319224796088813746
-    second: "Ba\u015Fl\u0131ks\u0131z-1_0"
+      213: -5303914433169244003
+    second: "sopak\u0131r\u0131k_0"
+  - first:
+      213: 8445816200000073551
+    second: "sopak\u0131r\u0131k_1"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +103,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "Ba\u015Fl\u0131ks\u0131z-1_0"
+      name: "sopak\u0131r\u0131k_0"
       rect:
         serializedVersion: 2
-        x: 172
-        y: 189
-        width: 138
-        height: 134
-      alignment: 9
-      pivot: {x: 0.24269336, y: 0.2462887}
+        x: 0
+        y: 0
+        width: 268
+        height: 61
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2b8c2c566f3de4210800000000000000
-      internalID: 1319224796088813746
+      spriteID: d9041e3ace5b466b0800000000000000
+      internalID: -5303914433169244003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: "sopak\u0131r\u0131k_1"
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 48
+        width: 17
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4f6e370611953570800000000000000
+      internalID: 8445816200000073551
       vertices: []
       indices: 
       edges: []
@@ -125,7 +150,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: dea6f140266f6d6478160718771ee3d8
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +160,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "Ba\u015Fl\u0131ks\u0131z-1_0": 1319224796088813746
+      "sopak\u0131r\u0131k_0": -5303914433169244003
+      "sopak\u0131r\u0131k_1": 8445816200000073551
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
