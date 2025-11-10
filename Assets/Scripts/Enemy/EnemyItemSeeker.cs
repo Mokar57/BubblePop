@@ -42,6 +42,9 @@ public class EnemyItemSeeker : MonoBehaviour
     
     private void Update()
     {
+        // Check if agent is valid and active before doing anything
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+        
         // Item takip modunda mıyız?
         if (isSeekingItem)
         {
@@ -99,7 +102,7 @@ public class EnemyItemSeeker : MonoBehaviour
             if (Vector3.Distance(targetItem.transform.position, lastItemPosition) > 0.5f)
             {
                 lastItemPosition = targetItem.transform.position;
-                if (agent != null)
+                if (agent != null && agent.enabled && agent.isOnNavMesh)
                 {
                     agent.SetDestination(targetItem.transform.position);
                 }
@@ -188,7 +191,7 @@ public class EnemyItemSeeker : MonoBehaviour
         lastItemPosition = item.transform.position;
         
         // NavMeshAgent ile item'a git
-        if (agent != null)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.SetDestination(item.transform.position);
         }

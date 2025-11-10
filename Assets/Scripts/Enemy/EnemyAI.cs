@@ -244,7 +244,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             return;
         
         Waypoint targetWaypoint = patrolWaypoints[currentWaypointIndex];
-        if (targetWaypoint != null && agent != null)
+        if (targetWaypoint != null && agent != null && agent.enabled && agent.isOnNavMesh)
         {
             // Set stopping distance to 0 for precise waypoint reaching
             agent.stoppingDistance = 0f;
@@ -260,7 +260,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     
     private void UpdatePatrol()
     {
-        if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null)
+        if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
         
         if (isWaitingAfterStuck)
@@ -321,7 +321,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
                     float distanceToWaypoint = Vector3.Distance(transform.position, currentWaypoint.Position);
                     
                     // Check if waypoint is reached - use very small distance or if agent has reached its destination
-                    if (distanceToWaypoint <= waypointReachDistance || (!agent.pathPending && agent.remainingDistance <= 0.01f))
+                    // Also check if agent is enabled and on NavMesh before accessing remainingDistance
+                    bool agentReachedDestination = agent.enabled && agent.isOnNavMesh && !agent.pathPending && agent.remainingDistance <= 0.01f;
+                    if (distanceToWaypoint <= waypointReachDistance || agentReachedDestination)
                     {
                         // Reached waypoint, start waiting
                         isWaitingAtWaypoint = true;
@@ -441,12 +443,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     
     private void Update()
     {
+        // Don't update if dead or agent is disabled
+        if (isDead || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+        
         if (target == null)
         {
             FindTarget();
         }
-
-        if (agent == null) return;
 
         // Check if target is visible
         bool canSeeTarget = target != null && CanSeeTarget();
@@ -548,6 +551,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         proximityTimer = 0f;
         playerInProximity = false;
         
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+        
         if (enablePatrol && patrolWaypoints.Count > 0)
         {
             // Find closest waypoint to return to
@@ -589,7 +594,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     
     private void UpdateChaseDestination()
     {
-        if (target == null || agent == null) return;
+        if (target == null || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
         
         float distanceToTarget = Vector3.Distance(transform.position, target.position);
         
@@ -640,7 +645,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     
     private void UpdateSearchDestination()
     {
-        if (agent == null) return;
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
         
         // Move to last known position
         if (Vector3.Distance(lastKnownTargetPosition, lastTargetPosition) > 0.5f)
@@ -1276,6 +1281,10 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         
         isDead = true;
         
+        // Trigger death event FIRST (before disabling components)
+        // This allows EnemyItemHolder to drop items while enemy is still active
+        OnEnemyDeath?.Invoke();
+        
         // Spawn SpeedBoostZone at death location
         if (speedBoostZonePrefab != null)
         {
@@ -1286,10 +1295,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             Debug.LogWarning($"{gameObject.name} died but no SpeedBoostZone prefab assigned!");
         }
         
-        // Trigger death event
-        OnEnemyDeath?.Invoke();
-        
-        // Disable components
+        // Disable components AFTER death event
         if (agent != null)
             agent.enabled = false;
         

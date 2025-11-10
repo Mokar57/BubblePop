@@ -169,6 +169,9 @@ public class EnemyItemHolder : MonoBehaviour
         // Rotation'ı sıfırla
         weapon.transform.rotation = Quaternion.identity;
         
+        // Scale'i sıfırla (parent transform'dan etkilenmiş olabilir)
+        weapon.transform.localScale = Vector3.one;
+        
         // Physics'i yeniden etkinleştir
         Rigidbody2D itemRb = weapon.GetComponent<Rigidbody2D>();
         if (itemRb != null)
@@ -187,11 +190,26 @@ public class EnemyItemHolder : MonoBehaviour
             itemCollider.enabled = true;
         }
         
+        // SpriteRenderer'ı kontrol et ve görünür yap
+        SpriteRenderer itemRenderer = weapon.GetComponent<SpriteRenderer>();
+        if (itemRenderer != null)
+        {
+            itemRenderer.enabled = true;
+            // Alpha değerini kontrol et
+            Color color = itemRenderer.color;
+            if (color.a < 1f)
+            {
+                color.a = 1f;
+                itemRenderer.color = color;
+            }
+        }
+        
         // PickupableItem component'ini yeniden etkinleştir
         PickupableItem pickupable = weapon.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
             pickupable.enabled = true;
+            pickupable.SetHeldState(false); // Mark as not held anymore
             pickupable.ResetPickupState();
         }
     }
