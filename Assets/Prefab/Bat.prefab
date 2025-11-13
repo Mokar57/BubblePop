@@ -186,6 +186,10 @@ MonoBehaviour:
   spriteWhenDropped: {fileID: 0}
   maxUsageCount: 2
   depletedSprite: {fileID: -5303914433169244003, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
+  useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
+  throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
+  useSoundVolume: 1
+  throwSoundVolume: 1
 --- !u!114 &7420832005633306765
 MonoBehaviour:
   m_ObjectHideFlags: 0

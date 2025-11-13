@@ -31383,6 +31383,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: useSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
       propertyPath: spriteWhenHeld
       value: 
       objectReference: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
@@ -33298,6 +33302,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: useSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: throwSound
+      value: 
+      objectReference: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: leftClickSound
+      value: 
+      objectReference: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -33472,6 +33488,22 @@ PrefabInstance:
       propertyPath: waypointReachDistance
       value: 0.1
       objectReference: {fileID: 0}
+    - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: deathSounds.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'deathSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 62b0c22023fc9e4449dc24798eaf5cdd, type: 3}
+    - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'deathSounds.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 692bb93d7b84c434bafae49961e534e6, type: 3}
+    - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'deathSounds.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: f38e5ac751d2d4245910d4ae16c07ffd, type: 3}
     - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: patrolWaypoints.Array.size
       value: 5
