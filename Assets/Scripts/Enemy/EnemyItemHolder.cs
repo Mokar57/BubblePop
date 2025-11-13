@@ -274,6 +274,8 @@ public class EnemyItemHolder : MonoBehaviour
         PickupableItem weaponPickup = currentWeapon.GetComponent<PickupableItem>();
         if (weaponPickup == null) return;
         
+        // Ses çalma kodu kaldırıldı - artık silah scriptlerinde çalacak
+        
         // Target'a doğru yön hesapla
         Vector2 direction = (targetPosition - transform.position).normalized;
         
@@ -335,6 +337,9 @@ public class EnemyItemHolder : MonoBehaviour
         PickupableItem pickupable = currentWeapon.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
+            // Fırlatma sesini çal
+            pickupable.PlayThrowSound();
+            
             // Kullanım sayısını 0'a çek ki depleted olsun
             while (!pickupable.IsDepleted())
             {

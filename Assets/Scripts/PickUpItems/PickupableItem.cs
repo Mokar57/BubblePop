@@ -24,6 +24,15 @@ public class PickupableItem : MonoBehaviour
     public int maxUsageCount = 10; // Maksimum kullanım sayısı
     public Sprite depletedSprite; // Kullanım bittiğinde gösterilecek sprite
     
+    [Header("Audio Settings")]
+    public AudioClip useSound; // Sol tık (kullanım) sesi
+    public AudioClip throwSound; // Sağ tık (fırlatma) sesi
+    [Range(0f, 1f)]
+    public float useSoundVolume = 1f; // Kullanım sesinin yüksekliği
+    [Range(0f, 1f)]
+    public float throwSoundVolume = 1f; // Fırlatma sesinin yüksekliği
+    
+    private AudioSource audioSource; // Sesleri çalmak için AudioSource
     private int currentUsageCount; // Mevcut kullanım sayısı
     private bool isDepleted = false; // Kullanım tükendi mi?
     private Sprite originalSprite; // Orijinal sprite'ı sakla
@@ -36,6 +45,16 @@ public class PickupableItem : MonoBehaviour
     {
         // Initialize usage count
         currentUsageCount = maxUsageCount;
+        
+        // Setup AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        // AudioSource ayarlarını yapılandır
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f; // 2D ses için
         
         // Store original sprite
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>();
@@ -299,5 +318,27 @@ public class PickupableItem : MonoBehaviour
     public bool IsHeld()
     {
         return isHeld;
+    }
+    
+    /// <summary>
+    /// Sol tık (kullanım) sesini çalar
+    /// </summary>
+    public void PlayUseSound()
+    {
+        if (audioSource != null && useSound != null)
+        {
+            audioSource.PlayOneShot(useSound, useSoundVolume);
+        }
+    }
+    
+    /// <summary>
+    /// Sağ tık (fırlatma) sesini çalar
+    /// </summary>
+    public void PlayThrowSound()
+    {
+        if (audioSource != null && throwSound != null)
+        {
+            audioSource.PlayOneShot(throwSound, throwSoundVolume);
+        }
     }
 }

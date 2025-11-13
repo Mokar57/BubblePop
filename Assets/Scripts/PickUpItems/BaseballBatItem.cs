@@ -51,6 +51,12 @@ public class BaseballBatItem : MonoBehaviour
         
         lastAttackTime = Time.time;
         
+        // Cooldown geçti, şimdi sesi çal
+        if (pickupable != null)
+        {
+            pickupable.PlayUseSound();
+        }
+        
         // Sahibi bul (parent)
         GameObject owner = transform.parent != null ? transform.parent.gameObject : null;
         

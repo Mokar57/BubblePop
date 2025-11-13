@@ -132,6 +132,8 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         PickupableItem weaponPickup = currentWeapon.GetComponent<PickupableItem>();
         if (weaponPickup == null) return;
         
+        // Ses çalma kodu kaldırıldı - artık silah scriptlerinde çalacak
+        
         if (weaponPickup.holdType == ItemHoldType.Primary)
         {
             // Primary weapon - Projectile attack
@@ -178,6 +180,9 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         PickupableItem pickupable = currentWeapon.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
+            // Sağ tık (fırlatma) sesini çal
+            pickupable.PlayThrowSound();
+            
             // Kullanım sayısını 0'a çek ki depleted olsun
             while (!pickupable.IsDepleted())
             {

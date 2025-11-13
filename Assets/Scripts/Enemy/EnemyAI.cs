@@ -59,6 +59,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [SerializeField] private GameObject speedBoostZonePrefab;
     [SerializeField] private Color damageColor = Color.red;
     [SerializeField] private float flashDuration = 0.1f;
+    [SerializeField] private AudioClip[] deathSounds; // Ölüm sesleri dizisi
+    [SerializeField] [Range(0f, 1f)] private float deathSoundVolume = 1f; // Ölüm sesinin yüksekliği
     
     // Speed boost variables
     private float originalSpeed;
@@ -70,6 +72,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private bool isDead = false;
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
+    private AudioSource audioSource; // Sesleri çalmak için AudioSource
     
     // Events
     public System.Action<float> OnHealthChanged;
@@ -129,6 +132,16 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         spriteRenderer = GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
             originalColor = spriteRenderer.color;
+        
+        // Setup AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        // AudioSource ayarlarını yapılandır
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 0f; // 2D ses için
         
         InitializeAgent();
         FindTarget();
@@ -1281,6 +1294,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         
         isDead = true;
         
+        // Rastgele ölüm sesi çal
+        PlayRandomDeathSound();
+        
         // Trigger death event FIRST (before disabling components)
         // This allows EnemyItemHolder to drop items while enemy is still active
         OnEnemyDeath?.Invoke();
@@ -1301,6 +1317,24 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         
         // Destroy the enemy after a short delay to allow for any death effects
         Destroy(gameObject, 0.1f);
+    }
+    
+    /// <summary>
+    /// Rastgele bir ölüm sesi çalar
+    /// </summary>
+    private void PlayRandomDeathSound()
+    {
+        if (audioSource != null && deathSounds != null && deathSounds.Length > 0)
+        {
+            // Rastgele bir ses seç
+            int randomIndex = Random.Range(0, deathSounds.Length);
+            AudioClip selectedSound = deathSounds[randomIndex];
+            
+            if (selectedSound != null)
+            {
+                audioSource.PlayOneShot(selectedSound, deathSoundVolume);
+            }
+        }
     }
     
     private System.Collections.IEnumerator DamageFlash()
