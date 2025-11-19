@@ -216,7 +216,7 @@ MonoBehaviour:
   pickupIndicator: {fileID: 0}
   spriteWhenHeld: {fileID: -965272607947795289, guid: 99392a0b042f4d64d8dda668c35e3c2b, type: 3}
   spriteWhenDropped: {fileID: 0}
-  maxUsageCount: 4
+  maxUsageCount: 3
   depletedSprite: {fileID: 8741980072048425201, guid: 3d902cca632705b409fe83d0ca467c25, type: 3}
   useSound: {fileID: 8300000, guid: 0f796ae148e81a44e9424437a61d8ce6, type: 3}
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}

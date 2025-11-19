@@ -215,9 +215,9 @@ MonoBehaviour:
   damageColor: {r: 1, g: 1, b: 1, a: 1}
   flashDuration: 0.1
   deathSounds:
+  - {fileID: 8300000, guid: f38e5ac751d2d4245910d4ae16c07ffd, type: 3}
   - {fileID: 8300000, guid: 62b0c22023fc9e4449dc24798eaf5cdd, type: 3}
   - {fileID: 8300000, guid: 692bb93d7b84c434bafae49961e534e6, type: 3}
-  - {fileID: 8300000, guid: f38e5ac751d2d4245910d4ae16c07ffd, type: 3}
   deathSoundVolume: 1
   currentState: 0
 --- !u!195 &584840815198655199
