@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Handles enemy's ability to hold and use PickupableItems
@@ -9,22 +10,43 @@ public class EnemyItemHolder : MonoBehaviour
     [Header("Item Hold Positions")]
     public Transform primaryHoldPosition;   // Önde tutulacak eşyalar için (tabanca)
     public Transform secondaryHoldPosition; // Yanda tutulacak eşyalar için (beyzbol sopası)
-    
+
     [Header("Current Items")]
     public GameObject currentPrimaryItem;   // Şu anda önde tutulan eşya
     public GameObject currentSecondaryItem; // Şu anda yanda tutulan eşya
-    
+
     [Header("Item Throwing Settings")]
     public float throwForce = 10f;
-    
+
     [Header("Attack Settings")]
     public bool canUseItems = true; // Enemy item kullanabilir mi?
-    
+
+    [Header("Rotation Settings")]
+    [SerializeField] private bool enableRotation = true; // Enable/disable automatic rotation
+    [Tooltip("If true, only rotates when NavMeshAgent is not actively pathfinding")]
+    [SerializeField] private bool safeRotationMode = true;
+
     private EnemyAI enemyAI;
-    
+    private NavMeshAgent navAgent;
+    private bool rotationValidated = false;
+
+    private void Awake()
+    {
+        navAgent = GetComponent<NavMeshAgent>();
+
+        // Fix rotation immediately in Awake to prevent any conflicts
+        if (navAgent != null)
+        {
+            navAgent.updateRotation = false;
+            navAgent.updateUpAxis = false;
+        }
+    }
+
     private void Start()
     {
         enemyAI = GetComponent<EnemyAI>();
+
+        ValidateRotationSetup();
     }
     
     private void LateUpdate()
@@ -32,17 +54,60 @@ public class EnemyItemHolder : MonoBehaviour
         // Enemy'nin görüş yönüne göre enemy ve item'ları döndür
         UpdateRotationBasedOnVision();
     }
-    
+
+    /// <summary>
+    /// Validates that NavMeshAgent is configured correctly for manual rotation
+    /// </summary>
+    private void ValidateRotationSetup()
+    {
+        if (navAgent == null)
+        {
+            rotationValidated = true;
+            return;
+        }
+
+        // Verify NavMeshAgent rotation is disabled (should already be set in Awake)
+        if (navAgent.updateRotation)
+        {
+            // This shouldn't happen since Awake() already fixed it, but just in case
+            navAgent.updateRotation = false;
+            Debug.LogWarning($"[EnemyItemHolder] Late rotation fix applied on {gameObject.name}", gameObject);
+        }
+
+        rotationValidated = true;
+    }
+
     /// <summary>
     /// Enemy'nin görüş yönüne göre enemy'yi ve item'ları döndürür
+    /// Enhanced with safety checks to prevent NavMeshAgent conflicts
     /// </summary>
     private void UpdateRotationBasedOnVision()
     {
+        // Safety check: Don't rotate if disabled
+        if (!enableRotation) return;
+
+        // Safety check: Ensure EnemyAI exists
         if (enemyAI == null) return;
-        
+
+        // Safety check: In safe mode, only rotate when NavMeshAgent is ready
+        if (safeRotationMode && navAgent != null)
+        {
+            // Don't rotate if NavMeshAgent is not on NavMesh or is being initialized
+            if (!navAgent.isOnNavMesh)
+            {
+                return;
+            }
+
+            // Don't rotate if NavMeshAgent is still calculating path
+            if (navAgent.pathPending)
+            {
+                return;
+            }
+        }
+
         // EnemyAI'dan görüş yönünü al
         Vector3 visionDirection = enemyAI.GetVisionDirection();
-        
+
         if (visionDirection.magnitude > 0.01f)
         {
             // Enemy'nin kendisini görüş yönüne döndür

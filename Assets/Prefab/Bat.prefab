@@ -56,6 +56,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -77,6 +79,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 10
@@ -184,7 +187,7 @@ MonoBehaviour:
   pickupIndicator: {fileID: 0}
   spriteWhenHeld: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   spriteWhenDropped: {fileID: 0}
-  maxUsageCount: 2
+  maxUsageCount: 99
   depletedSprite: {fileID: -5303914433169244003, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
   useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
@@ -205,9 +208,11 @@ MonoBehaviour:
   batName: Baseball Bat
   batColor: {r: 1, g: 1, b: 1, a: 1}
   attackRange: 1.5
-  attackDamage: 50
+  attackDamage: 0
   attackCooldown: 1
   attackAngle: 135
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  knockbackMultiplier: 1
+  enableKnockback: 1

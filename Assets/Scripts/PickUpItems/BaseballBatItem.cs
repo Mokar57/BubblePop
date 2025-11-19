@@ -12,6 +12,10 @@ public class BaseballBatItem : MonoBehaviour
     public float attackCooldown = 1f; // Saldırı bekleme süresi
     public float attackAngle = 90f; // Saldırı açısı (derece)
     public LayerMask enemyLayerMask = -1; // Hangi layer'lardaki düşmanları vuracak
+
+    [Header("Knockback Settings")]
+    public float knockbackMultiplier = 1f; // Knockback force multiplier
+    public bool enableKnockback = true; // Enable/disable knockback effect
     
     private float lastAttackTime = 0f;
     
@@ -84,7 +88,18 @@ public class BaseballBatItem : MonoBehaviour
                 // Açı kontrolü yap (isteğe bağlı)
                 if (IsInAttackAngle(centerPosition, direction, hitCollider.transform.position))
                 {
-                    enemy.TakeDamage(attackDamage);
+                    // Calculate knockback direction (from attacker to enemy)
+                    Vector3 knockbackDirection = (hitCollider.transform.position - centerPosition).normalized;
+
+                    // Apply damage with knockback
+                    if (enableKnockback)
+                    {
+                        enemy.TakeDamageWithKnockback(attackDamage, knockbackDirection, knockbackMultiplier);
+                    }
+                    else
+                    {
+                        enemy.TakeDamage(attackDamage);
+                    }
                     enemiesHit++;
                 }
             }

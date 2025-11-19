@@ -123,6 +123,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -144,6 +146,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 15
@@ -219,6 +222,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 692bb93d7b84c434bafae49961e534e6, type: 3}
   - {fileID: 8300000, guid: f38e5ac751d2d4245910d4ae16c07ffd, type: 3}
   deathSoundVolume: 1
+  knockbackForce: 25
+  knockbackDuration: 1
+  knockbackDrag: 3
+  wallBounceMultiplier: 1
+  maxBounces: 5
+  wallLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
   currentState: 0
 --- !u!195 &584840815198655199
 NavMeshAgent:
@@ -323,6 +334,8 @@ MonoBehaviour:
   currentSecondaryItem: {fileID: 0}
   throwForce: 10
   canUseItems: 1
+  enableRotation: 1
+  safeRotationMode: 1
 --- !u!114 &1091820595349382882
 MonoBehaviour:
   m_ObjectHideFlags: 0

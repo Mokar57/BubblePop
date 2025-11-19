@@ -61,6 +61,14 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [SerializeField] private float flashDuration = 0.1f;
     [SerializeField] private AudioClip[] deathSounds; // Ölüm sesleri dizisi
     [SerializeField] [Range(0f, 1f)] private float deathSoundVolume = 1f; // Ölüm sesinin yüksekliği
+
+    [Header("Knockback Settings")]
+    [SerializeField] private float knockbackForce = 15f;
+    [SerializeField] private float knockbackDuration = 0.5f;
+    [SerializeField] private float knockbackDrag = 3f;
+    [SerializeField] private float wallBounceMultiplier = 0.6f;
+    [SerializeField] private int maxBounces = 3;
+    [SerializeField] private LayerMask wallLayerMask = -1;
     
     // Speed boost variables
     private float originalSpeed;
@@ -108,6 +116,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private float proximityTimer = 0f; // Timer for how long player has been in proximity
     private bool playerInProximity = false; // Is player currently in proximity range
     private bool proximityTriggered = false; // Has proximity detection triggered chase mode
+
+    // Knockback variables
+    private bool isKnockedBack = false;
+    private Rigidbody2D rb;
+    private int currentBounceCount = 0;
+    private Coroutine knockbackCoroutine;
+    private Vector2 lastKnockbackVelocity;
     
     public enum AIState
     {
@@ -116,7 +131,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         WaitingAtWaypoint,
         SearchingLastKnown,
         WaitingAfterTimeout,
-        WaitingAfterStuck
+        WaitingAfterStuck,
+        KnockedBack
     }
     
     [SerializeField] private AIState currentState = AIState.Patrolling;
@@ -163,14 +179,16 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private void InitializeAgent()
     {
         agent = GetComponent<NavMeshAgent>();
-        
+
         if (agent == null)
         {
             Debug.LogError("NavMeshAgent component not found on " + gameObject.name);
             return;
         }
-        
+
         // Configure agent for 2D movement
+        // CRITICAL: updateRotation MUST be false to prevent conflicts with EnemyItemHolder rotation system
+        // EnemyItemHolder manually controls rotation based on vision direction
         agent.updateRotation = false;
         agent.updateUpAxis = false;
         
@@ -183,11 +201,11 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         // Configure Rigidbody2D for trigger detection (if present)
         ConfigureRigidbody2D();
     }
-    
+
     private void ConfigureRigidbody2D()
     {
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        
+        rb = GetComponent<Rigidbody2D>();
+
         if (rb != null)
         {
             // Set to Kinematic to prevent physics from affecting NavMeshAgent
@@ -454,10 +472,22 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         MoveToCurrentWaypoint();
     }
     
+    private void FixedUpdate()
+    {
+        // Track velocity during knockback for accurate bounce calculation
+        if (isKnockedBack && rb != null && rb.linearVelocity.magnitude > 0.5f)
+        {
+            lastKnockbackVelocity = rb.linearVelocity;
+        }
+    }
+
     private void Update()
     {
         // Don't update if dead or agent is disabled
         if (isDead || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+
+        // Skip AI updates when knocked back
+        if (isKnockedBack) return;
         
         if (target == null)
         {
@@ -845,8 +875,15 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        // Handle knockback wall bounces
+        if (isKnockedBack)
+        {
+            HandleKnockbackCollision(collision);
+            return;
+        }
+
         if (!enableContactDetection) return;
-        
+
         // Check if the colliding object is the player
         if (collision.transform == target || collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponent<PlayerControls>() != null)
         {
@@ -1260,20 +1297,201 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public void TakeDamage(float damage)
     {
         if (isDead) return;
-        
+
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
-        
+
         // Visual feedback
         StartCoroutine(DamageFlash());
-        
+
         // Trigger event
         OnHealthChanged?.Invoke(currentHealth);
-        
+
         // Check for death
         if (currentHealth <= 0)
         {
             Die();
+        }
+    }
+
+    public void TakeDamageWithKnockback(float damage, Vector3 knockbackDirection, float forceMultiplier = 1f)
+    {
+        if (isDead) return;
+
+        // Apply damage
+        currentHealth -= damage;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        // Visual feedback
+        StartCoroutine(DamageFlash());
+
+        // Trigger event
+        OnHealthChanged?.Invoke(currentHealth);
+
+        // Apply knockback if not already knocked back
+        if (!isKnockedBack && rb != null)
+        {
+            // Stop any existing knockback
+            if (knockbackCoroutine != null)
+            {
+                StopCoroutine(knockbackCoroutine);
+            }
+            knockbackCoroutine = StartCoroutine(KnockbackCoroutine(knockbackDirection.normalized, forceMultiplier));
+        }
+
+        // Check for death
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    private IEnumerator KnockbackCoroutine(Vector3 direction, float forceMultiplier)
+    {
+        isKnockedBack = true;
+        currentBounceCount = 0;
+        AIState previousState = currentState;
+        currentState = AIState.KnockedBack;
+
+        // Completely stop NavMeshAgent before disabling
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
+            agent.enabled = false;
+        }
+
+        // Switch Rigidbody2D to Dynamic for physics
+        if (rb != null)
+        {
+            // First zero out any existing velocity
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.gravityScale = 0f;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            rb.linearDamping = knockbackDrag;
+
+            // Apply knockback force
+            Vector2 knockbackVelocity = new Vector2(direction.x, direction.y).normalized * knockbackForce * forceMultiplier;
+            rb.linearVelocity = knockbackVelocity;
+            lastKnockbackVelocity = knockbackVelocity;
+        }
+
+        // Wait for knockback duration
+        float elapsedTime = 0f;
+        while (elapsedTime < knockbackDuration)
+        {
+            elapsedTime += Time.deltaTime;
+
+            // Check if velocity is very low, end knockback early
+            if (rb != null && rb.linearVelocity.magnitude < 0.5f && elapsedTime > 0.1f)
+            {
+                break;
+            }
+
+            yield return null;
+        }
+
+        // Return to normal state
+        EndKnockback(previousState);
+    }
+
+    private void EndKnockback(AIState previousState)
+    {
+        isKnockedBack = false;
+        knockbackCoroutine = null;
+
+        // Reset Rigidbody2D to Kinematic
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            rb.bodyType = RigidbodyType2D.Kinematic;
+            rb.linearDamping = 0f;
+        }
+
+        // Re-enable NavMeshAgent
+        if (agent != null && !isDead)
+        {
+            agent.enabled = true;
+            agent.isStopped = false;
+
+            // Make sure agent is on NavMesh before setting destination
+            if (agent.isOnNavMesh)
+            {
+                // After getting hit, chase the player
+                if (target != null)
+                {
+                    currentState = AIState.Chasing;
+                    hasSeenTarget = true;
+                    agent.speed = speed;
+                    agent.stoppingDistance = stopDistance;
+                    isPatrolling = false;
+                    lastSeenTime = Time.time;
+                    lastKnownTargetPosition = target.position;
+                }
+                else
+                {
+                    currentState = previousState;
+                }
+            }
+        }
+    }
+
+    private void HandleKnockbackCollision(Collision2D collision)
+    {
+        if (!isKnockedBack || rb == null) return;
+
+        Debug.Log($"Knockback collision with: {collision.gameObject.name}, Layer: {LayerMask.LayerToName(collision.gameObject.layer)}");
+
+        // Check if we hit a wall
+        if (((1 << collision.gameObject.layer) & wallLayerMask) != 0)
+        {
+            currentBounceCount++;
+            Debug.Log($"Wall hit! Bounce count: {currentBounceCount}");
+
+            if (currentBounceCount >= maxBounces)
+            {
+                // Max bounces reached, end knockback
+                if (knockbackCoroutine != null)
+                {
+                    StopCoroutine(knockbackCoroutine);
+                }
+                EndKnockback(AIState.Chasing);
+                return;
+            }
+
+            // Calculate bounce direction
+            if (collision.contacts.Length > 0)
+            {
+                Vector2 normal = collision.contacts[0].normal;
+
+                // Use the tracked velocity from before collision
+                Vector2 incomingVelocity = lastKnockbackVelocity;
+
+                // Push enemy slightly away from wall to prevent sticking
+                transform.position += (Vector3)(normal * 0.1f);
+
+                // Calculate reflected velocity
+                Vector2 reflectedVelocity = Vector2.Reflect(incomingVelocity, normal) * wallBounceMultiplier;
+
+                Debug.Log($"Incoming: {incomingVelocity}, Normal: {normal}, Reflected: {reflectedVelocity}");
+
+                // Apply bounce velocity and update tracked velocity
+                rb.linearVelocity = reflectedVelocity;
+                lastKnockbackVelocity = reflectedVelocity;
+            }
+            else
+            {
+                Debug.LogWarning("No contact points in collision!");
+            }
+        }
+        else
+        {
+            Debug.Log($"Layer {collision.gameObject.layer} not in wallLayerMask {wallLayerMask.value}");
         }
     }
     
