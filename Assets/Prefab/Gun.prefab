@@ -88,6 +88,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -109,6 +111,7 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 10
@@ -222,6 +225,11 @@ MonoBehaviour:
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   useSoundVolume: 1
   throwSoundVolume: 1
+  hasAreaEffect: 1
+  areaRadius: 8
+  areaDuration: 0.2
+  areaColor: {r: 1, g: 0, b: 0, a: 0.3}
+  areaSegments: 50
 --- !u!114 &8431068490430259348
 MonoBehaviour:
   m_ObjectHideFlags: 0

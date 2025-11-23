@@ -32,6 +32,13 @@ public class PickupableItem : MonoBehaviour
     [Range(0f, 1f)]
     public float throwSoundVolume = 1f; // Fırlatma sesinin yüksekliği
     
+    [Header("Area Effect Settings")]
+    public bool hasAreaEffect = false; // Bu item alan efekti çıkarır mı?
+    public float areaRadius = 3f; // Alan yarıçapı
+    public float areaDuration = 2f; // Alan ne kadar süre açık kalacak (saniye)
+    public Color areaColor = new Color(1f, 0f, 0f, 0.3f); // Alanın rengi (varsayılan: yarı saydam kırmızı)
+    public int areaSegments = 50; // Dairenin kaç segmentten oluşacağı (daha yüksek = daha düzgün daire)
+    
     private AudioSource audioSource; // Sesleri çalmak için AudioSource
     private int currentUsageCount; // Mevcut kullanım sayısı
     private bool isDepleted = false; // Kullanım tükendi mi?
@@ -340,5 +347,101 @@ public class PickupableItem : MonoBehaviour
         {
             audioSource.PlayOneShot(throwSound, throwSoundVolume);
         }
+    }
+    
+    /// <summary>
+    /// Sol tık kullanıldığında yuvarlak alan efekti oluşturur (eğer hasAreaEffect true ise)
+    /// </summary>
+    public void TriggerAreaEffect(Vector3 position)
+    {
+        if (!hasAreaEffect) return;
+        
+        // Alan efekti için GameObject oluştur
+        GameObject areaObject = new GameObject("AreaEffect");
+        areaObject.transform.position = position;
+        
+        // AreaEffect component'ini ekle
+        AreaEffect areaEffect = areaObject.AddComponent<AreaEffect>();
+        areaEffect.radius = areaRadius;
+        areaEffect.duration = areaDuration;
+        areaEffect.stunDuration = 3f; // Enemy'lerin merkezde kalma süresi
+        
+        // LineRenderer ekle
+        LineRenderer lineRenderer = areaObject.AddComponent<LineRenderer>();
+        
+        // LineRenderer ayarları
+        lineRenderer.positionCount = areaSegments + 1;
+        lineRenderer.useWorldSpace = false;
+        lineRenderer.loop = true;
+        
+        // Çizgi kalınlığı
+        lineRenderer.startWidth = 0.1f;
+        lineRenderer.endWidth = 0.1f;
+        
+        // Material ve renk ayarları
+        lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        lineRenderer.startColor = areaColor;
+        lineRenderer.endColor = areaColor;
+        
+        // Sorting layer ayarları (karakterlerin üzerinde görünsün)
+        lineRenderer.sortingOrder = 100;
+        
+        // Daire şeklinde pozisyonlar oluştur
+        float angle = 0f;
+        float angleStep = 360f / areaSegments;
+        
+        for (int i = 0; i <= areaSegments; i++)
+        {
+            float x = Mathf.Cos(angle * Mathf.Deg2Rad) * areaRadius;
+            float y = Mathf.Sin(angle * Mathf.Deg2Rad) * areaRadius;
+            lineRenderer.SetPosition(i, new Vector3(x, y, 0));
+            angle += angleStep;
+        }
+        
+        // Alan içini doldurmak için SpriteRenderer ekle (opsiyonel)
+        GameObject fillObject = new GameObject("AreaFill");
+        fillObject.transform.SetParent(areaObject.transform);
+        fillObject.transform.localPosition = Vector3.zero;
+        
+        SpriteRenderer fillRenderer = fillObject.AddComponent<SpriteRenderer>();
+        fillRenderer.sprite = CreateCircleSprite(areaRadius);
+        fillRenderer.color = areaColor;
+        fillRenderer.sortingOrder = 99; // LineRenderer'ın altında
+        
+        // Belirtilen süre sonra alanı yok et (AreaEffect component'i bunu yönetiyor)
+        // Destroy(areaObject, areaDuration); // Bu satırı kaldırıyoruz çünkü AreaEffect kendi duration'ını yönetiyor
+    }
+    
+    /// <summary>
+    /// Yuvarlak bir sprite oluşturur (alan dolgusu için)
+    /// </summary>
+    private Sprite CreateCircleSprite(float radius)
+    {
+        int resolution = 256;
+        Texture2D texture = new Texture2D(resolution, resolution);
+        
+        float center = resolution / 2f;
+        float radiusPixels = (resolution / 2f) - 2;
+        
+        for (int y = 0; y < resolution; y++)
+        {
+            for (int x = 0; x < resolution; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                
+                if (distance <= radiusPixels)
+                {
+                    texture.SetPixel(x, y, Color.white);
+                }
+                else
+                {
+                    texture.SetPixel(x, y, Color.clear);
+                }
+            }
+        }
+        
+        texture.Apply();
+        
+        return Sprite.Create(texture, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f), resolution / (radius * 2f));
     }
 }

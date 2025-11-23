@@ -31153,6 +31153,14 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
     - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaRadius
+      value: 8.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: hasAreaEffect
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
       propertyPath: spriteWhenHeld
       value: 
       objectReference: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
@@ -31288,6 +31296,63 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &729167951
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.147538
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.4888597
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3767543794077401968, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6894727181375628727, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: m_Name
+      value: Gun (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
 --- !u!1001 &768615450
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32481,6 +32546,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3962775807450164053, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: areaRadius
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3962775807450164053, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: areaDuration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3962775807450164053, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
+      propertyPath: hasAreaEffect
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6894727181375628727, guid: 2ab4a0ee8ee6815428719155345cef8b, type: 3}
       propertyPath: m_Name
       value: Gun
@@ -32780,9 +32857,41 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
     - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaRadius
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
       propertyPath: throwSound
       value: 
       objectReference: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaDuration
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: areaSegments
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
+      propertyPath: hasAreaEffect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8711459229895915111, guid: 0d0fa79ff36b8d34c926762513b38824, type: 3}
       propertyPath: leftClickSound
       value: 
@@ -33278,3 +33387,4 @@ SceneRoots:
   - {fileID: 1243958684}
   - {fileID: 768615450}
   - {fileID: 627770557}
+  - {fileID: 729167951}

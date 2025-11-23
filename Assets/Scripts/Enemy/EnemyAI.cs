@@ -109,6 +109,14 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private bool playerInProximity = false; // Is player currently in proximity range
     private bool proximityTriggered = false; // Has proximity detection triggered chase mode
     
+    // Stunned state variables
+    private bool isStunned = false;
+    private Vector3 stunCenter;
+    private float stunEndTime;
+    private AIState stateBeforeStun; // Stun bitmeden önceki state'i hatırla
+    private bool hasReachedStunCenter = false; // Merkeze ulaştı mı?
+    private bool isLookingAroundStunned = false; // Rastgele bakıyor mu?
+    
     public enum AIState
     {
         Patrolling,
@@ -116,7 +124,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         WaitingAtWaypoint,
         SearchingLastKnown,
         WaitingAfterTimeout,
-        WaitingAfterStuck
+        WaitingAfterStuck,
+        Stunned // Alan efekti tarafından stun edilmiş
     }
     
     [SerializeField] private AIState currentState = AIState.Patrolling;
@@ -458,6 +467,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     {
         // Don't update if dead or agent is disabled
         if (isDead || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+        
+        // Eğer stunned state'indeyse diğer update'leri atla
+        if (currentState == AIState.Stunned)
+        {
+            UpdateStunnedState();
+            return;
+        }
         
         if (target == null)
         {
@@ -1351,6 +1367,130 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public float CurrentHealth => currentHealth;
     public float MaxHealth => maxHealth;
     public bool IsDead => isDead;
+    
+    #endregion
+    
+    #region Stunned State System
+    
+    /// <summary>
+    /// Enemy'yi stun state'ine alır
+    /// </summary>
+    public void EnterStunnedState(Vector3 centerPosition, float duration)
+    {
+        if (isDead) return;
+        
+        // Önceki state'i kaydet
+        stateBeforeStun = currentState;
+        
+        // Stun state'ine geç
+        currentState = AIState.Stunned;
+        isStunned = true;
+        stunCenter = centerPosition;
+        stunEndTime = Time.time + duration;
+        hasReachedStunCenter = false; // Merkeze henüz ulaşmadı
+        isLookingAroundStunned = false; // Henüz rastgele bakmıyor
+        
+        // NavMeshAgent'ı merkeze yönlendir
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.SetDestination(stunCenter);
+        }
+    }
+    
+    /// <summary>
+    /// Stunned state güncellemesi - merkeze hareket et ve oyuncuyu kontrol et
+    /// </summary>
+    private void UpdateStunnedState()
+    {
+        if (!isStunned) return;
+        
+        // Oyuncuyu görebiliyor mu kontrol et
+        bool canSeeTarget = target != null && CanSeeTarget();
+        
+        if (canSeeTarget)
+        {
+            // Oyuncuyu gördü, hemen chase moduna geç
+            ExitStunnedState();
+            currentState = AIState.Chasing;
+            hasSeenTarget = true;
+            lastSeenTime = Time.time;
+            lastKnownTargetPosition = target.position;
+            
+            // Chase speed'e ayarla
+            if (agent != null && agent.enabled)
+            {
+                agent.speed = speed; // Normal chase speed
+                agent.stoppingDistance = stopDistance;
+            }
+            
+            return;
+        }
+        
+        // Merkeze ulaştı mı kontrol et
+        if (!hasReachedStunCenter)
+        {
+            float distanceToCenter = Vector3.Distance(transform.position, stunCenter);
+            
+            // Merkeze yakınısa (0.5 birim içinde)
+            if (distanceToCenter <= 0.5f)
+            {
+                hasReachedStunCenter = true;
+                isLookingAroundStunned = true;
+                
+                // Agent'ı durdur
+                if (agent != null && agent.enabled && agent.isOnNavMesh)
+                {
+                    agent.ResetPath();
+                    agent.velocity = Vector3.zero;
+                }
+            }
+            else
+            {
+                // Merkeze giderken hareket yönüne dön
+                if (agent != null && agent.velocity.magnitude > 0.1f)
+                {
+                    Vector3 moveDirection = agent.velocity.normalized;
+                    currentVisionDirection = moveDirection;
+                    targetVisionDirection = moveDirection;
+                }
+            }
+        }
+        
+        // Merkeze ulaştıysa ve süre dolmadıysa, orada kal (AreaEffect rastgele yönleri ayarlayacak)
+        // Stun süresi doldu mu kontrol et
+        if (Time.time >= stunEndTime)
+        {
+            ExitStunnedState();
+        }
+    }
+    
+    /// <summary>
+    /// Stun state'inden çıkar ve önceki state'e dön
+    /// </summary>
+    public void ExitStunnedState()
+    {
+        if (!isStunned) return;
+        
+        isStunned = false;
+        hasReachedStunCenter = false;
+        isLookingAroundStunned = false;
+        
+        // Önceki state'e dön veya patrol'e geç
+        if (stateBeforeStun == AIState.Patrolling || stateBeforeStun == AIState.WaitingAtWaypoint)
+        {
+            ReturnToPatrol();
+        }
+        else if (stateBeforeStun == AIState.Chasing)
+        {
+            // Chase moduna dönme, bunun yerine patrol'e geç
+            ReturnToPatrol();
+        }
+        else
+        {
+            // Varsayılan olarak patrol'e geç
+            ReturnToPatrol();
+        }
+    }
     
     #endregion
 }
