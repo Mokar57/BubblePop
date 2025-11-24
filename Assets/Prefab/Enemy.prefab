@@ -192,8 +192,8 @@ MonoBehaviour:
   stuckVelocityThreshold: 0.1
   stuckCheckDuration: 3
   stuckWaitDuration: 2
-  visionRange: 7
-  visionAngle: 40
+  visionRange: 8
+  visionAngle: 60
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

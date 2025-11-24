@@ -101,8 +101,12 @@ public class EnemyItemIntegration : MonoBehaviour
                 // Melee silahlar için de sadece Chasing modundayken saldır
                 else if (item.holdType == ItemHoldType.Secondary && distanceToTarget <= meleeRange)
                 {
-                    itemHolder.PerformAttack(target.position);
-                    lastAttackTime = Time.time;
+                    // For melee/secondary attacks, also ensure no friendly or obstacle is between shooter and target
+                    if (HasLineOfSight(target.position))
+                    {
+                        itemHolder.PerformAttack(target.position);
+                        lastAttackTime = Time.time;
+                    }
                 }
             }
         }
@@ -155,23 +159,46 @@ public class EnemyItemIntegration : MonoBehaviour
     {
         Vector2 directionToTarget = (targetPosition - transform.position).normalized;
         float distanceToTarget = Vector2.Distance(transform.position, targetPosition);
-        
-        // Enemy ve target layer'larını hariç tut
-        int enemyLayer = gameObject.layer;
-        int targetLayer = target != null ? target.gameObject.layer : -1;
-        
-        // Obstacle mask'ten enemy ve target layer'larını çıkar
-        int raycastMask = obstacleMask;
-        if (enemyLayer >= 0)
-            raycastMask &= ~(1 << enemyLayer);
-        if (targetLayer >= 0)
-            raycastMask &= ~(1 << targetLayer);
-        
-        // Raycast ile engel kontrolü
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, raycastMask);
-        
-        // Eğer raycast bir şeye çarptıysa, engel var demektir
-        return hit.collider == null;
+
+        // Use RaycastAll so we can inspect hits in order and detect if another enemy is between shooter and target.
+        RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, directionToTarget, distanceToTarget, obstacleMask);
+
+        if (hits == null || hits.Length == 0)
+        {
+            // Nothing hit: clear line of sight
+            return true;
+        }
+
+        // Sort hits by distance to ensure we evaluate nearest first
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        foreach (var hit in hits)
+        {
+            if (hit.collider == null) continue;
+
+            GameObject hitObj = hit.collider.gameObject;
+
+            // Ignore self-collisions (colliders attached to this enemy)
+            if (hitObj == gameObject) continue;
+
+            // If the first relevant hit is the target (player), clear line of sight
+            if ((target != null && hitObj == target.gameObject) || hitObj.GetComponent<PlayerControls>() != null || hitObj.CompareTag("Player"))
+            {
+                return true;
+            }
+
+            // If hit an Enemy before reaching player, block the shot
+            if (hitObj.GetComponent<EnemyAI>() != null || hitObj.CompareTag("Enemy"))
+            {
+                return false;
+            }
+
+            // If hit any other obstacle (wall, etc.), block the shot
+            return false;
+        }
+
+        // If we fell through, consider blocked
+        return false;
     }
     
     /// <summary>
