@@ -18,9 +18,9 @@ public class CameraMFollow : MonoBehaviour
     void Update()
     {
         // Sağ tık durumunu kontrol et
-        if (Input.GetMouseButtonDown(2))
+        if (Input.GetKeyDown(KeyCode.LeftShift))
             isRightClicking = true;
-        if (Input.GetMouseButtonUp(2))
+        if (Input.GetKeyUp(KeyCode.LeftShift))
             isRightClicking = false;
     }
 
