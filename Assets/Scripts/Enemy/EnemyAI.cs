@@ -13,7 +13,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemySoundDetector))]
 [RequireComponent(typeof(EnemyStunController))]
 [RequireComponent(typeof(EnemySoundInvestigator))]
-[RequireComponent(typeof(EnemyItemHolder))]
+[RequireComponent(typeof(EnemyWeaponController))]
 [RequireComponent(typeof(EnemyItemSeeker))]
 [RequireComponent(typeof(EnemyProximityDetector))]
 public class EnemyAI : MonoBehaviour, ISpeedBoostable
@@ -43,7 +43,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public EnemySoundDetector SoundDetector { get; private set; }
     public EnemyStunController StunController { get; private set; }
     public EnemySoundInvestigator SoundInvestigator { get; private set; }
-    public EnemyItemHolder ItemHolder { get; private set; }
+    public EnemyWeaponController WeaponController { get; private set; }
     public EnemyItemSeeker ItemSeeker { get; private set; }
     public EnemyProximityDetector ProximityDetector { get; private set; }
     public NavMeshAgent Agent { get; private set; }
@@ -80,7 +80,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         SoundDetector = GetComponent<EnemySoundDetector>();
         StunController = GetComponent<EnemyStunController>();
         SoundInvestigator = GetComponent<EnemySoundInvestigator>();
-        ItemHolder = GetComponent<EnemyItemHolder>();
+        WeaponController = GetComponent<EnemyWeaponController>();
         ItemSeeker = GetComponent<EnemyItemSeeker>();
         ProximityDetector = GetComponent<EnemyProximityDetector>();
         Agent = GetComponent<NavMeshAgent>();
@@ -112,7 +112,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         ProximityDetector.Initialize(enemyData, Target);
 
         // Set initial state
-        if (ItemHolder.HasWeapon())
+        if (WeaponController.HasWeapon())
         {
             TransitionToState(PatrolStateInstance);
         }
@@ -186,17 +186,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     private void UpdateVisionDirection()
     {
-        // Check if waiting at waypoint
-        if (MovementController.IsWaitingAtWaypoint)
-        {
-            Vector3 waypointDirection = MovementController.GetCurrentWaypointDirection();
-            if (enemyData != null)
-            {
-                VisionSystem.RotateVisionTowards(waypointDirection, enemyData.rotationSpeed);
-            }
-            return;
-        }
-
         // Update vision based on movement
         if (MovementController.IsMoving())
         {
@@ -235,7 +224,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         if (_currentState != ChaseStateInstance && _currentState != StunnedStateInstance)
         {
             // Don't investigate if no weapon and player was detected (still relevant for initial investigation trigger)
-            if (!ItemHolder.HasWeapon() && HasDetectedTarget) return;
+            if (!WeaponController.HasWeapon() && HasDetectedTarget) return;
 
             InvestigateStateInstance.SetInvestigationPosition(soundPosition);
             TransitionToState(InvestigateStateInstance);
@@ -259,6 +248,12 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     private void HandleDeath()
     {
+        // Drop all items before disabling
+        if (WeaponController != null)
+        {
+            WeaponController.DropAllItems();
+        }
+
         this.enabled = false;
         // Optionally, transition to a "Dead" state here.
     }
@@ -338,7 +333,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         return SoundInvestigator.HasDetectedSoundStatus;
     }
 
-    public bool HasWeapon() => ItemHolder.HasWeapon();
+    public bool HasWeapon() => WeaponController.HasWeapon();
     public Vector3 GetVisionDirection() => VisionSystem.GetVisionDirection();
     public void SetVisionDirection(Vector3 direction) => VisionSystem.SetVisionDirection(direction);
     public bool IsMoving() => MovementController.IsMoving();

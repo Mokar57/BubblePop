@@ -195,7 +195,7 @@ public class PickupableItem : MonoBehaviour
     /// <summary>
     /// Enemy'nin item'ı almasını sağlar (programatik olarak)
     /// </summary>
-    public bool TryPickupByEnemy(EnemyItemHolder enemyHolder)
+    public bool TryPickupByEnemy(EnemyWeaponController enemyHolder)
     {
         if (!canBePickedByEnemies || isDepleted) return false;
         

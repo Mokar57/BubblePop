@@ -9,7 +9,7 @@ public abstract class AIStateBase
     protected readonly EnemyAI enemyAI;
     protected readonly EnemyVisionSystem visionSystem;
     protected readonly EnemyMovementController movementController;
-    protected readonly EnemyItemHolder itemHolder;
+    protected readonly EnemyWeaponController weaponController;
     protected readonly EnemyItemSeeker itemSeeker;
     protected readonly EnemySoundInvestigator soundInvestigator;
     protected readonly EnemyStunController stunController;
@@ -20,7 +20,7 @@ public abstract class AIStateBase
         // These properties will be exposed on EnemyAI later
         this.visionSystem = context.VisionSystem;
         this.movementController = context.MovementController;
-        this.itemHolder = context.ItemHolder;
+        this.weaponController = context.WeaponController;
         this.itemSeeker = context.ItemSeeker;
         this.soundInvestigator = context.SoundInvestigator;
         this.stunController = context.StunController;

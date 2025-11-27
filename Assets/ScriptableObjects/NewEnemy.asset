@@ -15,8 +15,8 @@ MonoBehaviour:
   enemyName: Enemy
   maxHealth: 100
   patrolSpeed: 2
-  chaseSpeed: 5
-  acceleration: 32
+  chaseSpeed: 12
+  acceleration: 16
   angularSpeed: 120
   visionRange: 6
   visionAngle: 100
@@ -24,13 +24,15 @@ MonoBehaviour:
   proximityRadius: 2
   proximityTriggerTime: 0.5
   enableProximityDetection: 1
-  soundDetectionRange: 15
+  soundDetectionRange: 151.1
+  soundInvestigationDuration: 5
+  soundSearchRotationInterval: 2
   deathEffectPrefab: {fileID: 0}
   puddleSize: 1
   deathSounds: []
   deathSoundVolume: 1
   canUseWeapons: 1
-  weaponAttackRange: 0.5
+  weaponAttackRange: 1
   weaponAttackCooldown: 1
   meleeAttackRange: 1
   canSeekItems: 1

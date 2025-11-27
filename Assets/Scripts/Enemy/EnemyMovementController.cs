@@ -69,6 +69,7 @@ public class EnemyMovementController : MonoBehaviour
 
     // Speed boost
     private float speedBoostMultiplier = 1f;
+    private float currentBaseSpeed = 0f; // Track the base speed (patrol or chase)
 
     // NavMeshAgent
     private NavMeshAgent agent;
@@ -76,25 +77,13 @@ public class EnemyMovementController : MonoBehaviour
     private EnemyVisionSystem visionSystem;
 
     // Patrol state
-    private int currentWaypointIndex = 0;
-    private bool isPatrolling = false;
-    private bool isWaitingAtWaypoint = false;
-    private float waypointWaitTimer = 0f;
-    private float waypointStartTime = 0f;
-
+    // Logic moved to PatrolState
+    
     // Stuck detection
     private float stuckTimer = 0f;
     private bool isStuck = false;
-    private bool isWaitingAfterStuck = false;
-    private float stuckWaitTimer = 0f;
-
-    // Timeout waiting
-    private bool isWaitingAfterTimeout = false;
-    private float timeoutWaitTimer = 0f;
 
     // Public state queries
-    public bool IsPatrolling => isPatrolling;
-    public bool IsWaitingAtWaypoint => isWaitingAtWaypoint;
     public bool IsStuck => isStuck;
 
     private void Awake()
@@ -107,10 +96,7 @@ public class EnemyMovementController : MonoBehaviour
 
     private void Update()
     {
-        if (isPatrolling)
-        {
-            HandlePatrolUpdate();
-        }
+        UpdateStuckDetection();
     }
 
     private void LateUpdate()
@@ -188,226 +174,22 @@ public class EnemyMovementController : MonoBehaviour
         }
     }
 
-    #region Patrol System
+    #region Movement Commands
 
     /// <summary>
-    /// Start patrol behavior
+    /// Move to a specific position
     /// </summary>
-    public void StartPatrol()
-    {
-        if (!enablePatrol || patrolWaypoints.Count == 0) return;
-
-        currentWaypointIndex = 0;
-        isPatrolling = true;
-        isWaitingAtWaypoint = false;
-        isWaitingAfterTimeout = false;
-        isWaitingAfterStuck = false;
-        isStuck = false;
-        stuckTimer = 0f;
-
-        SetSpeed(patrolSpeed);
-        MoveToCurrentWaypoint();
-    }
-
-    /// <summary>
-    /// Update patrol behavior
-    /// </summary>
-    private void HandlePatrolUpdate()
-    {
-        if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null || !agent.enabled || !agent.isOnNavMesh)
-            return;
-
-        // Handle waiting after being stuck
-        if (isWaitingAfterStuck)
-        {
-            stuckWaitTimer -= Time.deltaTime;
-            if (stuckWaitTimer <= 0f)
-            {
-                NextWaypoint();
-            }
-            return;
-        }
-
-        // Handle waiting after timeout
-        if (isWaitingAfterTimeout)
-        {
-            timeoutWaitTimer -= Time.deltaTime;
-            if (timeoutWaitTimer <= 0f)
-            {
-                NextWaypoint();
-            }
-            return;
-        }
-
-        // Handle waiting at waypoint
-        if (isWaitingAtWaypoint)
-        {
-            waypointWaitTimer -= Time.deltaTime;
-            if (waypointWaitTimer <= 0f)
-            {
-                NextWaypoint();
-            }
-            return;
-        }
-
-        // Check if reached waypoint
-        if (currentWaypointIndex < patrolWaypoints.Count)
-        {
-            Waypoint currentWaypoint = patrolWaypoints[currentWaypointIndex];
-            if (currentWaypoint != null)
-            {
-                float distanceToWaypoint = Vector3.Distance(transform.position, currentWaypoint.Position);
-                bool agentReachedDestination = agent.enabled && agent.isOnNavMesh &&
-                                              !agent.pathPending && agent.remainingDistance <= 0.01f;
-
-                if (distanceToWaypoint <= waypointReachDistance || agentReachedDestination)
-                {
-                    // Reached waypoint
-                    isWaitingAtWaypoint = true;
-                    waypointWaitTimer = currentWaypoint.WaitTime;
-                    agent.ResetPath();
-
-                    // Reset stuck state
-                    isStuck = false;
-                    stuckTimer = 0f;
-                    return;
-                }
-            }
-        }
-
-        // Stuck detection (velocity-based)
-        float currentVelocity = agent.velocity.magnitude;
-
-        if (currentVelocity < stuckVelocityThreshold)
-        {
-            stuckTimer += Time.deltaTime;
-
-            if (stuckTimer >= stuckCheckDuration && !isStuck)
-            {
-                // Enemy is stuck
-                isStuck = true;
-                isWaitingAfterStuck = true;
-                stuckWaitTimer = stuckWaitDuration;
-                agent.ResetPath();
-                return;
-            }
-        }
-        else
-        {
-            stuckTimer = 0f;
-            isStuck = false;
-        }
-
-        // Waypoint timeout (fallback)
-        if (currentVelocity < stuckVelocityThreshold && Time.time - waypointStartTime > waypointTimeout)
-        {
-            isWaitingAfterTimeout = true;
-            timeoutWaitTimer = timeoutWaitDuration;
-            agent.ResetPath();
-            isStuck = false;
-            stuckTimer = 0f;
-        }
-    }
-
-    /// <summary>
-    /// Move to current waypoint
-    /// </summary>
-    private void MoveToCurrentWaypoint()
-    {
-        if (patrolWaypoints.Count == 0 || currentWaypointIndex >= patrolWaypoints.Count)
-            return;
-
-        Waypoint targetWaypoint = patrolWaypoints[currentWaypointIndex];
-        if (targetWaypoint != null && agent != null && agent.enabled && agent.isOnNavMesh)
-        {
-            agent.stoppingDistance = 0f;
-            agent.SetDestination(targetWaypoint.Position);
-            waypointStartTime = Time.time;
-            isWaitingAfterTimeout = false;
-            isWaitingAfterStuck = false;
-            isStuck = false;
-            stuckTimer = 0f;
-        }
-    }
-
-    /// <summary>
-    /// Move to next waypoint
-    /// </summary>
-    private void NextWaypoint()
-    {
-        if (patrolWaypoints.Count == 0) return;
-
-        if (randomPatrolOrder)
-        {
-            int newIndex;
-            do
-            {
-                newIndex = Random.Range(0, patrolWaypoints.Count);
-            } while (newIndex == currentWaypointIndex && patrolWaypoints.Count > 1);
-
-            currentWaypointIndex = newIndex;
-        }
-        else
-        {
-            currentWaypointIndex++;
-
-            if (currentWaypointIndex >= patrolWaypoints.Count)
-            {
-                if (loopPatrol)
-                {
-                    currentWaypointIndex = 0;
-                }
-                else
-                {
-                    isPatrolling = false;
-                    return;
-                }
-            }
-        }
-
-        isWaitingAtWaypoint = false;
-        isWaitingAfterTimeout = false;
-        isWaitingAfterStuck = false;
-        isStuck = false;
-        stuckTimer = 0f;
-        MoveToCurrentWaypoint();
-    }
-
-    /// <summary>
-    /// Get current waypoint's wait direction for vision
-    /// </summary>
-    public Vector3 GetCurrentWaypointDirection()
-    {
-        if (currentWaypointIndex < patrolWaypoints.Count)
-        {
-            Waypoint currentWaypoint = patrolWaypoints[currentWaypointIndex];
-            if (currentWaypoint != null)
-            {
-                return currentWaypoint.WaitDirection;
-            }
-        }
-        return transform.up;
-    }
-
-    #endregion
-
-    #region Chase System
-
-    /// <summary>
-    /// Chase a target position
-    /// </summary>
-    public void ChaseTarget(Vector3 targetPosition)
+    public void MoveTo(Vector3 position, bool isChasing = false)
     {
         if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
 
-        SetSpeed(chaseSpeed);
-        agent.stoppingDistance = stopDistance;
-        agent.SetDestination(targetPosition);
-
-        // Reset patrol state
-        isPatrolling = false;
-        isWaitingAtWaypoint = false;
-        isWaitingAfterStuck = false;
+        float baseSpeed = isChasing ? chaseSpeed : patrolSpeed;
+        SetSpeed(baseSpeed);
+        
+        agent.stoppingDistance = isChasing ? stopDistance : 0f;
+        agent.SetDestination(position);
+        
+        // Reset stuck state when starting new move
         isStuck = false;
         stuckTimer = 0f;
     }
@@ -417,11 +199,68 @@ public class EnemyMovementController : MonoBehaviour
     /// </summary>
     public void StopMovement()
     {
-        if (agent != null && agent.enabled)
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.ResetPath();
+            agent.velocity = Vector3.zero;
         }
-        isPatrolling = false;
+    }
+
+    /// <summary>
+    /// Check if agent has reached its destination
+    /// </summary>
+    public bool HasReachedDestination(float reachDistance = 0.1f)
+    {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return false;
+
+        if (agent.pathPending) return false;
+        
+        float dist = agent.remainingDistance;
+        return dist != float.PositiveInfinity && dist <= reachDistance;
+    }
+
+    #endregion
+
+    #region Stuck Detection
+
+    private void UpdateStuckDetection()
+    {
+        if (agent == null || !agent.enabled || !agent.hasPath) 
+        {
+            isStuck = false;
+            stuckTimer = 0f;
+            return;
+        }
+
+        // Stuck detection (velocity-based)
+        float currentVelocity = agent.velocity.magnitude;
+
+        if (currentVelocity < stuckVelocityThreshold)
+        {
+            stuckTimer += Time.deltaTime;
+
+            if (stuckTimer >= stuckCheckDuration)
+            {
+                isStuck = true;
+            }
+        }
+        else
+        {
+            stuckTimer = 0f;
+            isStuck = false;
+        }
+    }
+
+    #endregion
+
+    #region Chase System (Legacy Wrapper)
+
+    /// <summary>
+    /// Chase a target position
+    /// </summary>
+    public void ChaseTarget(Vector3 targetPosition)
+    {
+        MoveTo(targetPosition, true);
     }
 
     #endregion
@@ -431,11 +270,12 @@ public class EnemyMovementController : MonoBehaviour
     /// <summary>
     /// Set agent speed
     /// </summary>
-    private void SetSpeed(float speed)
+    private void SetSpeed(float baseSpeed)
     {
+        currentBaseSpeed = baseSpeed;
         if (agent != null)
         {
-            agent.speed = speed * speedBoostMultiplier;
+            agent.speed = currentBaseSpeed * speedBoostMultiplier;
         }
     }
 
@@ -445,15 +285,10 @@ public class EnemyMovementController : MonoBehaviour
     public void ApplySpeedBoost(float multiplier)
     {
         speedBoostMultiplier = multiplier;
-
-        // Update current speed
-        if (isPatrolling)
+        // Re-apply speed using stored base speed
+        if (agent != null)
         {
-            SetSpeed(patrolSpeed);
-        }
-        else
-        {
-            SetSpeed(chaseSpeed);
+            agent.speed = currentBaseSpeed * speedBoostMultiplier;
         }
     }
 
@@ -463,15 +298,10 @@ public class EnemyMovementController : MonoBehaviour
     public void RemoveSpeedBoost()
     {
         speedBoostMultiplier = 1f;
-
-        // Update current speed
-        if (isPatrolling)
+        // Re-apply speed using stored base speed
+        if (agent != null)
         {
-            SetSpeed(patrolSpeed);
-        }
-        else
-        {
-            SetSpeed(chaseSpeed);
+            agent.speed = currentBaseSpeed * speedBoostMultiplier;
         }
     }
 

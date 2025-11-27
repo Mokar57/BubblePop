@@ -26,7 +26,7 @@ public class InvestigateState : AIStateBase
         // Check for player seen while investigating
         if (enemyAI.IsPlayerDetected())
         {
-            if (itemHolder.HasWeapon())
+            if (weaponController.HasWeapon())
             {
                 enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
             }

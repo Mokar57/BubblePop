@@ -16,7 +16,7 @@ public class StunnedState : AIStateBase
     public override void UpdateState()
     {
         // Check if player is visible while stunned (early exit if armed)
-        if (visionSystem.CanSeeTarget() && itemHolder.HasWeapon())
+        if (visionSystem.CanSeeTarget() && weaponController.HasWeapon())
         {
             stunController.ForceExitStun(); // Force exit stun in controller
             enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
@@ -29,7 +29,7 @@ public class StunnedState : AIStateBase
             // After stun, check if player is visible
             if (visionSystem.CanSeeTarget())
             {
-                if (itemHolder.HasWeapon())
+                if (weaponController.HasWeapon())
                 {
                     enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
                 }

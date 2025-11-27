@@ -1,6 +1,6 @@
 /// <summary>
 /// Core enums used throughout the game
-/// Defines teams, damage types, and AI states
+/// Defines teams, damage and types states
 /// </summary>
 
 /// <summary>
@@ -24,5 +24,3 @@ public enum DamageType
     Blunt      // Causes bounce/knockback (baseball bat, fan projectiles)
 }
 
-// NOTE: AIState enum moved to Assets/Scripts/Enemy/AIState.cs
-// as it is enemy-specific and not a core shared enum

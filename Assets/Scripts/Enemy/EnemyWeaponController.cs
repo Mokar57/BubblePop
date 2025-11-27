@@ -4,7 +4,7 @@ using UnityEngine;
 /// Handles enemy's ability to hold and use PickupableItems
 /// Implements IItemHolder interface for consistency with player system
 /// </summary>
-public class EnemyItemHolder : MonoBehaviour, IItemHolder
+public class EnemyWeaponController : MonoBehaviour, IItemHolder
 {
     [Header("Item Hold Positions")]
     [Tooltip("Hold position for primary items (pistol)")]

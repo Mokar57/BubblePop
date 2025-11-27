@@ -41,13 +41,13 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     // Cached components
     private EnemyAI enemyAI;
-    private EnemyItemHolder itemHolder;
+    private EnemyWeaponController weaponController;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         enemyAI = GetComponent<EnemyAI>();
-        itemHolder = GetComponent<EnemyItemHolder>();
+        weaponController = GetComponent<EnemyWeaponController>();
 
         // Setup AudioSource
         audioSource = GetComponent<AudioSource>();
@@ -198,7 +198,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         PlayRandomDeathSound();
 
         // Trigger death event FIRST (before disabling components)
-        // This allows EnemyItemHolder to drop items while enemy is still active
+        // This allows EnemyWeaponController to drop items while enemy is still active
         OnEnemyDeath?.Invoke();
 
         // Trigger global death event

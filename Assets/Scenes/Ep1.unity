@@ -33042,6 +33042,10 @@ PrefabInstance:
       propertyPath: 'patrolWaypoints.Array.data[4]'
       value: 
       objectReference: {fileID: 1918115164}
+    - target: {fileID: 4783484216242003377, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: debugMode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6351230964340868058, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: m_LocalPosition.x
       value: 13.52
@@ -33086,6 +33090,10 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 9786676}
+    - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: debugMode
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: randomPatrolOrder
       value: 1
@@ -33141,6 +33149,10 @@ PrefabInstance:
     - target: {fileID: 8784797368900934643, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: m_Name
       value: EnemyA
+      objectReference: {fileID: 0}
+    - target: {fileID: 9098328513698841382, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: debugMode
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

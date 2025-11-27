@@ -67,7 +67,7 @@ public class EnemyDebugVisualizer : MonoBehaviour
     private EnemyMovementController movementController;
     private EnemySoundDetector soundDetector;
     private EnemyStunController stunController;
-    private EnemyItemIntegration itemIntegration;
+    // private EnemyItemIntegration itemIntegration; // Removed
     private EnemyItemSeeker itemSeeker;
     private EnemyDataSO enemyData;
 
@@ -80,7 +80,7 @@ public class EnemyDebugVisualizer : MonoBehaviour
         movementController = GetComponent<EnemyMovementController>();
         soundDetector = GetComponent<EnemySoundDetector>();
         stunController = GetComponent<EnemyStunController>();
-        itemIntegration = GetComponent<EnemyItemIntegration>();
+        // itemIntegration = GetComponent<EnemyItemIntegration>(); // Removed
         itemSeeker = GetComponent<EnemyItemSeeker>();
 
         // Get EnemyDataSO from any component
@@ -139,7 +139,7 @@ public class EnemyDebugVisualizer : MonoBehaviour
         }
 
         // Draw weapon ranges
-        if (showWeaponRanges && itemIntegration != null && enemyData != null)
+        if (showWeaponRanges && enemyData != null)
         {
             // Ranged attack range
             Gizmos.color = new Color(1f, 0f, 0f, 1f);
@@ -342,10 +342,10 @@ public class EnemyDebugVisualizer : MonoBehaviour
         }
 
         // Show item info
-        if (itemSeeker != null && itemSeeker.IsSeekingItem)
-        {
-            label += $"Seeking: {itemSeeker.TargetItem?.itemName ?? "Unknown"}\n";
-        }
+        // if (itemSeeker != null && itemSeeker.IsSeekingItem)
+        // {
+        //     label += $"Seeking: {itemSeeker.TargetItem?.itemName ?? "Unknown"}\n";
+        // }
 
         if (!string.IsNullOrEmpty(label))
         {

@@ -77,7 +77,6 @@ GameObject:
   - component: {fileID: 2662765289795793543}
   - component: {fileID: 7162906996643147603}
   - component: {fileID: 5874983752475686397}
-  - component: {fileID: 1091820595349382882}
   - component: {fileID: 7515671672148588985}
   - component: {fileID: 7173759479696343927}
   - component: {fileID: 7979743389041854394}
@@ -86,6 +85,7 @@ GameObject:
   - component: {fileID: 8846134668370118012}
   - component: {fileID: 2510889999578025272}
   - component: {fileID: 9098328513698841382}
+  - component: {fileID: 4545356152958220809}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Enemy
@@ -268,9 +268,6 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   autoFindPlayer: 1
   persistentChase: 1
-  enableProximityDetection: 1
-  proximityTriggerTime: 2
-  enableContactDetection: 1
   debugMode: 0
 --- !u!114 &5874983752475686397
 MonoBehaviour:
@@ -290,25 +287,6 @@ MonoBehaviour:
   currentSecondaryItem: {fileID: 0}
   throwForce: 10
   canUseItems: 1
---- !u!114 &1091820595349382882
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8784797368900934643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36fdb596f160e1f4fbb9b333976c73d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
-  attackRangeOverride: 0
-  attackCooldownOverride: 0
-  meleeRangeOverride: 0
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 2048
 --- !u!114 &7515671672148588985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,12 +302,9 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   seekRadiusOverride: 0
   pickupRadiusOverride: 0
-  seekIntervalOverride: 0
   itemLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  pauseAIDuringSeek: 1
-  pausePatrolUntilArmed: 1
 --- !u!114 &7173759479696343927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -465,4 +440,22 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   investigationDurationOverride: 0
   rotationIntervalOverride: 0
+  searchRadius: 3
+  searchMoveInterval: 2
+  searchSpeedMultiplier: 0.7
   debugMode: 0
+--- !u!114 &4545356152958220809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8784797368900934643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02bcbccc7f794330a4ee2f7329029336, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyProximityDetector
+  enableProximityDetection: 1
+  proximityTriggerTime: 1
+  enableContactDetection: 1

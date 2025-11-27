@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// Interface for entities that can hold and use items/weapons
-/// Implemented by PlayerControls and EnemyItemHolder
+/// Implemented by PlayerControls and EnemyWeaponController
 /// </summary>
 public interface IItemHolder
 {
