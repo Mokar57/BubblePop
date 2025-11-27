@@ -2,23 +2,27 @@ using UnityEngine;
 
 /// <summary>
 /// Handles enemy's ability to hold and use PickupableItems
-/// Similar to PlayerControls item system, but designed for enemy AI
+/// Implements IItemHolder interface for consistency with player system
 /// </summary>
-public class EnemyItemHolder : MonoBehaviour
+public class EnemyItemHolder : MonoBehaviour, IItemHolder
 {
     [Header("Item Hold Positions")]
-    public Transform primaryHoldPosition;   // Önde tutulacak eşyalar için (tabanca)
-    public Transform secondaryHoldPosition; // Yanda tutulacak eşyalar için (beyzbol sopası)
+    [Tooltip("Hold position for primary items (pistol)")]
+    public Transform primaryHoldPosition;
+    
+    [Tooltip("Hold position for secondary items (baseball bat)")]
+    public Transform secondaryHoldPosition;
     
     [Header("Current Items")]
-    public GameObject currentPrimaryItem;   // Şu anda önde tutulan eşya
-    public GameObject currentSecondaryItem; // Şu anda yanda tutulan eşya
+    public GameObject currentPrimaryItem;
+    public GameObject currentSecondaryItem;
     
     [Header("Item Throwing Settings")]
     public float throwForce = 10f;
     
     [Header("Attack Settings")]
-    public bool canUseItems = true; // Enemy item kullanabilir mi?
+    [Tooltip("Can this enemy use items to attack?")]
+    public bool canUseItems = true;
     
     private EnemyAI enemyAI;
     
@@ -26,81 +30,85 @@ public class EnemyItemHolder : MonoBehaviour
     {
         enemyAI = GetComponent<EnemyAI>();
     }
-    
-    private void LateUpdate()
-    {
-        // Enemy'nin görüş yönüne göre enemy ve item'ları döndür
-        UpdateRotationBasedOnVision();
-    }
+
+    #region IItemHolder Implementation
     
     /// <summary>
-    /// Enemy'nin görüş yönüne göre enemy'yi ve item'ları döndürür
+    /// Get the transform position where items should be held
     /// </summary>
-    private void UpdateRotationBasedOnVision()
+    public Transform GetHoldPosition()
     {
-        if (enemyAI == null) return;
-        
-        // EnemyAI'dan görüş yönünü al
-        Vector3 visionDirection = enemyAI.GetVisionDirection();
-        
-        if (visionDirection.magnitude > 0.01f)
-        {
-            // Enemy'nin kendisini görüş yönüne döndür
-            float angle = Mathf.Atan2(visionDirection.y, visionDirection.x) * Mathf.Rad2Deg;
-            transform.rotation = Quaternion.Euler(0, 0, angle - 90f); // -90 çünkü Unity'de up vektörü 90 derece offset'li
-        }
+        // Return primary hold position, or secondary if primary is null
+        return primaryHoldPosition != null ? primaryHoldPosition : secondaryHoldPosition;
     }
+
+    /// <summary>
+    /// Get the team of this entity
+    /// </summary>
+    public Team GetTeam()
+    {
+        return Team.Enemy;
+    }
+
+    /// <summary>
+    /// Called when an item is picked up
+    /// </summary>
+    public void OnItemPickedUp(GameObject item)
+    {
+        // Trigger game event
+        GameEvents.TriggerItemPickedUp(item, gameObject);
+    }
+
+    /// <summary>
+    /// Called when an item is dropped
+    /// </summary>
+    public void OnItemDropped(GameObject item)
+    {
+        // Trigger game event
+        GameEvents.TriggerItemDropped(item, gameObject);
+    }
+
+    #endregion
     
     #region Item Pickup System
     
     /// <summary>
-    /// Enemy bir item'ı alır ve belirlenen slot'a yerleştirir
+    /// Picks up an item and assigns it to the appropriate slot
     /// </summary>
     public void PickupItem(GameObject item, ItemHoldType holdType = ItemHoldType.Primary)
     {
         if (item == null) return;
         
-        // Eğer enemy zaten bir silah tutuyorsa, onu düşür
-        GameObject currentWeapon = null;
-        
-        if (currentPrimaryItem != null)
-        {
-            currentWeapon = currentPrimaryItem;
-        }
-        else if (currentSecondaryItem != null)
-        {
-            currentWeapon = currentSecondaryItem;
-        }
-        
-        // Mevcut silahı düşür
+        // Drop current weapon if holding one
+        GameObject currentWeapon = GetCurrentWeapon();
         if (currentWeapon != null)
         {
             DropCurrentWeaponAtPosition(currentWeapon, transform.position);
         }
         
-        // Yeni item'ı uygun slot'a ata
+        // Assign new item to appropriate slot
         if (holdType == ItemHoldType.Primary)
         {
             currentPrimaryItem = item;
-            currentSecondaryItem = null; // Diğer slot'u temizle
+            currentSecondaryItem = null;
         }
         else
         {
             currentSecondaryItem = item;
-            currentPrimaryItem = null; // Diğer slot'u temizle
+            currentPrimaryItem = null;
         }
         
-        // Item'ı enemy'nin child'ı yap
+        // Parent item to enemy
         item.transform.SetParent(transform);
         
-        // Silah tutulduğunda sprite'ı güncelle
+        // Update held state
         PickupableItem pickupable = item.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
             pickupable.SetHeldState(true);
         }
         
-        // Item'ın sprite özelliklerini koru
+        // Preserve sprite properties
         SpriteRenderer itemRenderer = item.GetComponent<SpriteRenderer>();
         if (itemRenderer != null)
         {
@@ -111,7 +119,7 @@ public class EnemyItemHolder : MonoBehaviour
             }
         }
         
-        // Item'ı belirlenen tutma pozisyonuna yerleştir
+        // Position item at hold position
         Transform targetPosition = (holdType == ItemHoldType.Primary) ? primaryHoldPosition : secondaryHoldPosition;
         
         if (targetPosition != null)
@@ -121,58 +129,55 @@ public class EnemyItemHolder : MonoBehaviour
         }
         else
         {
-            // Default pozisyonlar
+            // Default positions
             if (holdType == ItemHoldType.Primary)
             {
-                item.transform.localPosition = new Vector3(1f, 0f, 0f); // Önde
+                item.transform.localPosition = new Vector3(1f, 0f, 0f);
             }
             else
             {
-                item.transform.localPosition = new Vector3(0f, 1f, 0f); // Yanda
+                item.transform.localPosition = new Vector3(0f, 1f, 0f);
             }
         }
         
-        // Physics'i devre dışı bırak
+        // Disable physics
         Rigidbody2D itemRb = item.GetComponent<Rigidbody2D>();
         if (itemRb != null)
         {
             itemRb.bodyType = RigidbodyType2D.Kinematic;
         }
         
-        // Collider'ı devre dışı bırak
+        // Disable collider
         Collider2D itemCollider = item.GetComponent<Collider2D>();
         if (itemCollider != null)
         {
             itemCollider.enabled = false;
         }
         
-        // PickupableItem component'ini devre dışı bırak (başkaları alamasın)
+        // Disable PickupableItem component
         if (pickupable != null)
         {
             pickupable.enabled = false;
         }
+        
+        // Trigger pickup event
+        OnItemPickedUp(item);
     }
     
     /// <summary>
-    /// Enemy elindeki silahı belirtilen pozisyona düşürür
+    /// Drops a weapon at specified position
     /// </summary>
     private void DropCurrentWeaponAtPosition(GameObject weapon, Vector3 dropPosition)
     {
         if (weapon == null) return;
         
-        // Parent'tan ayır
+        // Unparent
         weapon.transform.SetParent(null);
-        
-        // Pozisyonu ayarla
         weapon.transform.position = dropPosition;
-        
-        // Rotation'ı sıfırla
         weapon.transform.rotation = Quaternion.identity;
-        
-        // Scale'i sıfırla (parent transform'dan etkilenmiş olabilir)
         weapon.transform.localScale = Vector3.one;
         
-        // Physics'i yeniden etkinleştir
+        // Re-enable physics
         Rigidbody2D itemRb = weapon.GetComponent<Rigidbody2D>();
         if (itemRb != null)
         {
@@ -183,19 +188,18 @@ public class EnemyItemHolder : MonoBehaviour
             itemRb.angularDamping = 10f;
         }
         
-        // Collider'ı yeniden etkinleştir
+        // Re-enable collider
         Collider2D itemCollider = weapon.GetComponent<Collider2D>();
         if (itemCollider != null)
         {
             itemCollider.enabled = true;
         }
         
-        // SpriteRenderer'ı kontrol et ve görünür yap
+        // Re-enable sprite renderer
         SpriteRenderer itemRenderer = weapon.GetComponent<SpriteRenderer>();
         if (itemRenderer != null)
         {
             itemRenderer.enabled = true;
-            // Alpha değerini kontrol et
             Color color = itemRenderer.color;
             if (color.a < 1f)
             {
@@ -204,24 +208,26 @@ public class EnemyItemHolder : MonoBehaviour
             }
         }
         
-        // PickupableItem component'ini yeniden etkinleştir
+        // Re-enable PickupableItem component
         PickupableItem pickupable = weapon.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
             pickupable.enabled = true;
-            pickupable.SetHeldState(false); // Mark as not held anymore
+            pickupable.SetHeldState(false);
             pickupable.ResetPickupState();
         }
+        
+        // Trigger drop event
+        OnItemDropped(weapon);
     }
     
     /// <summary>
-    /// Enemy elindeki item'ı düşürür
+    /// Drops current item
     /// </summary>
     public void DropItem(ItemHoldType holdType = ItemHoldType.Primary)
     {
         GameObject itemToDrop = null;
         
-        // Hangi item'ın düşürüleceğini bul
         if (currentPrimaryItem != null)
         {
             itemToDrop = currentPrimaryItem;
@@ -233,13 +239,14 @@ public class EnemyItemHolder : MonoBehaviour
             currentSecondaryItem = null;
         }
         
-        if (itemToDrop == null) return;
-        
-        DropCurrentWeaponAtPosition(itemToDrop, transform.position);
+        if (itemToDrop != null)
+        {
+            DropCurrentWeaponAtPosition(itemToDrop, transform.position);
+        }
     }
     
     /// <summary>
-    /// Enemy elindeki tüm item'ları düşürür
+    /// Drops all held items
     /// </summary>
     public void DropAllItems()
     {
@@ -261,7 +268,7 @@ public class EnemyItemHolder : MonoBehaviour
     #region Attack System
     
     /// <summary>
-    /// Enemy elindeki silahla saldırır
+    /// Performs attack with current weapon
     /// </summary>
     public void PerformAttack(Vector3 targetPosition)
     {
@@ -270,29 +277,23 @@ public class EnemyItemHolder : MonoBehaviour
         GameObject currentWeapon = GetCurrentWeapon();
         if (currentWeapon == null) return;
         
-        // Weapon type'ına göre attack gerçekleştir
         PickupableItem weaponPickup = currentWeapon.GetComponent<PickupableItem>();
         if (weaponPickup == null) return;
         
-        // Ses çalma kodu kaldırıldı - artık silah scriptlerinde çalacak
-        
-        // Target'a doğru yön hesapla
         Vector2 direction = (targetPosition - transform.position).normalized;
         
         if (weaponPickup.holdType == ItemHoldType.Primary)
         {
-            // Primary weapon - Projectile attack
             PerformProjectileAttack(currentWeapon, direction);
         }
         else if (weaponPickup.holdType == ItemHoldType.Secondary)
         {
-            // Secondary weapon - Melee attack
             PerformMeleeAttack(currentWeapon, direction);
         }
     }
     
     /// <summary>
-    /// Projectile (mermili) saldırı gerçekleştirir
+    /// Performs projectile attack (ranged weapons)
     /// </summary>
     private void PerformProjectileAttack(GameObject weapon, Vector2 direction)
     {
@@ -304,11 +305,10 @@ public class EnemyItemHolder : MonoBehaviour
     }
     
     /// <summary>
-    /// Melee (yakın dövüş) saldırısı gerçekleştirir
+    /// Performs melee attack
     /// </summary>
     private void PerformMeleeAttack(GameObject weapon, Vector2 direction)
     {
-        // Melee attack yaparken enemy'yi hedef yönüne döndür
         if (enemyAI != null && direction.magnitude > 0.01f)
         {
             enemyAI.SetVisionDirection(direction.normalized);
@@ -326,31 +326,28 @@ public class EnemyItemHolder : MonoBehaviour
     #region Item Throwing System
     
     /// <summary>
-    /// Enemy elindeki item'ı belirtilen yöne fırlatır
+    /// Throws current item in specified direction
     /// </summary>
     public void ThrowCurrentItem(Vector2 direction)
     {
         GameObject currentWeapon = GetCurrentWeapon();
         if (currentWeapon == null) return;
         
-        // Fırlatılan silahı hemen depleted yap
         PickupableItem pickupable = currentWeapon.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
-            // Fırlatma sesini çal
             pickupable.PlayThrowSound();
             
-            // Kullanım sayısını 0'a çek ki depleted olsun
+            // Deplete the weapon
             while (!pickupable.IsDepleted())
             {
                 pickupable.DecreaseUsage();
             }
         }
         
-        // Item'ı fırlat
         ThrowItemAtDirection(currentWeapon, direction);
         
-        // Item fırlatıldıktan sonra enemy'nin elinden çıkar
+        // Clear from slots
         if (currentPrimaryItem == currentWeapon)
             currentPrimaryItem = null;
         else if (currentSecondaryItem == currentWeapon)
@@ -358,39 +355,26 @@ public class EnemyItemHolder : MonoBehaviour
     }
     
     /// <summary>
-    /// Item'ı belirtilen yöne fiziksel olarak fırlatır
+    /// Physically throws item in direction
     /// </summary>
     private void ThrowItemAtDirection(GameObject item, Vector2 direction)
     {
-        // Item'ı parent'tan ayır
         item.transform.SetParent(null);
-        
-        // Item'ın pozisyonunu enemy'nin mevcut pozisyonuna ayarla
         item.transform.position = transform.position;
         
-        // Physics'i etkinleştir
         Rigidbody2D itemRb = item.GetComponent<Rigidbody2D>();
         if (itemRb != null)
         {
             itemRb.bodyType = RigidbodyType2D.Dynamic;
             itemRb.angularVelocity = 0f;
-            
             itemRb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             itemRb.interpolation = RigidbodyInterpolation2D.Interpolate;
-            
-            if (itemRb.gravityScale == 0)
-                itemRb.gravityScale = 0;
-            
             itemRb.linearDamping = 0f;
             itemRb.angularDamping = 0.05f;
-            
             itemRb.constraints = RigidbodyConstraints2D.FreezeRotation;
-            
-            // Belirtilen yöne kuvvet uygula
             itemRb.linearVelocity = direction.normalized * throwForce;
         }
         
-        // Collider'ı yeniden etkinleştir
         Collider2D itemCollider = item.GetComponent<Collider2D>();
         if (itemCollider != null)
         {
@@ -398,22 +382,22 @@ public class EnemyItemHolder : MonoBehaviour
             itemCollider.isTrigger = false;
         }
         
-        // ThrownItem component'i ekle
         ThrownItem thrownComponent = item.GetComponent<ThrownItem>();
         if (thrownComponent == null)
         {
             thrownComponent = item.AddComponent<ThrownItem>();
         }
         thrownComponent.Initialize();
-        thrownComponent.SetThrower(gameObject); // Fırlatan enemy'yi set et
+        thrownComponent.SetThrower(gameObject);
         
-        // PickupableItem component'ini yeniden etkinleştir
         PickupableItem pickupable = item.GetComponent<PickupableItem>();
         if (pickupable != null)
         {
             pickupable.enabled = true;
             pickupable.ResetPickupState();
         }
+        
+        OnItemDropped(item);
     }
     
     #endregion
@@ -421,7 +405,7 @@ public class EnemyItemHolder : MonoBehaviour
     #region Helper Methods
     
     /// <summary>
-    /// Enemy'nin elinde silah var mı?
+    /// Check if enemy has any weapon
     /// </summary>
     public bool HasWeapon()
     {
@@ -429,7 +413,7 @@ public class EnemyItemHolder : MonoBehaviour
     }
     
     /// <summary>
-    /// Enemy'nin şu anda tuttuğu silahı döndürür
+    /// Get current weapon (primary or secondary)
     /// </summary>
     public GameObject GetCurrentWeapon()
     {
@@ -442,7 +426,7 @@ public class EnemyItemHolder : MonoBehaviour
     }
     
     /// <summary>
-    /// Belirtilen slot'ta item var mı?
+    /// Check if item exists in specific slot
     /// </summary>
     public bool HasItemInSlot(ItemHoldType slotType)
     {
@@ -453,7 +437,7 @@ public class EnemyItemHolder : MonoBehaviour
     }
     
     /// <summary>
-    /// Belirtilen slot'taki item'ı döndürür
+    /// Get item in specific slot
     /// </summary>
     public GameObject GetItemInSlot(ItemHoldType slotType)
     {

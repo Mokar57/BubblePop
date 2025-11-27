@@ -56,10 +56,7 @@ public class EnemyStunController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Update stun state
-    /// </summary>
-    public void UpdateStun()
+    private void Update()
     {
         if (!isStunned) return;
 

@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Handles enemy behavior when investigating sounds
 /// Moves to sound location and looks around for a duration
+/// Now works as a behavior helper - state is managed by EnemyAI
 /// </summary>
 [RequireComponent(typeof(EnemyMovementController))]
 [RequireComponent(typeof(EnemyVisionSystem))]
@@ -37,6 +38,13 @@ public class EnemySoundInvestigator : MonoBehaviour
     private EnemyVisionSystem visionSystem;
     private EnemySoundDetector soundDetector;
     private EnemyStunController stunController;
+    private EnemyAI enemyAI;
+
+    // Event
+    public event System.Action<Vector2> OnSoundDetected;
+
+    // State
+    private bool _hasDetectedSound = false;
 
     // Investigation state
     private bool isInvestigating = false;
@@ -52,17 +60,13 @@ public class EnemySoundInvestigator : MonoBehaviour
     private float investigationDuration;
     private float rotationInterval;
 
-    // Events
-    public System.Action OnInvestigationStarted;
-    public System.Action OnInvestigationEnded;
-    public System.Action OnMovingToInvestigate;
-
     private void Awake()
     {
         movementController = GetComponent<EnemyMovementController>();
         visionSystem = GetComponent<EnemyVisionSystem>();
         soundDetector = GetComponent<EnemySoundDetector>();
         stunController = GetComponent<EnemyStunController>();
+        enemyAI = GetComponent<EnemyAI>();
     }
 
     private void Start()
@@ -89,7 +93,6 @@ public class EnemySoundInvestigator : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Unsubscribe
         if (soundDetector != null)
         {
             soundDetector.OnSoundDetected -= HandleSoundDetected;
@@ -103,7 +106,7 @@ public class EnemySoundInvestigator : MonoBehaviour
         {
             if (HasReachedInvestigationPoint())
             {
-                StartInvestigation();
+                StartInvestigationBehavior();
             }
         }
 
@@ -115,35 +118,28 @@ public class EnemySoundInvestigator : MonoBehaviour
     }
 
     /// <summary>
-    /// Handle sound detected event
+    /// Handle sound detected event - invokes OnSoundDetected event
     /// </summary>
     private void HandleSoundDetected(Vector2 soundPosition)
     {
-        // Don't interrupt if already investigating
-        if (isInvestigating || isMovingToInvestigate)
-            return;
-
-        if (debugMode)
-            Debug.Log($"{gameObject.name}: Heard sound at {soundPosition}, moving to investigate");
-
-        // If enemy is stunned, force exit stun to start investigation
-        if (stunController != null && stunController.IsStunned())
-            stunController.ForceExitStun();
-
-        // Start moving to sound position
-        investigationPoint = soundPosition;
-        isMovingToInvestigate = true;
-        movementController.ChaseTarget(soundPosition);
-
-        // Notify AI coordinator that we're investigating
-        OnMovingToInvestigate?.Invoke();
+        _hasDetectedSound = true;
+        OnSoundDetected?.Invoke(soundPosition);
     }
 
     /// <summary>
-    /// Start investigating at current position
-    /// Call this when enemy reaches sound location
+    /// Starts the investigation process.
     /// </summary>
-    public void StartInvestigation()
+    public void StartInvestigation(Vector2 position)
+    {
+        investigationPoint = position;
+        isMovingToInvestigate = true;
+        movementController.ChaseTarget(position);
+    }
+
+    /// <summary>
+    /// Start the investigation behavior at current position
+    /// </summary>
+    private void StartInvestigationBehavior()
     {
         if (isInvestigating) return;
 
@@ -155,12 +151,8 @@ public class EnemySoundInvestigator : MonoBehaviour
         lastRotationTime = Time.time;
         lastSearchMoveTime = Time.time;
         currentSearchTarget = investigationPoint;
-        targetLookDirection = visionSystem.GetVisionDirection(); // Start with current direction
-
-        // Trigger event
-        OnInvestigationStarted?.Invoke();
+        targetLookDirection = visionSystem.GetVisionDirection();
         
-        // Immediately pick first search point
         PickNewSearchPoint();
     }
 
@@ -174,7 +166,7 @@ public class EnemySoundInvestigator : MonoBehaviour
         {
             // Check if reached current search target or time to move
             float distToTarget = Vector3.Distance(transform.position, currentSearchTarget);
-            if (distToTarget <= movementController.stopDistance + 0.5f)
+            if (distToTarget <= movementController.StopDistance + 0.5f) // Use public StopDistance
             {
                 PickNewSearchPoint();
             }
@@ -249,7 +241,7 @@ public class EnemySoundInvestigator : MonoBehaviour
     /// </summary>
     public void StopInvestigation()
     {
-        if (!isInvestigating) return;
+        if (!isInvestigating && !isMovingToInvestigate) return;
 
         if (debugMode)
             Debug.Log($"{gameObject.name}: Finished investigating");
@@ -257,9 +249,7 @@ public class EnemySoundInvestigator : MonoBehaviour
         isInvestigating = false;
         isMovingToInvestigate = false;
         movementController.StopMovement();
-
-        // Trigger event
-        OnInvestigationEnded?.Invoke();
+        _hasDetectedSound = false; // Reset the flag when investigation stops
     }
 
     /// <summary>
@@ -292,7 +282,7 @@ public class EnemySoundInvestigator : MonoBehaviour
     public bool HasReachedInvestigationPoint()
     {
         float distance = Vector3.Distance(transform.position, investigationPoint);
-        return distance <= movementController.stopDistance;
+        return distance <= movementController.StopDistance; // Use public StopDistance
     }
 
     /// <summary>
@@ -303,4 +293,7 @@ public class EnemySoundInvestigator : MonoBehaviour
         if (!isInvestigating) return 0f;
         return Mathf.Max(0f, investigationEndTime - Time.time);
     }
+    
+    // Public getter for sound detected status
+    public bool HasDetectedSoundStatus => _hasDetectedSound;
 }

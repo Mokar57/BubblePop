@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEngine.AI;
+// using BubblePop.Enemy.States; // Namespace for states
 
 /// <summary>
 /// Enemy AI Coordinator
 /// Manages state machine and coordinates between component systems
-/// Refactored from 1496-line monolith to ~350-line coordinator
+/// Core rule: Enemy cannot chase without a weapon - must seek weapon first
 /// </summary>
 [RequireComponent(typeof(EnemyHealth))]
 [RequireComponent(typeof(EnemyVisionSystem))]
@@ -12,6 +13,9 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemySoundDetector))]
 [RequireComponent(typeof(EnemyStunController))]
 [RequireComponent(typeof(EnemySoundInvestigator))]
+[RequireComponent(typeof(EnemyItemHolder))]
+[RequireComponent(typeof(EnemyItemSeeker))]
+[RequireComponent(typeof(EnemyProximityDetector))]
 public class EnemyAI : MonoBehaviour, ISpeedBoostable
 {
     [Header("Enemy Data")]
@@ -25,76 +29,78 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [Header("Chase Settings")]
     [Tooltip("Once spotted, chase forever until too far")]
     public bool persistentChase = true;
-
-    [Header("Proximity Detection")]
-    [Tooltip("Enable proximity detection (detect player when close even without vision)")]
-    public bool enableProximityDetection = true;
-
-    [Tooltip("Time player must stay in proximity before triggering chase")]
-    public float proximityTriggerTime = 1f;
-
-    [Header("Contact Detection")]
-    [Tooltip("Enable contact detection (trigger chase on collision with player)")]
-    public bool enableContactDetection = true;
+    public bool PersistentChase => persistentChase;
 
     [Header("Debug")]
     [Tooltip("Show state changes in console")]
     public bool debugMode = false;
+    public AIStateBase CurrentState => _currentState;
 
-    // Component references
-    private EnemyHealth health;
-    private EnemyVisionSystem visionSystem;
-    private EnemyMovementController movementController;
-    private EnemySoundDetector soundDetector;
-    private EnemyStunController stunController;
-    private EnemySoundInvestigator soundInvestigator;
-    private NavMeshAgent agent;
+    // Component references (public getters for states)
+    public EnemyHealth Health { get; private set; }
+    public EnemyVisionSystem VisionSystem { get; private set; }
+    public EnemyMovementController MovementController { get; private set; }
+    public EnemySoundDetector SoundDetector { get; private set; }
+    public EnemyStunController StunController { get; private set; }
+    public EnemySoundInvestigator SoundInvestigator { get; private set; }
+    public EnemyItemHolder ItemHolder { get; private set; }
+    public EnemyItemSeeker ItemSeeker { get; private set; }
+    public EnemyProximityDetector ProximityDetector { get; private set; }
+    public NavMeshAgent Agent { get; private set; }
 
-    // State machine
-    private AIState currentState = AIState.Patrolling;
-    private AIState stateBeforeStun;
+    // State pattern instances
+    private AIStateBase _currentState;
+    public PatrolState PatrolStateInstance { get; private set; }
+    public ChaseState ChaseStateInstance { get; private set; }
+    public SearchState SearchStateInstance { get; private set; }
+    public SeekItemState SeekItemStateInstance { get; private set; }
+    public InvestigateState InvestigateStateInstance { get; private set; }
+    public StunnedState StunnedStateInstance { get; private set; }
 
-    // Target tracking
-    private Transform target;
-    private bool hasSeenTarget = false;
-    private float lastSeenTime;
-    private Vector3 lastKnownTargetPosition;
-
-    // Proximity detection
-    private float proximityTimer = 0f;
-    private bool playerInProximity = false;
-    private bool proximityTriggered = false;
+    // Target tracking (public for states)
+    public Transform Target { get; private set; }
+    public bool HasDetectedTarget { get; private set; }
+    public float LastSeenTime { get; set; }
+    public Vector3 LastKnownTargetPosition { get; set; }
+    public bool ProximityDetected { get; private set; }
+    public bool DebugMode => debugMode; // Public getter for debug mode
 
     // Speed boost
     private bool isSpeedBoosted = false;
     private float speedBoostMultiplier = 1f;
-
-    // Update timing
-    private float lastUpdateTime;
-    private const float UPDATE_RATE = 0.1f;
 
     #region Initialization
 
     private void Awake()
     {
         // Get component references
-        health = GetComponent<EnemyHealth>();
-        visionSystem = GetComponent<EnemyVisionSystem>();
-        movementController = GetComponent<EnemyMovementController>();
-        soundDetector = GetComponent<EnemySoundDetector>();
-        stunController = GetComponent<EnemyStunController>();
-        soundInvestigator = GetComponent<EnemySoundInvestigator>();
-        agent = GetComponent<NavMeshAgent>();
+        Health = GetComponent<EnemyHealth>();
+        VisionSystem = GetComponent<EnemyVisionSystem>();
+        MovementController = GetComponent<EnemyMovementController>();
+        SoundDetector = GetComponent<EnemySoundDetector>();
+        StunController = GetComponent<EnemyStunController>();
+        SoundInvestigator = GetComponent<EnemySoundInvestigator>();
+        ItemHolder = GetComponent<EnemyItemHolder>();
+        ItemSeeker = GetComponent<EnemyItemSeeker>();
+        ProximityDetector = GetComponent<EnemyProximityDetector>();
+        Agent = GetComponent<NavMeshAgent>();
+
+        // Initialize states
+        PatrolStateInstance = new PatrolState(this);
+        ChaseStateInstance = new ChaseState(this);
+        SearchStateInstance = new SearchState(this);
+        SeekItemStateInstance = new SeekItemState(this);
+        InvestigateStateInstance = new InvestigateState(this);
+        StunnedStateInstance = new StunnedState(this);
     }
 
     private void Start()
     {
         // Subscribe to events
-        stunController.OnStunEnded += HandleStunEnded;
-        health.OnEnemyDeath += HandleDeath;
-        soundInvestigator.OnMovingToInvestigate += HandleMovingToInvestigate;
-        soundInvestigator.OnInvestigationStarted += HandleInvestigationStarted;
-        soundInvestigator.OnInvestigationEnded += HandleInvestigationEnded;
+        StunController.OnStunEnded += HandleStunEnded;
+        Health.OnEnemyDeath += HandleDeath;
+        ProximityDetector.OnPlayerDetected += HandleProximityDetection;
+        SoundInvestigator.OnSoundDetected += HandleSoundDetected; // New event for sound
 
         // Find target
         if (autoFindPlayer)
@@ -102,27 +108,31 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
             FindTarget();
         }
 
-        // Start patrol if enabled
-        if (movementController.enablePatrol)
+        // Initialize detector
+        ProximityDetector.Initialize(enemyData, Target);
+
+        // Set initial state
+        if (ItemHolder.HasWeapon())
         {
-            currentState = AIState.Patrolling;
-            movementController.StartPatrol();
+            TransitionToState(PatrolStateInstance);
+        }
+        else
+        {
+            TransitionToState(SeekItemStateInstance);
         }
     }
 
     private void OnDestroy()
     {
         // Unsubscribe from events
-        if (stunController != null)
-            stunController.OnStunEnded -= HandleStunEnded;
-        if (health != null)
-            health.OnEnemyDeath -= HandleDeath;
-        if (soundInvestigator != null)
-        {
-            soundInvestigator.OnMovingToInvestigate -= HandleMovingToInvestigate;
-            soundInvestigator.OnInvestigationStarted -= HandleInvestigationStarted;
-            soundInvestigator.OnInvestigationEnded -= HandleInvestigationEnded;
-        }
+        if (StunController != null)
+            StunController.OnStunEnded -= HandleStunEnded;
+        if (Health != null)
+            Health.OnEnemyDeath -= HandleDeath;
+        if (ProximityDetector != null)
+            ProximityDetector.OnPlayerDetected -= HandleProximityDetection;
+        if (SoundInvestigator != null)
+            SoundInvestigator.OnSoundDetected -= HandleSoundDetected; // Unsubscribe new event
     }
 
     #endregion
@@ -131,284 +141,70 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     private void Update()
     {
-        // Don't update if dead or stunned
-        if (health.IsDead) return;
+        // Don't update if dead
+        if (Health.IsDead) return;
 
-        // Handle stunned state separately
-        if (stunController.IsStunned())
+        // Check for stun state outside main state machine as it has higher priority
+        if (StunController.IsStunned() && _currentState != StunnedStateInstance)
         {
-            currentState = AIState.Stunned;
-            stunController.UpdateStun();
-
-            // Check if can see player while stunned (early exit)
-            if (visionSystem.CanSeeTarget())
-            {
-                stunController.ForceExitStun();
-                TransitionToChase();
-            }
-
+            TransitionToState(StunnedStateInstance);
             return;
         }
 
         // Find target if lost
-        if (target == null && autoFindPlayer)
+        if (Target == null && autoFindPlayer)
         {
             FindTarget();
         }
 
-        // Check vision
-        bool canSeeTarget = target != null && visionSystem.CanSeeTarget();
-
-        // Check proximity detection
-        bool proximityDetected = false;
-        if (enableProximityDetection && target != null)
-        {
-            proximityDetected = CheckProximityDetection();
-        }
-
-        // Handle state transitions
-        HandleStateTransitions(canSeeTarget, proximityDetected);
+        _currentState?.UpdateState(); // Update the current active state
 
         // Update vision direction based on movement
         UpdateVisionDirection();
-
-        // Update current state behavior
-        UpdateStateBehavior();
     }
 
     #endregion
 
-    #region State Machine
+    #region State Transitions (Managed by State Classes)
 
-    private void HandleStateTransitions(bool canSeeTarget, bool proximityDetected)
+    public void TransitionToState(AIStateBase newState)
     {
-        // Don't interrupt investigation
-        if (currentState == AIState.Investigating || soundInvestigator.IsMovingToInvestigate())
-            return;
+        if (newState == _currentState) return;
 
-        // Spotted player or proximity triggered - switch to chase
-        if (canSeeTarget || proximityDetected)
-        {
-            if (currentState != AIState.Chasing)
-            {
-                TransitionToChase();
-            }
+        _currentState?.ExitState(); // Call Exit on previous state
 
-            lastSeenTime = Time.time;
-            if (target != null)
-            {
-                lastKnownTargetPosition = target.position;
-            }
-        }
-        // Lost sight while chasing
-        else if (hasSeenTarget && currentState == AIState.Chasing)
-        {
-            if (persistentChase)
-            {
-                // Continue chasing until too far
-                float distanceToTarget = target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
-                if (distanceToTarget > movementController.maxChaseDistance)
-                {
-                    ReturnToPatrol();
-                }
-            }
-            else
-            {
-                // Go to last known position
-                currentState = AIState.SearchingLastKnown;
-            }
-        }
-        // Reached last known position while searching
-        else if (currentState == AIState.SearchingLastKnown)
-        {
-            if (Vector3.Distance(transform.position, lastKnownTargetPosition) <= movementController.stopDistance)
-            {
-                ReturnToPatrol();
-            }
-        }
-    }
-
-    private void UpdateStateBehavior()
-    {
-        switch (currentState)
-        {
-            case AIState.Patrolling:
-            case AIState.WaitingAtWaypoint:
-            case AIState.WaitingAfterTimeout:
-            case AIState.WaitingAfterStuck:
-                movementController.UpdatePatrol();
-                UpdatePatrolVision();
-                break;
-
-            case AIState.Chasing:
-                if (Time.time - lastUpdateTime >= UPDATE_RATE)
-                {
-                    UpdateChaseDestination();
-                    lastUpdateTime = Time.time;
-                }
-                break;
-
-            case AIState.SearchingLastKnown:
-                if (Time.time - lastUpdateTime >= UPDATE_RATE)
-                {
-                    UpdateSearchDestination();
-                    lastUpdateTime = Time.time;
-                }
-                break;
-        }
-    }
-
-    private void TransitionToChase()
-    {
         if (debugMode)
-            Debug.Log($"{gameObject.name}: Transitioning to Chase");
+            Debug.Log($"{gameObject.name}: {(_currentState != null ? _currentState.GetType().Name : "None")} -> {newState.GetType().Name}");
 
-        currentState = AIState.Chasing;
-        hasSeenTarget = true;
-    }
-
-    private void ReturnToPatrol()
-    {
-        if (debugMode)
-            Debug.Log($"{gameObject.name}: Returning to patrol");
-
-        hasSeenTarget = false;
-        proximityTriggered = false;
-        proximityTimer = 0f;
-        playerInProximity = false;
-
-        if (movementController.enablePatrol)
-        {
-            currentState = AIState.Patrolling;
-            movementController.StartPatrol();
-        }
-        else
-        {
-            movementController.StopMovement();
-            currentState = AIState.Patrolling;
-        }
+        _currentState = newState; // Set new current state
+        _currentState.EnterState(); // Call Enter on new state
     }
 
     #endregion
 
-    #region Movement Updates
-
-    private void UpdateChaseDestination()
-    {
-        if (target == null || agent == null || !agent.enabled || !agent.isOnNavMesh) return;
-
-        Vector3 destinationPosition = target.position;
-
-        if (persistentChase || visionSystem.CanSeeTarget())
-        {
-            lastKnownTargetPosition = target.position;
-            lastSeenTime = Time.time;
-        }
-
-        movementController.ChaseTarget(destinationPosition);
-    }
-
-    private void UpdateSearchDestination()
-    {
-        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
-
-        movementController.ChaseTarget(lastKnownTargetPosition);
-    }
+    #region Movement/Vision Updates (Still managed by EnemyAI for now)
 
     private void UpdateVisionDirection()
     {
-        // Check if waiting at waypoint (use movement controller's flag)
-        if (movementController.IsWaitingAtWaypoint)
+        // Check if waiting at waypoint
+        if (MovementController.IsWaitingAtWaypoint)
         {
-            // Rotate towards waypoint direction
-            Vector3 waypointDirection = movementController.GetCurrentWaypointDirection();
+            Vector3 waypointDirection = MovementController.GetCurrentWaypointDirection();
             if (enemyData != null)
             {
-                visionSystem.RotateVisionTowards(waypointDirection, enemyData.rotationSpeed);
+                VisionSystem.RotateVisionTowards(waypointDirection, enemyData.rotationSpeed);
             }
             return;
         }
 
         // Update vision based on movement
-        if (movementController.IsMoving())
+        if (MovementController.IsMoving())
         {
-            Vector3 moveDirection = movementController.GetMovementDirection();
+            Vector3 moveDirection = MovementController.GetMovementDirection();
             if (moveDirection.magnitude > 0.1f && enemyData != null)
             {
-                visionSystem.RotateVisionTowards(moveDirection, enemyData.rotationSpeed);
+                VisionSystem.RotateVisionTowards(moveDirection, enemyData.rotationSpeed);
             }
-        }
-    }
-
-    private void UpdatePatrolVision()
-    {
-        // Vision is handled in UpdateVisionDirection
-    }
-
-    #endregion
-
-    #region Proximity Detection
-
-    private bool CheckProximityDetection()
-    {
-        if (!enableProximityDetection || target == null || enemyData == null)
-        {
-            proximityTimer = 0f;
-            playerInProximity = false;
-            return false;
-        }
-
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
-
-        // Check if player is within proximity range (but not in vision)
-        if (distanceToTarget <= enemyData.proximityRadius && !visionSystem.CanSeeTarget())
-        {
-            if (!playerInProximity)
-            {
-                playerInProximity = true;
-                proximityTimer = 0f;
-            }
-
-            proximityTimer += Time.deltaTime;
-
-            if (proximityTimer >= proximityTriggerTime && !proximityTriggered)
-            {
-                proximityTriggered = true;
-                return true;
-            }
-        }
-        else
-        {
-            playerInProximity = false;
-            proximityTimer = 0f;
-        }
-
-        return proximityTriggered && currentState == AIState.Chasing;
-    }
-
-    #endregion
-
-    #region Contact Detection
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!enableContactDetection) return;
-
-        if (other.transform == target || other.CompareTag("Player") || other.GetComponent<PlayerControls>() != null)
-        {
-            TransitionToChase();
-            proximityTriggered = true;
-        }
-    }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (!enableContactDetection) return;
-
-        if (collision.transform == target || collision.gameObject.CompareTag("Player") || collision.gameObject.GetComponent<PlayerControls>() != null)
-        {
-            TransitionToChase();
-            proximityTriggered = true;
         }
     }
 
@@ -416,26 +212,34 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     #region Event Handlers
 
-    private void HandleMovingToInvestigate()
+    private void HandleProximityDetection(Transform detectedTarget)
     {
         if (debugMode)
-            Debug.Log($"{gameObject.name}: Moving to investigate sound");
+            Debug.Log($"{gameObject.name}: Proximity detected player at {detectedTarget.position}");
 
-        currentState = AIState.Investigating;
+        ProximityDetected = true;
+        SetHasDetectedTarget(true); // Set hasDetectedTarget via public setter
+        SetTarget(detectedTarget); // Set target via public setter
+        LastKnownTargetPosition = detectedTarget.position;
+        
+        // This event might trigger a state change, e.g., from Patrol to Chase/SeekItem
+        // The current state's UpdateState will handle the transition
     }
 
-    private void HandleInvestigationStarted()
+    private void HandleSoundDetected(Vector2 soundPosition)
     {
         if (debugMode)
-            Debug.Log($"{gameObject.name}: Reached investigation point, searching area");
-    }
+            Debug.Log($"{gameObject.name}: Sound detected at {soundPosition}");
 
-    private void HandleInvestigationEnded()
-    {
-        if (debugMode)
-            Debug.Log($"{gameObject.name}: Investigation ended, returning to patrol");
+        // Only transition to investigate if not chasing or stunned
+        if (_currentState != ChaseStateInstance && _currentState != StunnedStateInstance)
+        {
+            // Don't investigate if no weapon and player was detected (still relevant for initial investigation trigger)
+            if (!ItemHolder.HasWeapon() && HasDetectedTarget) return;
 
-        ReturnToPatrol();
+            InvestigateStateInstance.SetInvestigationPosition(soundPosition);
+            TransitionToState(InvestigateStateInstance);
+        }
     }
 
     private void HandleStunEnded()
@@ -443,20 +247,20 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         if (debugMode)
             Debug.Log($"{gameObject.name}: Stun ended");
 
-        // Don't interrupt investigation
-        if (currentState == AIState.Investigating || soundInvestigator.IsInvestigating() || soundInvestigator.IsMovingToInvestigate())
+        // The stunned state's Update will handle the transition logic after stun ends.
+        // We ensure that we transition out of the Stunned state if we are currently in it.
+        if (_currentState == StunnedStateInstance)
         {
-            currentState = AIState.Investigating;
-            return;
+             // This might be redundant as StunnedState.UpdateState() handles it.
+             // However, a direct event can force a transition if needed.
+             // For simplicity, let StunnedState.UpdateState handle it.
         }
-
-        ReturnToPatrol();
     }
 
     private void HandleDeath()
     {
-        // Disable all components
         this.enabled = false;
+        // Optionally, transition to a "Dead" state here.
     }
 
     #endregion
@@ -468,29 +272,35 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
-            target = player.transform;
-            visionSystem.SetTarget(target);
+            SetTarget(player.transform);
             return;
         }
 
         PlayerControls playerScript = FindFirstObjectByType<PlayerControls>();
         if (playerScript != null)
         {
-            target = playerScript.transform;
-            visionSystem.SetTarget(target);
+            SetTarget(playerScript.transform);
         }
     }
 
     public void SetTarget(Transform newTarget)
     {
-        target = newTarget;
-        visionSystem.SetTarget(newTarget);
-        hasSeenTarget = false;
+        Target = newTarget;
+        VisionSystem.SetTarget(newTarget);
+        if (ProximityDetector != null) ProximityDetector.SetTarget(newTarget);
+        // Reset hasDetectedTarget if a new target is set or target is lost
+        if (newTarget == null) SetHasDetectedTarget(false); 
+    }
+
+    public void SetHasDetectedTarget(bool detected)
+    {
+        HasDetectedTarget = detected;
+        if (!detected) ProximityDetected = false; // Reset proximity detected if target is lost
     }
 
     #endregion
 
-    #region ISpeedBoostable Implementation
+    #region ISpeedBoostable Implementation (remains as is)
 
     public void ApplySpeedBoost(float multiplier)
     {
@@ -498,7 +308,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         {
             speedBoostMultiplier = multiplier;
             isSpeedBoosted = true;
-            movementController.ApplySpeedBoost(multiplier);
+            MovementController.ApplySpeedBoost(multiplier);
         }
     }
 
@@ -508,7 +318,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         {
             speedBoostMultiplier = 1f;
             isSpeedBoosted = false;
-            movementController.RemoveSpeedBoost();
+            MovementController.RemoveSpeedBoost();
         }
     }
 
@@ -516,20 +326,37 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     #endregion
 
-    #region Public API (for backward compatibility)
+    #region Public API / Helper Methods for States
 
-    public AIState GetCurrentState() => currentState;
-    public bool CanSeeTargetPublic() => visionSystem.CanSeeTarget();
-    public Vector3 GetVisionDirection() => visionSystem.GetVisionDirection();
-    public void SetVisionDirection(Vector3 direction) => visionSystem.SetVisionDirection(direction);
-    public bool IsMoving() => movementController.IsMoving();
-    public float DistanceToTarget() => target != null ? Vector3.Distance(transform.position, target.position) : float.MaxValue;
-    public void ResetChase()
+    public bool IsPlayerDetected()
     {
-        hasSeenTarget = false;
-        proximityTriggered = false;
-        proximityTimer = 0f;
-        playerInProximity = false;
+        return (Target != null && VisionSystem.CanSeeTarget()) || ProximityDetected;
+    }
+    
+    public bool IsSoundHeard()
+    {
+        return SoundInvestigator.HasDetectedSoundStatus;
+    }
+
+    public bool HasWeapon() => ItemHolder.HasWeapon();
+    public Vector3 GetVisionDirection() => VisionSystem.GetVisionDirection();
+    public void SetVisionDirection(Vector3 direction) => VisionSystem.SetVisionDirection(direction);
+    public bool IsMoving() => MovementController.IsMoving();
+    public float DistanceToTarget() => Target != null ? Vector3.Distance(transform.position, Target.position) : float.MaxValue;
+    
+    public void ResetDetection()
+    {
+        SetHasDetectedTarget(false);
+        ProximityDetector.ResetDetection();
+    }
+
+    /// <summary>
+    /// Called by EnemyItemSeeker when it picks up a weapon
+    /// </summary>
+    public void OnWeaponAcquired()
+    {
+        // The current state's UpdateState will handle the transition based on weapon acquired.
+        // For example, SeekItemState will transition out if a weapon is acquired.
     }
 
     #endregion

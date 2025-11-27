@@ -3,8 +3,8 @@ using UnityEngine.AI;
 using System.Collections.Generic;
 
 /// <summary>
-/// Enemy'nin yakındaki item'ları bulmasını ve almasını sağlar
-/// REFACTORED: Now uses EnemyDataSO for configuration
+/// Handles enemy item seeking behavior
+/// Works as a behavior helper - state is managed by EnemyAI
 /// </summary>
 [RequireComponent(typeof(EnemyItemHolder))]
 public class EnemyItemSeeker : MonoBehaviour
@@ -22,13 +22,6 @@ public class EnemyItemSeeker : MonoBehaviour
     [Header("Detection")]
     [SerializeField] private LayerMask itemLayerMask = -1;
 
-    [Header("Navigation")]
-    [SerializeField] private bool pauseAIDuringSeek = false;
-
-    [Header("Priority Settings")]
-    [Tooltip("Pause AI patrol until initial weapon is found")]
-    [SerializeField] private bool pausePatrolUntilArmed = true;
-
     private EnemyItemHolder itemHolder;
     private EnemyAI enemyAI;
     private NavMeshAgent agent;
@@ -42,10 +35,7 @@ public class EnemyItemSeeker : MonoBehaviour
     private bool preferPrimaryItems;
     private bool onlySeekWhenUnarmed;
 
-    // Initial weapon search state
-    private bool hasCompletedInitialSearch = false;
-    
-    // Item takip durumu
+    // Item tracking
     private PickupableItem targetItem;
     private bool isSeekingItem = false;
     private Vector3 lastItemPosition;
@@ -63,7 +53,7 @@ public class EnemyItemSeeker : MonoBehaviour
             autoSeekItems = enemyData.canSeekItems;
             seekRadius = seekRadiusOverride > 0 ? seekRadiusOverride : enemyData.itemSeekRadius;
             pickupRadius = pickupRadiusOverride > 0 ? pickupRadiusOverride : enemyData.itemPickupRadius;
-            seekInterval = seekIntervalOverride > 0 ? seekIntervalOverride : 2f; // Faster initial check
+            seekInterval = seekIntervalOverride > 0 ? seekIntervalOverride : 2f;
             preferPrimaryItems = enemyData.preferPrimaryWeapons;
             onlySeekWhenUnarmed = enemyData.onlySeekWhenUnarmed;
         }
@@ -78,25 +68,15 @@ public class EnemyItemSeeker : MonoBehaviour
             Debug.LogWarning($"{gameObject.name}: No EnemyDataSO assigned! Using default item seeking settings.");
         }
 
-        // Immediate weapon search on spawn (prioritize arming before patrol)
+        // Initial weapon search on spawn
         if (autoSeekItems && !itemHolder.HasWeapon())
         {
-            // Pause AI patrol until weapon is found
-            if (pausePatrolUntilArmed && enemyAI != null)
-            {
-                enemyAI.enabled = false; // Disable AI temporarily
-            }
-
-            Invoke(nameof(InitialWeaponSearch), 0.5f); // Small delay for NavMesh initialization
-        }
-        else
-        {
-            hasCompletedInitialSearch = true;
+            Invoke(nameof(InitialWeaponSearch), 0.5f);
         }
     }
 
     /// <summary>
-    /// Initial weapon search on spawn - runs once before patrol starts
+    /// Initial weapon search on spawn
     /// </summary>
     private void InitialWeaponSearch()
     {
@@ -104,59 +84,25 @@ public class EnemyItemSeeker : MonoBehaviour
         {
             TryFindAndSeekItem();
         }
-        else
-        {
-            CompleteInitialSearch();
-        }
-    }
-
-    /// <summary>
-    /// Called when initial weapon search is complete
-    /// </summary>
-    private void CompleteInitialSearch()
-    {
-        hasCompletedInitialSearch = true;
-
-        // Re-enable AI if it was paused
-        if (pausePatrolUntilArmed && enemyAI != null && !enemyAI.enabled)
-        {
-            enemyAI.enabled = true;
-        }
     }
     
     private void Update()
     {
-        // Check if agent is valid and active before doing anything
         if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
         
-        // Item takip modunda mıyız?
+        // If seeking item, update the seeking behavior
         if (isSeekingItem)
         {
             UpdateItemSeeking();
-            return;
-        }
-        
-        // Otomatik item arama
-        if (!autoSeekItems) return;
-        
-        // Belirli aralıklarla item ara
-        if (Time.time - lastSeekTime >= seekInterval)
-        {
-            lastSeekTime = Time.time;
-            
-            if (onlySeekWhenUnarmed && itemHolder.HasWeapon())
-                return;
-            
-            TryFindAndSeekItem();
         }
     }
     
     /// <summary>
-    /// Item takibini günceller ve yaklaşınca alır
+    /// Updates item seeking behavior
     /// </summary>
     private void UpdateItemSeeking()
     {
-        // Target item hala geçerli mi?
+        // Target item still valid?
         if (targetItem == null || targetItem.IsDepleted() || targetItem.transform.parent != null)
         {
             StopSeekingItem();
@@ -165,24 +111,21 @@ public class EnemyItemSeeker : MonoBehaviour
         
         float distanceToItem = Vector2.Distance(transform.position, targetItem.transform.position);
         
-        // Item pickup radius içinde mi?
+        // Within pickup radius?
         if (distanceToItem <= pickupRadius)
         {
-            // Item'ı almaya çalış
             bool success = targetItem.TryPickupByEnemy(itemHolder);
-            if (success)
+            StopSeekingItem();
+            
+            if (success && enemyAI != null)
             {
-                StopSeekingItem();
-            }
-            else
-            {
-                // Başarısız olduysa vazgeç
-                StopSeekingItem();
+                // Notify EnemyAI that we got a weapon
+                enemyAI.OnWeaponAcquired();
             }
         }
         else
         {
-            // Item hareket ettiyse pozisyonu güncelle
+            // Update destination if item moved
             if (Vector3.Distance(targetItem.transform.position, lastItemPosition) > 0.5f)
             {
                 lastItemPosition = targetItem.transform.position;
@@ -195,35 +138,21 @@ public class EnemyItemSeeker : MonoBehaviour
     }
     
     /// <summary>
-    /// Item takibini durdurur ve normal AI davranışına döner
+    /// Stops seeking and clears target
     /// </summary>
     private void StopSeekingItem()
     {
         isSeekingItem = false;
         targetItem = null;
-
-        // AI'ı yeniden etkinleştir (eğer durdurulmuşsa)
-        if (pauseAIDuringSeek && enemyAI != null)
-        {
-            enemyAI.enabled = true;
-        }
-
-        // Complete initial search if this was the first weapon pickup
-        if (!hasCompletedInitialSearch && itemHolder.HasWeapon())
-        {
-            CompleteInitialSearch();
-        }
     }
     
     /// <summary>
-    /// Yakındaki item'ları bulur ve en uygununa doğru gitmeye başlar
+    /// Finds nearby items and navigates to the best one
     /// </summary>
     public void TryFindAndSeekItem()
     {
-        // Zaten item arıyorsa yeni arama yapma
         if (isSeekingItem) return;
         
-        // Yakındaki tüm collider'ları bul
         Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, itemLayerMask);
         
         PickupableItem bestItem = null;
@@ -233,38 +162,31 @@ public class EnemyItemSeeker : MonoBehaviour
         {
             PickupableItem item = col.GetComponent<PickupableItem>();
             
-            // Item geçerli mi kontrol et
             if (item == null || item.IsDepleted() || !item.canBePickedByEnemies)
                 continue;
             
-            // Item zaten tutuluyorsa atla
+            // Skip if already held
             if (item.transform.parent != null)
                 continue;
             
             float distance = Vector2.Distance(transform.position, item.transform.position);
             
-            // Eğer preference varsa ve bu item uygunsa
+            // Prefer primary weapons if configured
             if (preferPrimaryItems && item.holdType == ItemHoldType.Primary)
             {
-                // Primary item'lar için öncelik ver
-                if (bestItem == null || distance < closestDistance)
+                if (bestItem == null || bestItem.holdType != ItemHoldType.Primary || distance < closestDistance)
                 {
                     bestItem = item;
                     closestDistance = distance;
                 }
             }
-            else
+            else if (bestItem == null || (bestItem.holdType != ItemHoldType.Primary && distance < closestDistance))
             {
-                // En yakın item'ı al
-                if (bestItem == null || distance < closestDistance)
-                {
-                    bestItem = item;
-                    closestDistance = distance;
-                }
+                bestItem = item;
+                closestDistance = distance;
             }
         }
         
-        // En iyi item'ı bulduysa ona doğru git
         if (bestItem != null)
         {
             StartSeekingItem(bestItem);
@@ -272,7 +194,7 @@ public class EnemyItemSeeker : MonoBehaviour
     }
     
     /// <summary>
-    /// Belirli bir item'a doğru gitmeye başlar
+    /// Starts navigating to a specific item
     /// </summary>
     private void StartSeekingItem(PickupableItem item)
     {
@@ -280,40 +202,21 @@ public class EnemyItemSeeker : MonoBehaviour
         isSeekingItem = true;
         lastItemPosition = item.transform.position;
         
-        // NavMeshAgent ile item'a git
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
             agent.SetDestination(item.transform.position);
         }
-        
-        // AI'ı duraklat (eğer ayarlanmışsa)
-        if (pauseAIDuringSeek && enemyAI != null)
-        {
-            enemyAI.enabled = false;
-        }
     }
     
     /// <summary>
-    /// [DEPRECATED] Yakındaki item'ları bulur ve en uygununu alır
-    /// Bu metod artık kullanılmıyor, TryFindAndSeekItem kullanın
-    /// </summary>
-    [System.Obsolete("Use TryFindAndSeekItem instead")]
-    public void TryFindAndPickupNearbyItem()
-    {
-        TryFindAndSeekItem();
-    }
-    
-    /// <summary>
-    /// Belirtilen item'a doğru gitmeye başlar
+    /// Try to seek a specific item
     /// </summary>
     public bool TrySeekSpecificItem(GameObject itemObject)
     {
         if (itemObject == null) return false;
         
         PickupableItem item = itemObject.GetComponent<PickupableItem>();
-        if (item == null) return false;
-        
-        if (item.IsDepleted() || !item.canBePickedByEnemies || item.transform.parent != null)
+        if (item == null || item.IsDepleted() || !item.canBePickedByEnemies || item.transform.parent != null)
             return false;
         
         StartSeekingItem(item);
@@ -321,33 +224,7 @@ public class EnemyItemSeeker : MonoBehaviour
     }
     
     /// <summary>
-    /// [DEPRECATED] Belirtilen item'ı almaya çalışır
-    /// Bu metod artık item'a gitmeden direkt almaya çalışır
-    /// </summary>
-    [System.Obsolete("Use TrySeekSpecificItem for navigating to item")]
-    public bool TryPickupSpecificItem(GameObject itemObject)
-    {
-        if (itemObject == null) return false;
-        
-        PickupableItem item = itemObject.GetComponent<PickupableItem>();
-        if (item == null) return false;
-        
-        // Yakında mı kontrol et
-        float distance = Vector2.Distance(transform.position, item.transform.position);
-        if (distance <= pickupRadius)
-        {
-            return item.TryPickupByEnemy(itemHolder);
-        }
-        else
-        {
-            // Uzaktaysa ona doğru git
-            StartSeekingItem(item);
-            return false; // Henüz alınmadı
-        }
-    }
-    
-    /// <summary>
-    /// En yakın item'ı bulur ve döndürür
+    /// Finds and returns the nearest valid item (does not navigate)
     /// </summary>
     public PickupableItem FindNearestItem()
     {
@@ -360,10 +237,7 @@ public class EnemyItemSeeker : MonoBehaviour
         {
             PickupableItem item = col.GetComponent<PickupableItem>();
             
-            if (item == null || item.IsDepleted() || !item.canBePickedByEnemies)
-                continue;
-            
-            if (item.transform.parent != null)
+            if (item == null || item.IsDepleted() || !item.canBePickedByEnemies || item.transform.parent != null)
                 continue;
             
             float distance = Vector2.Distance(transform.position, item.transform.position);
@@ -380,38 +254,34 @@ public class EnemyItemSeeker : MonoBehaviour
     
     private void OnDrawGizmosSelected()
     {
-        // Seek radius'u göster (algılama alanı)
+        float drawSeekRadius = seekRadius > 0 ? seekRadius : (seekRadiusOverride > 0 ? seekRadiusOverride : 10f);
+        float drawPickupRadius = pickupRadius > 0 ? pickupRadius : (pickupRadiusOverride > 0 ? pickupRadiusOverride : 1.5f);
+        
+        // Seek radius
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, seekRadius);
+        Gizmos.DrawWireSphere(transform.position, drawSeekRadius);
         
-        // Pickup radius'u göster (alma alanı)
+        // Pickup radius
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(transform.position, pickupRadius);
+        Gizmos.DrawWireSphere(transform.position, drawPickupRadius);
         
-        // Target item varsa çizgi çek
+        // Target item line
         if (isSeekingItem && targetItem != null)
         {
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(transform.position, targetItem.transform.position);
             
-            // Target item'ı vurgula
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(targetItem.transform.position, 0.5f);
         }
     }
     
-    /// <summary>
-    /// Public getter: Enemy şu anda item arıyor mu?
-    /// </summary>
+    // Public getters
     public bool IsSeekingItem => isSeekingItem;
-    
-    /// <summary>
-    /// Public getter: Target item
-    /// </summary>
     public PickupableItem TargetItem => targetItem;
     
     /// <summary>
-    /// Manuel olarak item aramayı iptal et
+    /// Cancel current item seeking
     /// </summary>
     public void CancelSeeking()
     {

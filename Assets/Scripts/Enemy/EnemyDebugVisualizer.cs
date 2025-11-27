@@ -185,20 +185,34 @@ public class EnemyDebugVisualizer : MonoBehaviour
         if (stunController != null && stunController.IsStunned())
             return stunnedColor;
 
-        AIState state = enemyAI.GetCurrentState();
-        switch (state)
+        AIStateBase state = enemyAI.CurrentState;
+        if (state == enemyAI.ChaseStateInstance)
         {
-            case AIState.Chasing:
-                return chaseColor;
-            case AIState.Investigating:
-                return Color.cyan; // Cyan for investigating
-            case AIState.Patrolling:
-            case AIState.WaitingAtWaypoint:
-                return patrolColor;
-            case AIState.Stunned:
-                return stunnedColor;
-            default:
-                return idleColor;
+            return chaseColor;
+        }
+        else if (state == enemyAI.SeekItemStateInstance)
+        {
+            return Color.magenta; // Magenta for seeking items
+        }
+        else if (state == enemyAI.InvestigateStateInstance)
+        {
+            return Color.cyan; // Cyan for investigating
+        }
+        else if (state == enemyAI.PatrolStateInstance)
+        {
+            return patrolColor;
+        }
+        else if (state == enemyAI.StunnedStateInstance)
+        {
+            return stunnedColor;
+        }
+        else if (state == enemyAI.SearchStateInstance)
+        {
+            return new Color(1f, 0.5f, 0f); // Orange for searching
+        }
+        else
+        {
+            return idleColor;
         }
     }
 
@@ -309,8 +323,8 @@ public class EnemyDebugVisualizer : MonoBehaviour
         // Show state
         if (showState && enemyAI != null)
         {
-            AIState state = enemyAI.GetCurrentState();
-            label += $"State: {state}\n";
+            AIStateBase state = enemyAI.CurrentState;
+            label += $"State: {state.GetType().Name}\n";
         }
 
         // Show health

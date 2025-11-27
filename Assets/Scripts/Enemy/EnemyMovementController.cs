@@ -55,9 +55,11 @@ public class EnemyMovementController : MonoBehaviour
     [Header("Chase Settings")]
     [Tooltip("Distance to stop from target when chasing")]
     public float stopDistance = 1f;
+    public float StopDistance => stopDistance;
 
     [Tooltip("Maximum chase distance before giving up")]
     public float maxChaseDistance = 50f;
+    public float MaxChaseDistance => maxChaseDistance;
 
     // Movement speeds
     private float patrolSpeed;
@@ -70,6 +72,8 @@ public class EnemyMovementController : MonoBehaviour
 
     // NavMeshAgent
     private NavMeshAgent agent;
+    public NavMeshAgent Agent => agent;
+    private EnemyVisionSystem visionSystem;
 
     // Patrol state
     private int currentWaypointIndex = 0;
@@ -96,8 +100,38 @@ public class EnemyMovementController : MonoBehaviour
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        visionSystem = GetComponent<EnemyVisionSystem>();
         ConfigureAgent();
         ConfigureRigidbody2D();
+    }
+
+    private void Update()
+    {
+        if (isPatrolling)
+        {
+            HandlePatrolUpdate();
+        }
+    }
+
+    private void LateUpdate()
+    {
+        UpdateRotationBasedOnVision();
+    }
+
+    /// <summary>
+    /// Rotates the enemy based on vision direction
+    /// </summary>
+    private void UpdateRotationBasedOnVision()
+    {
+        if (visionSystem == null) return;
+        
+        Vector3 visionDirection = visionSystem.GetVisionDirection();
+        
+        if (visionDirection.magnitude > 0.01f)
+        {
+            float angle = Mathf.Atan2(visionDirection.y, visionDirection.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
+        }
     }
 
     private void Start()
@@ -178,7 +212,7 @@ public class EnemyMovementController : MonoBehaviour
     /// <summary>
     /// Update patrol behavior
     /// </summary>
-    public void UpdatePatrol()
+    private void HandlePatrolUpdate()
     {
         if (!enablePatrol || patrolWaypoints.Count == 0 || agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
@@ -387,6 +421,7 @@ public class EnemyMovementController : MonoBehaviour
         {
             agent.ResetPath();
         }
+        isPatrolling = false;
     }
 
     #endregion

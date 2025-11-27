@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+// using BubblePop.Enemy.States;
 
 /// <summary>
 /// Yuvarlak alan içindeki enemy'leri etkiler
@@ -64,8 +65,8 @@ public class AreaEffect : MonoBehaviour
                     // Enemy chase modundaysa alana tepki verme
                     if (enemyAI != null)
                     {
-                        AIState currentState = enemyAI.GetCurrentState();
-                        if (currentState == AIState.Chasing)
+                        AIStateBase currentState = enemyAI.CurrentState;
+                        if (currentState == enemyAI.ChaseStateInstance)
                         {
                             continue; // Bu enemy'yi atla
                         }

@@ -29,7 +29,7 @@ public interface IItemHolder
 
 /// <summary>
 /// Interface for entities that can take damage
-/// Implemented by PlayerHealth, EnemyHealth (to be created)
+/// Implemented by PlayerHealth, EnemyHealth
 /// </summary>
 public interface IDamageable
 {
@@ -47,4 +47,26 @@ public interface IDamageable
     /// Check if this entity is dead
     /// </summary>
     bool IsDead { get; }
+}
+
+/// <summary>
+/// Interface for objects that can receive speed boosts from SpeedBoostZone
+/// Implemented by EnemyAI (and potentially PlayerControls)
+/// </summary>
+public interface ISpeedBoostable
+{
+    /// <summary>
+    /// Apply speed boost with given multiplier
+    /// </summary>
+    void ApplySpeedBoost(float multiplier);
+    
+    /// <summary>
+    /// Remove currently applied speed boost
+    /// </summary>
+    void RemoveSpeedBoost();
+    
+    /// <summary>
+    /// Check if speed boost is currently active
+    /// </summary>
+    bool IsSpeedBoosted { get; }
 }

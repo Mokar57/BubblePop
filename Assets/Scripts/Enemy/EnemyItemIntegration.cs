@@ -95,7 +95,8 @@ public class EnemyItemIntegration : MonoBehaviour
             return;
 
         // Enemy sadece Chasing modundayken saldırsın
-        if (enemyAI.GetCurrentState() != AIState.Chasing)
+        // (State is now managed by EnemyAI's state pattern, check current state directly)
+        if (enemyAI.CurrentState != enemyAI.ChaseStateInstance) // Use the state instance
             return;
         
         if (target == null)
@@ -120,7 +121,7 @@ public class EnemyItemIntegration : MonoBehaviour
                 if (item.holdType == ItemHoldType.Primary && distanceToTarget <= attackRange)
                 {
                     // Hem EnemyAI görüş kontrolünü hem de kendi line of sight kontrolümüzü yap
-                    if (enemyAI.CanSeeTargetPublic() && HasLineOfSight(target.position))
+                    if (enemyAI.VisionSystem.CanSeeTarget() && HasLineOfSight(target.position))
                     {
                         itemHolder.PerformAttack(target.position);
                         lastAttackTime = Time.time;
