@@ -24,16 +24,5 @@ public enum DamageType
     Blunt      // Causes bounce/knockback (baseball bat, fan projectiles)
 }
 
-/// <summary>
-/// AI state machine states for enemy behavior
-/// </summary>
-public enum AIState
-{
-    Patrolling,          // Following patrol waypoints
-    Chasing,             // Actively pursuing target
-    WaitingAtWaypoint,   // Waiting at a waypoint with optional rotation
-    SearchingLastKnown,  // Moving to last known position of target
-    WaitingAfterTimeout, // Waiting after failing to reach waypoint
-    WaitingAfterStuck,   // Waiting after being stuck
-    Stunned              // Stunned by area effect (door slam, etc.)
-}
+// NOTE: AIState enum moved to Assets/Scripts/Enemy/AIState.cs
+// as it is enemy-specific and not a core shared enum

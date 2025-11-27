@@ -51,17 +51,17 @@ public class Projectile : MonoBehaviour
         }
         
         // Enemy'ye çarptığında hasar ver
-        if (other.CompareTag("Enemy") || other.GetComponent<EnemyAI>() != null)
+        if (other.CompareTag("Enemy") || other.GetComponent<EnemyHealth>() != null)
         {
-            EnemyAI enemy = other.GetComponent<EnemyAI>();
-            if (enemy != null)
+            EnemyHealth enemyHealth = other.GetComponent<EnemyHealth>();
+            if (enemyHealth != null)
             {
-                enemy.TakeDamage(damage);
+                enemyHealth.TakeDamage(damage);
             }
-            
+
             // Hit effect oluştur
             CreateHitEffect();
-            
+
             // Projectile'ı yok et
             Destroy(gameObject);
         }

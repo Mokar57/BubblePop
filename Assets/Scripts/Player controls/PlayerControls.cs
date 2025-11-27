@@ -132,9 +132,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable
         PickupableItem weaponPickup = currentWeapon.GetComponent<PickupableItem>();
         if (weaponPickup == null) return;
         
-        // Alan efektini tetikle (eğer item'da bu özellik varsa)
-        weaponPickup.TriggerAreaEffect(transform.position);
-        
         // Ses çalma kodu kaldırıldı - artık silah scriptlerinde çalacak
         
         if (weaponPickup.holdType == ItemHoldType.Primary)

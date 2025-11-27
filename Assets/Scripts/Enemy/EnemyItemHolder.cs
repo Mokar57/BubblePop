@@ -274,9 +274,6 @@ public class EnemyItemHolder : MonoBehaviour
         PickupableItem weaponPickup = currentWeapon.GetComponent<PickupableItem>();
         if (weaponPickup == null) return;
         
-        // Alan efektini tetikle (eğer item'da bu özellik varsa)
-        weaponPickup.TriggerAreaEffect(transform.position);
-        
         // Ses çalma kodu kaldırıldı - artık silah scriptlerinde çalacak
         
         // Target'a doğru yön hesapla

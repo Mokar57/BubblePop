@@ -3,36 +3,65 @@ using UnityEngine;
 /// <summary>
 /// EnemyAI için item kullanımını entegre eden örnek script
 /// Bu script EnemyAI ile EnemyItemHolder'ı birleştirir
+/// REFACTORED: Now uses EnemyDataSO for configuration
 /// </summary>
 [RequireComponent(typeof(EnemyAI))]
 [RequireComponent(typeof(EnemyItemHolder))]
+[RequireComponent(typeof(EnemyHealth))]
 public class EnemyItemIntegration : MonoBehaviour
 {
-    [Header("Combat Settings")]
-    [SerializeField] private float attackRange = 10f; // Ateş etme menzili
-    [SerializeField] private float attackCooldown = 1f; // Saldırılar arası bekleme süresi
-    [SerializeField] private bool useItemsInCombat = true; // Savaşta item kullan
-    
-    [Header("Melee Settings")]
-    [SerializeField] private float meleeRange = 2f; // Yakın dövüş menzili
-    
+    [Header("Enemy Data")]
+    [Tooltip("ScriptableObject containing enemy configuration")]
+    public EnemyDataSO enemyData;
+
+    [Header("Combat Settings (Override)")]
+    [Tooltip("Leave at 0 to use enemyData values")]
+    [SerializeField] private float attackRangeOverride = 0f;
+    [SerializeField] private float attackCooldownOverride = 0f;
+    [SerializeField] private float meleeRangeOverride = 0f;
+
     [Header("Line of Sight Settings")]
-    [SerializeField] private LayerMask obstacleMask = -1; // Engelleri belirleyen layer mask (duvarlar vs.)
-    
+    [SerializeField] private LayerMask obstacleMask = -1;
+
     private EnemyAI enemyAI;
     private EnemyItemHolder itemHolder;
+    private EnemyHealth health;
     private Transform target;
     private float lastAttackTime;
-    
+
+    // Runtime values from SO
+    private float attackRange;
+    private float attackCooldown;
+    private float meleeRange;
+    private bool useItemsInCombat;
+
     private void Start()
     {
         enemyAI = GetComponent<EnemyAI>();
         itemHolder = GetComponent<EnemyItemHolder>();
-        
-        // Enemy öldüğünde item'ları düşür
-        if (enemyAI != null)
+        health = GetComponent<EnemyHealth>();
+
+        // Initialize values from ScriptableObject or override
+        if (enemyData != null)
         {
-            enemyAI.OnEnemyDeath += OnEnemyDeath;
+            attackRange = attackRangeOverride > 0 ? attackRangeOverride : enemyData.weaponAttackRange;
+            attackCooldown = attackCooldownOverride > 0 ? attackCooldownOverride : enemyData.weaponAttackCooldown;
+            meleeRange = meleeRangeOverride > 0 ? meleeRangeOverride : enemyData.meleeAttackRange;
+            useItemsInCombat = enemyData.canUseWeapons;
+        }
+        else
+        {
+            attackRange = attackRangeOverride > 0 ? attackRangeOverride : 10f;
+            attackCooldown = attackCooldownOverride > 0 ? attackCooldownOverride : 1f;
+            meleeRange = meleeRangeOverride > 0 ? meleeRangeOverride : 2f;
+            useItemsInCombat = true;
+            Debug.LogWarning($"{gameObject.name}: No EnemyDataSO assigned! Using default combat settings.");
+        }
+
+        // Enemy öldüğünde item'ları düşür
+        if (health != null)
+        {
+            health.OnEnemyDeath += OnEnemyDeath;
         }
     }
     
@@ -64,9 +93,9 @@ public class EnemyItemIntegration : MonoBehaviour
         
         if (!useItemsInCombat || !itemHolder.HasWeapon())
             return;
-        
+
         // Enemy sadece Chasing modundayken saldırsın
-        if (enemyAI.GetCurrentState() != EnemyAI.AIState.Chasing)
+        if (enemyAI.GetCurrentState() != AIState.Chasing)
             return;
         
         if (target == null)

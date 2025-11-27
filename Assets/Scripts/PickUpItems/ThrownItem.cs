@@ -52,12 +52,12 @@ public class ThrownItem : MonoBehaviour
         // Enemy'e çarptığında hasar ver
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            EnemyAI enemy = collision.gameObject.GetComponent<EnemyAI>();
-            if (enemy != null)
+            EnemyHealth enemyHealth = collision.gameObject.GetComponent<EnemyHealth>();
+            if (enemyHealth != null)
             {
-                enemy.TakeDamage(damageAmount);
+                enemyHealth.TakeDamage(damageAmount);
             }
-            
+
             hitValidTarget = true;
             BounceAndSlowDown(collision);
         }

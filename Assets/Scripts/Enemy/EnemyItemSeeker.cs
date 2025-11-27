@@ -4,28 +4,46 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Enemy'nin yakındaki item'ları bulmasını ve almasını sağlar
+/// REFACTORED: Now uses EnemyDataSO for configuration
 /// </summary>
 [RequireComponent(typeof(EnemyItemHolder))]
 public class EnemyItemSeeker : MonoBehaviour
 {
-    [Header("Item Seeking Settings")]
-    [SerializeField] private bool autoSeekItems = true;
-    [SerializeField] private float seekRadius = 10f; // Item arama yarıçapı
-    [SerializeField] private float pickupRadius = 1.5f; // Item'ı almak için gereken yakınlık
-    [SerializeField] private float seekInterval = 2f; // Kaç saniyede bir item arar
-    [SerializeField] private LayerMask itemLayerMask = -1; // Hangi layer'daki item'ları arayacak
-    
-    [Header("Preferences")]
-    [SerializeField] private bool preferPrimaryItems = true; // Primary item'ları tercih eder
-    [SerializeField] private bool onlySeekWhenUnarmed = true; // Sadece silahsızken item arar
-    
+    [Header("Enemy Data")]
+    [Tooltip("ScriptableObject containing enemy configuration")]
+    public EnemyDataSO enemyData;
+
+    [Header("Item Seeking Settings (Override)")]
+    [Tooltip("Leave at 0 to use enemyData values")]
+    [SerializeField] private float seekRadiusOverride = 0f;
+    [SerializeField] private float pickupRadiusOverride = 0f;
+    [SerializeField] private float seekIntervalOverride = 0f;
+
+    [Header("Detection")]
+    [SerializeField] private LayerMask itemLayerMask = -1;
+
     [Header("Navigation")]
-    [SerializeField] private bool pauseAIDuringSeek = false; // Item ararken AI'ı duraklat
-    
+    [SerializeField] private bool pauseAIDuringSeek = false;
+
+    [Header("Priority Settings")]
+    [Tooltip("Pause AI patrol until initial weapon is found")]
+    [SerializeField] private bool pausePatrolUntilArmed = true;
+
     private EnemyItemHolder itemHolder;
     private EnemyAI enemyAI;
     private NavMeshAgent agent;
     private float lastSeekTime;
+
+    // Runtime values from SO
+    private bool autoSeekItems;
+    private float seekRadius;
+    private float pickupRadius;
+    private float seekInterval;
+    private bool preferPrimaryItems;
+    private bool onlySeekWhenUnarmed;
+
+    // Initial weapon search state
+    private bool hasCompletedInitialSearch = false;
     
     // Item takip durumu
     private PickupableItem targetItem;
@@ -38,6 +56,72 @@ public class EnemyItemSeeker : MonoBehaviour
         enemyAI = GetComponent<EnemyAI>();
         agent = GetComponent<NavMeshAgent>();
         lastSeekTime = Time.time;
+
+        // Initialize values from ScriptableObject or override
+        if (enemyData != null)
+        {
+            autoSeekItems = enemyData.canSeekItems;
+            seekRadius = seekRadiusOverride > 0 ? seekRadiusOverride : enemyData.itemSeekRadius;
+            pickupRadius = pickupRadiusOverride > 0 ? pickupRadiusOverride : enemyData.itemPickupRadius;
+            seekInterval = seekIntervalOverride > 0 ? seekIntervalOverride : 2f; // Faster initial check
+            preferPrimaryItems = enemyData.preferPrimaryWeapons;
+            onlySeekWhenUnarmed = enemyData.onlySeekWhenUnarmed;
+        }
+        else
+        {
+            autoSeekItems = true;
+            seekRadius = seekRadiusOverride > 0 ? seekRadiusOverride : 10f;
+            pickupRadius = pickupRadiusOverride > 0 ? pickupRadiusOverride : 1.5f;
+            seekInterval = seekIntervalOverride > 0 ? seekIntervalOverride : 2f;
+            preferPrimaryItems = true;
+            onlySeekWhenUnarmed = true;
+            Debug.LogWarning($"{gameObject.name}: No EnemyDataSO assigned! Using default item seeking settings.");
+        }
+
+        // Immediate weapon search on spawn (prioritize arming before patrol)
+        if (autoSeekItems && !itemHolder.HasWeapon())
+        {
+            // Pause AI patrol until weapon is found
+            if (pausePatrolUntilArmed && enemyAI != null)
+            {
+                enemyAI.enabled = false; // Disable AI temporarily
+            }
+
+            Invoke(nameof(InitialWeaponSearch), 0.5f); // Small delay for NavMesh initialization
+        }
+        else
+        {
+            hasCompletedInitialSearch = true;
+        }
+    }
+
+    /// <summary>
+    /// Initial weapon search on spawn - runs once before patrol starts
+    /// </summary>
+    private void InitialWeaponSearch()
+    {
+        if (!itemHolder.HasWeapon())
+        {
+            TryFindAndSeekItem();
+        }
+        else
+        {
+            CompleteInitialSearch();
+        }
+    }
+
+    /// <summary>
+    /// Called when initial weapon search is complete
+    /// </summary>
+    private void CompleteInitialSearch()
+    {
+        hasCompletedInitialSearch = true;
+
+        // Re-enable AI if it was paused
+        if (pausePatrolUntilArmed && enemyAI != null && !enemyAI.enabled)
+        {
+            enemyAI.enabled = true;
+        }
     }
     
     private void Update()
@@ -117,11 +201,17 @@ public class EnemyItemSeeker : MonoBehaviour
     {
         isSeekingItem = false;
         targetItem = null;
-        
+
         // AI'ı yeniden etkinleştir (eğer durdurulmuşsa)
         if (pauseAIDuringSeek && enemyAI != null)
         {
             enemyAI.enabled = true;
+        }
+
+        // Complete initial search if this was the first weapon pickup
+        if (!hasCompletedInitialSearch && itemHolder.HasWeapon())
+        {
+            CompleteInitialSearch();
         }
     }
     

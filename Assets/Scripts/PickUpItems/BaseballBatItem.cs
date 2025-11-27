@@ -78,13 +78,13 @@ public class BaseballBatItem : MonoBehaviour
                 continue;
             
             // Enemy mi kontrol et
-            EnemyAI enemy = hitCollider.GetComponent<EnemyAI>();
-            if (enemy != null)
+            EnemyHealth enemyHealth = hitCollider.GetComponent<EnemyHealth>();
+            if (enemyHealth != null)
             {
                 // Açı kontrolü yap (isteğe bağlı)
                 if (IsInAttackAngle(centerPosition, direction, hitCollider.transform.position))
                 {
-                    enemy.TakeDamage(attackDamage);
+                    enemyHealth.TakeDamage(attackDamage);
                     enemiesHit++;
                 }
             }

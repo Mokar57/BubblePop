@@ -4,7 +4,7 @@ using UnityEngine;
 /// Base ScriptableObject for all weapon data
 /// Contains common properties shared by all weapons
 /// </summary>
-[CreateAssetMenu(fileName = "NewWeapon", menuFolder = "PopTheBubble/Weapons/Base Weapon")]
+[CreateAssetMenu(fileName = "NewWeapon", menuName = "PopTheBubble/Weapons/Base Weapon")]
 public class WeaponDataSO : ScriptableObject
 {
     [Header("Basic Info")]

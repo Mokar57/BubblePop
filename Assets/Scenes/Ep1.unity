@@ -33018,6 +33018,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1073536437750496324, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: patrolWaypoints.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1073536437750496324, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'patrolWaypoints.Array.data[0]'
+      value: 
+      objectReference: {fileID: 1017485040}
+    - target: {fileID: 1073536437750496324, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'patrolWaypoints.Array.data[1]'
+      value: 
+      objectReference: {fileID: 49877263}
+    - target: {fileID: 1073536437750496324, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'patrolWaypoints.Array.data[2]'
+      value: 
+      objectReference: {fileID: 1007510621}
+    - target: {fileID: 1073536437750496324, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'patrolWaypoints.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1510699809}
+    - target: {fileID: 1073536437750496324, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+      propertyPath: 'patrolWaypoints.Array.data[4]'
+      value: 
+      objectReference: {fileID: 1918115164}
     - target: {fileID: 6351230964340868058, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: m_LocalPosition.x
       value: 13.52
@@ -33263,7 +33287,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 7180173134511464316, guid: 53cb7e915e7907b4b9be8bc4ec61e591, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53cb7e915e7907b4b9be8bc4ec61e591, type: 3}

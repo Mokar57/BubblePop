@@ -60,6 +60,9 @@ public class PistolItem : MonoBehaviour
         
         lastFireTime = Time.time;
         
+        // Emit sound for enemy detection
+        GameEvents.TriggerSoundEmitted(playerPosition, 15f); // 15 units sound radius
+        
         // Cooldown geçti, şimdi sesi çal
         if (pickupable != null)
         {

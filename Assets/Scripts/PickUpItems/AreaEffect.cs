@@ -5,6 +5,7 @@ using System.Collections.Generic;
 /// <summary>
 /// Yuvarlak alan içindeki enemy'leri etkiler
 /// Enemy'leri merkeze çeker, 3 saniye orada rastgele yönlere baktırır
+/// REFACTORED: Now uses new enemy component system
 /// </summary>
 public class AreaEffect : MonoBehaviour
 {
@@ -12,32 +13,32 @@ public class AreaEffect : MonoBehaviour
     public float radius = 3f;
     public float duration = 2f;
     public float stunDuration = 8f; // Enemy'lerin merkezde kaç saniye kalacağı
-    
+
     [Header("Effect Settings")]
     public float pullForce = 5f; // Enemy'leri merkeze çekme kuvveti
     public float rotationInterval = 1f; // Kaç saniyede bir rastgele yön değişecek (saniyede 1 kere)
-    
+
     private Vector3 centerPosition;
-    private List<EnemyAI> affectedEnemies = new List<EnemyAI>();
-    private HashSet<EnemyAI> processedEnemies = new HashSet<EnemyAI>(); // Zaten işlenmiş enemy'ler
-    
+    private List<EnemyStunController> affectedEnemies = new List<EnemyStunController>();
+    private HashSet<EnemyStunController> processedEnemies = new HashSet<EnemyStunController>(); // Zaten işlenmiş enemy'ler
+
     private void Start()
     {
         centerPosition = transform.position;
-        
+
         // Alan içindeki tüm enemy'leri bul ve etkile
         DetectAndAffectEnemies();
-        
+
         // Belirtilen süre sonra alanı yok et
         Destroy(gameObject, duration);
     }
-    
+
     private void Update()
     {
         // Sürekli yeni enemy'leri tespit et (alana sonradan girebilirler)
         DetectAndAffectEnemies();
     }
-    
+
     /// <summary>
     /// Alan içindeki enemy'leri tespit eder ve etkiler
     /// </summary>
@@ -45,66 +46,73 @@ public class AreaEffect : MonoBehaviour
     {
         // Alan içindeki tüm collider'ları bul
         Collider2D[] colliders = Physics2D.OverlapCircleAll(centerPosition, radius);
-        
+
         foreach (Collider2D col in colliders)
         {
             // Enemy tag'i veya isimde "Enemy" geçen objeleri kontrol et
             if (col.CompareTag("Enemy") || col.gameObject.name.Contains("Enemy"))
             {
-                EnemyAI enemy = col.GetComponent<EnemyAI>();
-                
+                // Get component references
+                EnemyAI enemyAI = col.GetComponent<EnemyAI>();
+                EnemyHealth health = col.GetComponent<EnemyHealth>();
+                EnemyStunController stunController = col.GetComponent<EnemyStunController>();
+
                 // Enemy'yi daha önce işlemediysen ve henüz ölmemişse
-                if (enemy != null && !processedEnemies.Contains(enemy) && !enemy.IsDead)
+                if (stunController != null && !processedEnemies.Contains(stunController) &&
+                    health != null && !health.IsDead)
                 {
                     // Enemy chase modundaysa alana tepki verme
-                    EnemyAI.AIState currentState = enemy.GetCurrentState();
-                    if (currentState == EnemyAI.AIState.Chasing)
+                    if (enemyAI != null)
                     {
-                        continue; // Bu enemy'yi atla
+                        AIState currentState = enemyAI.GetCurrentState();
+                        if (currentState == AIState.Chasing)
+                        {
+                            continue; // Bu enemy'yi atla
+                        }
                     }
-                    
-                    processedEnemies.Add(enemy);
-                    affectedEnemies.Add(enemy);
-                    
+
+                    processedEnemies.Add(stunController);
+                    affectedEnemies.Add(stunController);
+
                     // Enemy'yi stun et
-                    StartCoroutine(StunEnemy(enemy));
+                    StartCoroutine(StunEnemy(stunController, health, enemyAI));
                 }
             }
         }
     }
-    
+
     /// <summary>
     /// Enemy'yi stun eder - merkeze çeker ve rastgele yönlere baktırır
     /// </summary>
-    private IEnumerator StunEnemy(EnemyAI enemy)
+    private IEnumerator StunEnemy(EnemyStunController stunController, EnemyHealth health, EnemyAI enemyAI)
     {
-        if (enemy == null) yield break;
-        
+        if (stunController == null || health == null) yield break;
+
         // Enemy'yi stun state'ine al
-        enemy.EnterStunnedState(centerPosition, stunDuration);
-        
+        stunController.EnterStun(centerPosition, stunDuration);
+
         // Enemy'nin merkeze ulaşmasını bekle
         float maxWaitTime = 10f; // Maksimum bekleme süresi (enemy çok uzaktaysa)
         float waitTimer = 0f;
-        
-        while (waitTimer < maxWaitTime && enemy != null && !enemy.IsDead)
+
+        while (waitTimer < maxWaitTime && stunController != null && health != null && !health.IsDead)
         {
-            float distanceToCenter = Vector3.Distance(enemy.transform.position, centerPosition);
-            
+            float distanceToCenter = Vector3.Distance(stunController.transform.position, centerPosition);
+
             // Merkeze ulaştı mı kontrol et (0.5 birim içinde)
-            if (distanceToCenter <= 0.5f)
+            if (distanceToCenter <= 0.5f || stunController.HasReachedStunCenter())
             {
                 break; // Merkeze ulaştı, döngüden çık
             }
-            
+
             waitTimer += Time.deltaTime;
             yield return null; // Bir frame bekle
         }
-        
+
         // Merkeze ulaştıktan sonra rastgele yön değiştirme başlat
         float elapsedTime = 0f;
-        
-        while (elapsedTime < stunDuration && enemy != null && !enemy.IsDead)
+
+        while (elapsedTime < stunDuration && stunController != null && health != null && !health.IsDead)
         {
             // Rastgele bir yön oluştur
             float randomAngle = Random.Range(0f, 360f);
@@ -113,22 +121,25 @@ public class AreaEffect : MonoBehaviour
                 Mathf.Sin(randomAngle * Mathf.Deg2Rad),
                 0f
             );
-            
-            // Enemy'yi bu yöne baktır
-            enemy.SetVisionDirection(randomDirection);
-            
+
+            // Enemy'yi bu yöne baktır (through AI if available)
+            if (enemyAI != null)
+            {
+                enemyAI.SetVisionDirection(randomDirection);
+            }
+
             // Bir sonraki rotasyon için bekle
             yield return new WaitForSeconds(rotationInterval);
             elapsedTime += rotationInterval;
         }
-        
+
         // Stun süresi bitti, enemy'yi serbest bırak
-        if (enemy != null && !enemy.IsDead)
+        if (stunController != null && health != null && !health.IsDead)
         {
-            enemy.ExitStunnedState();
+            stunController.ExitStun();
         }
     }
-    
+
     private void OnDrawGizmos()
     {
         // Scene view'da alanı görselleştir
