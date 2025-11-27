@@ -7,15 +7,15 @@ using UnityEngine;
 public class EnemyProximityDetector : MonoBehaviour
 {
     [Header("Proximity Detection")]
-    [Tooltip("Enable proximity detection (detect player when close even without vision)")]
-    public bool enableProximityDetection = true;
+    [Tooltip("Enable proximity detection (detect player when close even without vision) - Overrides SO if false")]
+    public bool enableProximityDetectionOverride = true;
 
-    [Tooltip("Time player must stay in proximity before triggering chase")]
-    public float proximityTriggerTime = 1f;
+    [Tooltip("Time player must stay in proximity before triggering chase - Overrides SO if > 0")]
+    public float proximityTriggerTimeOverride = 0f;
 
     [Header("Contact Detection")]
-    [Tooltip("Enable contact detection (trigger chase on collision with player)")]
-    public bool enableContactDetection = true;
+    [Tooltip("Enable contact detection (trigger chase on collision with player) - Overrides SO if false")]
+    public bool enableContactDetectionOverride = true;
 
     // Public event
     public event System.Action<Transform> OnPlayerDetected;
@@ -28,11 +28,29 @@ public class EnemyProximityDetector : MonoBehaviour
     private float proximityTimer = 0f;
     private bool playerInProximity = false;
     private bool hasDetected = false;
+    
+    // Runtime settings
+    private bool enableProximity;
+    private float proximityTime;
+    private bool enableContact;
 
     public void Initialize(EnemyDataSO data, Transform targetTransform)
     {
         this.enemyData = data;
         this.target = targetTransform;
+        
+        if (enemyData != null)
+        {
+            enableProximity = enemyData.enableProximityDetection && enableProximityDetectionOverride;
+            proximityTime = proximityTriggerTimeOverride > 0 ? proximityTriggerTimeOverride : enemyData.proximityTriggerTime;
+            enableContact = enemyData.enableContactDetection && enableContactDetectionOverride;
+        }
+        else
+        {
+            enableProximity = enableProximityDetectionOverride;
+            proximityTime = proximityTriggerTimeOverride > 0 ? proximityTriggerTimeOverride : 1f;
+            enableContact = enableContactDetectionOverride;
+        }
     }
     
     public void SetTarget(Transform newTarget)
@@ -43,7 +61,7 @@ public class EnemyProximityDetector : MonoBehaviour
 
     private void Update()
     {
-        if (enableProximityDetection && !hasDetected)
+        if (enableProximity && !hasDetected)
         {
             CheckProximityDetection();
         }
@@ -70,7 +88,7 @@ public class EnemyProximityDetector : MonoBehaviour
 
             proximityTimer += Time.deltaTime;
 
-            if (proximityTimer >= proximityTriggerTime)
+            if (proximityTimer >= proximityTime)
             {
                 hasDetected = true;
                 OnPlayerDetected?.Invoke(target);
@@ -85,7 +103,7 @@ public class EnemyProximityDetector : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (!enableContactDetection || hasDetected) return;
+        if (!enableContact || hasDetected) return;
         if (IsPlayerCollider(other))
         {
             hasDetected = true;
@@ -95,7 +113,7 @@ public class EnemyProximityDetector : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!enableContactDetection || hasDetected) return;
+        if (!enableContact || hasDetected) return;
         if (IsPlayerCollider(collision.collider))
         {
             hasDetected = true;

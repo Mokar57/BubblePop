@@ -40,4 +40,20 @@ public abstract class AIStateBase
     /// Called when the state is exited.
     /// </summary>
     public abstract void ExitState();
+
+    /// <summary>
+    /// Helper method: Rotates the enemy's vision towards their movement direction.
+    /// Call this in UpdateState() if you want standard movement-based vision.
+    /// </summary>
+    protected void LookWhereMoving()
+    {
+        if (movementController.IsMoving())
+        {
+            Vector3 moveDirection = movementController.GetMovementDirection();
+            if (moveDirection.magnitude > 0.1f && enemyAI.enemyData != null)
+            {
+                visionSystem.RotateVisionTowards(moveDirection, enemyAI.enemyData.rotationSpeed);
+            }
+        }
+    }
 }

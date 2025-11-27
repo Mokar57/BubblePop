@@ -38,6 +38,9 @@ public class EnemyDataSO : ScriptableObject
     [Tooltip("Rotation speed for vision direction (degrees per second)")]
     public float rotationSpeed = 90f;
 
+    [Tooltip("What blocks vision (walls, obstacles)")]
+    public LayerMask visionObstacleMask;
+
     [Header("Proximity Detection")]
     [Tooltip("Range to detect player without vision (close proximity)")]
     public float proximityRadius = 5f;
@@ -47,6 +50,9 @@ public class EnemyDataSO : ScriptableObject
 
     [Tooltip("Enable proximity detection")]
     public bool enableProximityDetection = true;
+
+    [Tooltip("Enable contact detection (trigger chase on collision with player)")]
+    public bool enableContactDetection = true;
 
     [Header("Sound Detection")]
     [Tooltip("How far enemy can hear sounds (gunshots, etc.)")]
@@ -103,4 +109,14 @@ public class EnemyDataSO : ScriptableObject
 
     [Tooltip("Only seek items when unarmed?")]
     public bool onlySeekWhenUnarmed = true;
+
+    [Tooltip("Layer mask for detecting items")]
+    public LayerMask itemLayerMask;
+
+    [Header("Behavior Settings")]
+    [Tooltip("Auto-find player on start")]
+    public bool autoFindPlayer = true;
+
+    [Tooltip("Once spotted, chase forever until too far")]
+    public bool persistentChase = true;
 }

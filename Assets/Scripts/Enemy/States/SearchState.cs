@@ -39,6 +39,9 @@ public class SearchState : AIStateBase
             enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
             return;
         }
+        
+        // Standard vision behavior
+        LookWhereMoving();
     }
 
     public override void ExitState()

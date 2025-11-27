@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class StunnedState : AIStateBase
 {
+    private float stunEndTime;
+    private bool hasReachedStunCenter;
+    private float currentRotationSpeed;
+    private Vector3 stunCenter;
+
+    public bool HasReachedCenter => hasReachedStunCenter;
+
     public StunnedState(EnemyAI context) : base(context) { }
 
     public override void EnterState()
@@ -9,39 +16,77 @@ public class StunnedState : AIStateBase
         if (enemyAI.DebugMode)
             Debug.Log("Entering Stunned State");
         
-        // This state assumes stunController.EnterStun() has already been called
-        // by EnemyAI, so the stun is active and the timer is running.
+        // Initialize stun parameters from controller
+        stunCenter = stunController.StunCenter;
+        stunEndTime = Time.time + stunController.StunDuration;
+        hasReachedStunCenter = false;
+        currentRotationSpeed = stunController.GetRandomRotationSpeed();
+
+        // Start moving to center
+        movementController.SetEnabled(true);
+        movementController.ChaseTarget(stunCenter);
     }
 
     public override void UpdateState()
     {
-        // Check if player is visible while stunned (early exit if armed)
+        // 1. Check for early exit (Player visible + Armed)
         if (visionSystem.CanSeeTarget() && weaponController.HasWeapon())
         {
-            stunController.ForceExitStun(); // Force exit stun in controller
             enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
             return;
         }
 
-        // Check if stun duration ended (this check is within the stunController's Update)
-        if (!stunController.IsStunned())
+        // 2. Handle Movement / Rotation
+        if (!hasReachedStunCenter)
         {
-            // After stun, check if player is visible
-            if (visionSystem.CanSeeTarget())
+            float distanceToCenter = Vector3.Distance(enemyAI.transform.position, stunCenter);
+            if (distanceToCenter <= stunController.reachCenterDistance)
             {
-                if (weaponController.HasWeapon())
-                {
-                    enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
-                }
-                else
-                {
-                    enemyAI.TransitionToState(enemyAI.SeekItemStateInstance);
-                }
+                hasReachedStunCenter = true;
+                movementController.StopMovement();
             }
             else
             {
-                enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
+                // Look where we are going
+                Vector3 moveDir = movementController.GetMovementDirection();
+                if (moveDir.magnitude > 0.1f)
+                {
+                    visionSystem.SetVisionDirection(moveDir);
+                }
             }
+        }
+        else
+        {
+            // Spin around confusedly
+            Vector3 currentVision = visionSystem.GetVisionDirection();
+            Quaternion rotation = Quaternion.Euler(0, 0, currentRotationSpeed * Time.deltaTime);
+            Vector3 newVision = rotation * currentVision;
+            visionSystem.SetVisionDirection(newVision);
+        }
+
+        // 3. Check Timer
+        if (Time.time >= stunEndTime)
+        {
+            TransitionAfterStun();
+        }
+    }
+
+    private void TransitionAfterStun()
+    {
+        if (visionSystem.CanSeeTarget())
+        {
+            if (weaponController.HasWeapon())
+            {
+                enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
+            }
+            else
+            {
+                enemyAI.TransitionToState(enemyAI.SeekItemStateInstance);
+            }
+        }
+        else
+        {
+            enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
         }
     }
 
@@ -50,6 +95,7 @@ public class StunnedState : AIStateBase
         if (enemyAI.DebugMode)
             Debug.Log("Exiting Stunned State");
         
-        // StunController will have handled its own ExitStun() via its Update.
+        stunController.ResetStunTrigger();
+        movementController.StopMovement();
     }
 }

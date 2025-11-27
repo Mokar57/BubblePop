@@ -19,7 +19,8 @@ public class EnemyItemSeeker : MonoBehaviour
     [SerializeField] private float pickupRadiusOverride = 0f;
 
     [Header("Detection")]
-    [SerializeField] private LayerMask itemLayerMask = -1;
+    [Tooltip("Layer mask for detecting items - Overrides SO if set")]
+    [SerializeField] private LayerMask itemLayerMaskOverride;
 
     private EnemyWeaponController weaponController;
     
@@ -27,6 +28,7 @@ public class EnemyItemSeeker : MonoBehaviour
     private float seekRadius;
     private float pickupRadius;
     private bool preferPrimaryItems;
+    private LayerMask itemMask;
 
     private void Awake()
     {
@@ -41,12 +43,14 @@ public class EnemyItemSeeker : MonoBehaviour
             seekRadius = seekRadiusOverride > 0 ? seekRadiusOverride : enemyData.itemSeekRadius;
             pickupRadius = pickupRadiusOverride > 0 ? pickupRadiusOverride : enemyData.itemPickupRadius;
             preferPrimaryItems = enemyData.preferPrimaryWeapons;
+            itemMask = itemLayerMaskOverride.value != 0 ? itemLayerMaskOverride : enemyData.itemLayerMask;
         }
         else
         {
             seekRadius = seekRadiusOverride > 0 ? seekRadiusOverride : 10f;
             pickupRadius = pickupRadiusOverride > 0 ? pickupRadiusOverride : 1.5f;
             preferPrimaryItems = true;
+            itemMask = itemLayerMaskOverride;
         }
     }
 
@@ -55,7 +59,7 @@ public class EnemyItemSeeker : MonoBehaviour
     /// </summary>
     public PickupableItem FindBestItem()
     {
-        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, itemLayerMask);
+        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, itemMask);
         
         PickupableItem bestItem = null;
         float closestDistance = float.MaxValue;

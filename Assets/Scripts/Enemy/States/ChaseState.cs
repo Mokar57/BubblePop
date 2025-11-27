@@ -64,6 +64,24 @@ public class ChaseState : AIStateBase
 
         // Transition Logic
         CheckTransitions();
+        
+        // Vision Logic
+        UpdateChaseVision();
+    }
+
+    private void UpdateChaseVision()
+    {
+        // If we have a target and can see it, look at it
+        if (enemyAI.Target != null && visionSystem.CanSeeTarget())
+        {
+            Vector3 dirToTarget = (enemyAI.Target.position - enemyAI.transform.position).normalized;
+            visionSystem.RotateVisionTowards(dirToTarget, enemyAI.enemyData.rotationSpeed);
+        }
+        else
+        {
+            // Otherwise look where we are going
+            LookWhereMoving();
+        }
     }
 
     private void HandleAttack()

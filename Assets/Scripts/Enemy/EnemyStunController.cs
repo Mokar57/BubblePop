@@ -1,8 +1,8 @@
 using UnityEngine;
 
 /// <summary>
-/// Handles enemy stun state when affected by area effects (door slams, etc.)
-/// Pulls enemy to stun area center and applies random rotation
+/// Handles enemy stun triggers.
+/// Logic is now driven by StunnedState.
 /// </summary>
 public class EnemyStunController : MonoBehaviour
 {
@@ -13,144 +13,68 @@ public class EnemyStunController : MonoBehaviour
     [Tooltip("Distance threshold to consider reached stun center")]
     public float reachCenterDistance = 0.5f;
 
-    // Stun state
-    private bool isStunned = false;
-    private Vector3 stunCenter;
-    private float stunEndTime;
-    private bool hasReachedStunCenter = false;
-    private float currentRotationSpeed;
+    // Stun parameters to be passed to state
+    public Vector3 StunCenter { get; private set; }
+    public float StunDuration { get; private set; }
+    public bool IsStunTriggered { get; private set; }
 
-    // Cached components
-    private EnemyMovementController movementController;
-    private EnemyVisionSystem visionSystem;
-
-    // State before stun
-    public System.Action OnStunEnded;
+    private EnemyAI enemyAI;
 
     private void Awake()
     {
-        movementController = GetComponent<EnemyMovementController>();
-        visionSystem = GetComponent<EnemyVisionSystem>();
+        enemyAI = GetComponent<EnemyAI>();
     }
 
     /// <summary>
-    /// Enter stunned state
+    /// Trigger stun effect
     /// </summary>
     public void EnterStun(Vector3 centerPosition, float duration)
     {
-        if (isStunned) return;
-
-        isStunned = true;
-        stunCenter = centerPosition;
-        stunEndTime = Time.time + duration;
-        hasReachedStunCenter = false;
-
-        // Pick random rotation speed
-        currentRotationSpeed = Random.Range(rotationSpeedRange.x, rotationSpeedRange.y);
-        currentRotationSpeed *= Random.value > 0.5f ? 1f : -1f; // Random direction
-
-        // Move to stun center
-        if (movementController != null)
+        StunCenter = centerPosition;
+        StunDuration = duration;
+        IsStunTriggered = true;
+        
+        // Force transition to StunnedState
+        if (enemyAI != null)
         {
-            movementController.ChaseTarget(stunCenter);
-        }
-    }
-
-    private void Update()
-    {
-        if (!isStunned) return;
-
-        // Check if reached center
-        if (!hasReachedStunCenter)
-        {
-            float distanceToCenter = Vector3.Distance(transform.position, stunCenter);
-
-            if (distanceToCenter <= reachCenterDistance)
-            {
-                hasReachedStunCenter = true;
-
-                // Stop movement
-                if (movementController != null)
-                {
-                    movementController.StopMovement();
-                }
-            }
-            else
-            {
-                // Still moving to center, update vision direction to movement direction
-                if (movementController != null && visionSystem != null)
-                {
-                    Vector3 moveDir = movementController.GetMovementDirection();
-                    if (moveDir.magnitude > 0.1f)
-                    {
-                        visionSystem.SetVisionDirection(moveDir);
-                    }
-                }
-            }
-        }
-        else
-        {
-            // At center, apply random rotation to vision
-            if (visionSystem != null)
-            {
-                Vector3 currentVision = visionSystem.GetVisionDirection();
-                Quaternion rotation = Quaternion.Euler(0, 0, currentRotationSpeed * Time.deltaTime);
-                Vector3 newVision = rotation * currentVision;
-                visionSystem.SetVisionDirection(newVision);
-            }
-        }
-
-        // Check if stun duration ended
-        if (Time.time >= stunEndTime)
-        {
-            ExitStun();
+            enemyAI.TransitionToState(enemyAI.StunnedStateInstance);
         }
     }
 
     /// <summary>
-    /// Exit stunned state
+    /// Called by StunnedState when stun is finished or interrupted
     /// </summary>
-    public void ExitStun()
+    public void ResetStunTrigger()
     {
-        if (!isStunned) return;
-
-        isStunned = false;
-        hasReachedStunCenter = false;
-
-        // Notify listeners that stun ended
-        OnStunEnded?.Invoke();
+        IsStunTriggered = false;
+    }
+    
+    // Helper methods for StunnedState to access settings
+    public float GetRandomRotationSpeed()
+    {
+        float speed = Random.Range(rotationSpeedRange.x, rotationSpeedRange.y);
+        return speed * (Random.value > 0.5f ? 1f : -1f);
     }
 
-    /// <summary>
-    /// Force exit stun immediately
-    /// </summary>
-    public void ForceExitStun()
-    {
-        ExitStun();
-    }
-
-    /// <summary>
-    /// Check if currently stunned
-    /// </summary>
+    // Compatibility methods for other scripts
     public bool IsStunned()
     {
-        return isStunned;
+        return enemyAI.CurrentState == enemyAI.StunnedStateInstance;
     }
 
-    /// <summary>
-    /// Get remaining stun time
-    /// </summary>
-    public float GetRemainingStunTime()
-    {
-        if (!isStunned) return 0f;
-        return Mathf.Max(0f, stunEndTime - Time.time);
-    }
-
-    /// <summary>
-    /// Check if reached stun center
-    /// </summary>
     public bool HasReachedStunCenter()
     {
-        return hasReachedStunCenter;
+        return enemyAI.StunnedStateInstance != null && enemyAI.StunnedStateInstance.HasReachedCenter;
+    }
+
+    public void ExitStun()
+    {
+        if (IsStunned())
+        {
+            // Force transition to Patrol (or let AI decide based on context in next frame)
+            // But since this is a forced exit, we should probably transition directly.
+            enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
+        }
+        ResetStunTrigger();
     }
 }

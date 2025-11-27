@@ -52,6 +52,9 @@ public class SeekItemState : AIStateBase
 
         // 3. Move towards item
         movementController.MoveTo(targetItem.transform.position);
+        
+        // Standard vision behavior
+        LookWhereMoving();
 
         // 4. Check distance and pickup
         float distanceToItem = Vector2.Distance(enemyAI.transform.position, targetItem.transform.position);

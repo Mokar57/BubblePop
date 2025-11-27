@@ -16,8 +16,8 @@ public class EnemyVisionSystem : MonoBehaviour
     public float visionAngleOverride = 0f;
 
     [Header("Detection")]
-    [Tooltip("What blocks vision (walls, obstacles)")]
-    public LayerMask obstacleLayerMask = -1;
+    [Tooltip("What blocks vision (walls, obstacles) - Overrides SO if set to anything other than Nothing/Everything")]
+    public LayerMask obstacleLayerMaskOverride;
 
     [Header("Debug")]
     [Tooltip("Draw vision cone in editor")]
@@ -26,6 +26,7 @@ public class EnemyVisionSystem : MonoBehaviour
     // Vision parameters
     private float visionRange;
     private float visionAngle;
+    private LayerMask obstacleMask;
 
     // Current vision direction (separate from transform.up)
     private Vector3 currentVisionDirection;
@@ -40,11 +41,15 @@ public class EnemyVisionSystem : MonoBehaviour
         {
             visionRange = visionRangeOverride > 0 ? visionRangeOverride : enemyData.visionRange;
             visionAngle = visionAngleOverride > 0 ? visionAngleOverride : enemyData.visionAngle;
+            
+            // Use override if it has any bits set, otherwise use SO
+            obstacleMask = obstacleLayerMaskOverride.value != 0 ? obstacleLayerMaskOverride : enemyData.visionObstacleMask;
         }
         else
         {
             visionRange = visionRangeOverride > 0 ? visionRangeOverride : 8f;
             visionAngle = visionAngleOverride > 0 ? visionAngleOverride : 60f;
+            obstacleMask = obstacleLayerMaskOverride;
             Debug.LogWarning($"{gameObject.name}: No EnemyDataSO assigned! Using default vision settings.");
         }
 
@@ -83,7 +88,8 @@ public class EnemyVisionSystem : MonoBehaviour
         int targetLayer = target.gameObject.layer;
 
         // Create a temporary layermask that excludes enemy and target layers
-        int tempMask = obstacleLayerMask & ~(1 << enemyLayer) & ~(1 << targetLayer);
+        // Use the configured obstacleMask instead of the old public field
+        int tempMask = obstacleMask & ~(1 << enemyLayer) & ~(1 << targetLayer);
 
         RaycastHit2D hit = Physics2D.Raycast(transform.position, directionToTarget, distanceToTarget, tempMask);
 

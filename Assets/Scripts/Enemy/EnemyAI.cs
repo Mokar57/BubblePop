@@ -23,13 +23,14 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public EnemyDataSO enemyData;
 
     [Header("Target Settings")]
-    [Tooltip("Auto-find player on start")]
-    public bool autoFindPlayer = true;
+    [Tooltip("Auto-find player on start (Overrides SO if true)")]
+    public bool autoFindPlayerOverride = false;
 
     [Header("Chase Settings")]
-    [Tooltip("Once spotted, chase forever until too far")]
-    public bool persistentChase = true;
-    public bool PersistentChase => persistentChase;
+    [Tooltip("Once spotted, chase forever until too far (Overrides SO if true)")]
+    public bool persistentChaseOverride = false;
+    
+    public bool PersistentChase => persistentChaseOverride || (enemyData != null && enemyData.persistentChase);
 
     [Header("Debug")]
     [Tooltip("Show state changes in console")]
@@ -97,13 +98,13 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private void Start()
     {
         // Subscribe to events
-        StunController.OnStunEnded += HandleStunEnded;
         Health.OnEnemyDeath += HandleDeath;
         ProximityDetector.OnPlayerDetected += HandleProximityDetection;
         SoundInvestigator.OnSoundDetected += HandleSoundDetected; // New event for sound
 
         // Find target
-        if (autoFindPlayer)
+        bool shouldAutoFind = autoFindPlayerOverride || (enemyData != null && enemyData.autoFindPlayer);
+        if (shouldAutoFind)
         {
             FindTarget();
         }
@@ -125,8 +126,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     private void OnDestroy()
     {
         // Unsubscribe from events
-        if (StunController != null)
-            StunController.OnStunEnded -= HandleStunEnded;
         if (Health != null)
             Health.OnEnemyDeath -= HandleDeath;
         if (ProximityDetector != null)
@@ -144,23 +143,21 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         // Don't update if dead
         if (Health.IsDead) return;
 
-        // Check for stun state outside main state machine as it has higher priority
-        if (StunController.IsStunned() && _currentState != StunnedStateInstance)
+        // Check for stun trigger
+        if (StunController.IsStunTriggered && _currentState != StunnedStateInstance)
         {
             TransitionToState(StunnedStateInstance);
             return;
         }
 
         // Find target if lost
-        if (Target == null && autoFindPlayer)
+        bool shouldAutoFind = autoFindPlayerOverride || (enemyData != null && enemyData.autoFindPlayer);
+        if (Target == null && shouldAutoFind)
         {
             FindTarget();
         }
 
         _currentState?.UpdateState(); // Update the current active state
-
-        // Update vision direction based on movement
-        UpdateVisionDirection();
     }
 
     #endregion
@@ -184,18 +181,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     #region Movement/Vision Updates (Still managed by EnemyAI for now)
 
-    private void UpdateVisionDirection()
-    {
-        // Update vision based on movement
-        if (MovementController.IsMoving())
-        {
-            Vector3 moveDirection = MovementController.GetMovementDirection();
-            if (moveDirection.magnitude > 0.1f && enemyData != null)
-            {
-                VisionSystem.RotateVisionTowards(moveDirection, enemyData.rotationSpeed);
-            }
-        }
-    }
+    // UpdateVisionDirection removed - logic moved to AIStateBase.UpdateVision()
 
     #endregion
 
@@ -228,21 +214,6 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
             InvestigateStateInstance.SetInvestigationPosition(soundPosition);
             TransitionToState(InvestigateStateInstance);
-        }
-    }
-
-    private void HandleStunEnded()
-    {
-        if (debugMode)
-            Debug.Log($"{gameObject.name}: Stun ended");
-
-        // The stunned state's Update will handle the transition logic after stun ends.
-        // We ensure that we transition out of the Stunned state if we are currently in it.
-        if (_currentState == StunnedStateInstance)
-        {
-             // This might be redundant as StunnedState.UpdateState() handles it.
-             // However, a direct event can force a transition if needed.
-             // For simplicity, let StunnedState.UpdateState handle it.
         }
     }
 

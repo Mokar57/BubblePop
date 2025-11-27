@@ -43,6 +43,9 @@ public class PatrolState : AIStateBase
         {
             HandleMoving();
         }
+        
+        // Standard vision behavior
+        LookWhereMoving();
     }
 
     private void HandleMoving()

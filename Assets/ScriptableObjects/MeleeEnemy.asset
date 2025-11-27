@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bbbdac2490e0d5458c8cb46a7dea796, type: 3}
-  m_Name: NewEnemy
+  m_Name: MeleeEnemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Enemy
   maxHealth: 100
@@ -21,9 +21,13 @@ MonoBehaviour:
   visionRange: 6
   visionAngle: 100
   rotationSpeed: 720
+  visionObstacleMask:
+    serializedVersion: 2
+    m_Bits: 2048
   proximityRadius: 2
   proximityTriggerTime: 0.5
   enableProximityDetection: 1
+  enableContactDetection: 1
   soundDetectionRange: 151.1
   soundInvestigationDuration: 5
   soundSearchRotationInterval: 2
@@ -41,3 +45,8 @@ MonoBehaviour:
   itemSeekInterval: 2
   preferPrimaryWeapons: 1
   onlySeekWhenUnarmed: 1
+  itemLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  autoFindPlayer: 1
+  persistentChase: 1
