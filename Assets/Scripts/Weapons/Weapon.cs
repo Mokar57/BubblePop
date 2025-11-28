@@ -9,6 +9,8 @@ public abstract class Weapon : PickupableItem
     [Header("Weapon Data")]
     [SerializeField] protected WeaponDataSO weaponData;
 
+    public override ItemHoldType HoldType => weaponData != null ? weaponData.holdType : base.HoldType;
+
     protected int currentDurability;
     protected IItemHolder currentHolder;
 
@@ -28,7 +30,12 @@ public abstract class Weapon : PickupableItem
     public virtual void Initialize(WeaponDataSO data)
     {
         weaponData = data;
-        holdType = weaponData.holdType;
+        // holdType is now accessed directly from weaponData via property if needed, 
+        // but we keep the field for now if other scripts rely on it, or remove it if requested.
+        // User requested: "WeaponDataSO has hold type so Weapon scripts doesnt need them"
+        // So we will remove the assignment here and rely on the property.
+        // holdType = weaponData.holdType; // Removed
+
         currentDurability = weaponData.maxDurability;
 
         // Update visuals from data
@@ -36,6 +43,19 @@ public abstract class Weapon : PickupableItem
         {
             sr.sprite = weaponData.droppedSprite;
         }
+    }
+
+    /// <summary>
+    /// Attempt to pick up the weapon. Returns false if broken.
+    /// </summary>
+    public override bool TryPickup(IItemHolder holder)
+    {
+        if (IsBroken)
+        {
+            // Optional: Play a "broken" sound or show a message?
+            return false;
+        }
+        return base.TryPickup(holder);
     }
 
     /// <summary>
@@ -48,7 +68,14 @@ public abstract class Weapon : PickupableItem
 
         if (GetComponent<SpriteRenderer>() is SpriteRenderer sr)
         {
-            sr.sprite = weaponData.heldSprite;
+            if (currentDurability <= 0 && weaponData.depletedSprite != null)
+            {
+                sr.sprite = weaponData.depletedSprite;
+            }
+            else
+            {
+                sr.sprite = weaponData.heldSprite;
+            }
         }
     }
 
@@ -62,7 +89,14 @@ public abstract class Weapon : PickupableItem
 
         if (GetComponent<SpriteRenderer>() is SpriteRenderer sr)
         {
-            sr.sprite = weaponData.droppedSprite;
+            if (currentDurability <= 0 && weaponData.depletedSprite != null)
+            {
+                sr.sprite = weaponData.depletedSprite;
+            }
+            else
+            {
+                sr.sprite = weaponData.droppedSprite;
+            }
         }
     }
 
@@ -99,6 +133,15 @@ public abstract class Weapon : PickupableItem
         }
     }
 
+    /// <summary>
+    /// Force the weapon to break (e.g. on throw impact)
+    /// </summary>
+    public void ForceBreak()
+    {
+        currentDurability = 0;
+        OnWeaponBroken();
+    }
+
     protected virtual void OnWeaponBroken()
     {
         // Visual feedback for broken weapon
@@ -108,6 +151,38 @@ public abstract class Weapon : PickupableItem
         }
 
         // Optional: Auto-drop or disable?
+    }
+
+    /// <summary>
+    /// Drop the weapon without throwing it (e.g. when stunned)
+    /// </summary>
+    public void Drop()
+    {
+        // Cache holder
+        IItemHolder holder = currentHolder;
+
+        if (holder != null)
+        {
+            holder.OnItemDropped(gameObject);
+        }
+
+        // Detach
+        OnDropped();
+
+        // Ensure physics state for ground item
+        if (TryGetComponent<Rigidbody2D>(out var rb))
+        {
+            rb.bodyType = RigidbodyType2D.Dynamic;
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            rb.linearDamping = 5f; // High drag to stop quickly
+        }
+
+        // Ensure it's a trigger so it can be picked up
+        if (TryGetComponent<Collider2D>(out var col))
+        {
+            col.isTrigger = true;
+        }
     }
 
     /// <summary>
@@ -126,6 +201,12 @@ public abstract class Weapon : PickupableItem
 
         // Detach physically (unparent, enable physics)
         OnDropped();
+
+        // Ensure collider is solid for physics interactions (bouncing/damage)
+        if (TryGetComponent<Collider2D>(out var col))
+        {
+            col.isTrigger = false;
+        }
 
         // Add ThrownItem component logic
         if (TryGetComponent<Rigidbody2D>(out var rb))
@@ -147,6 +228,7 @@ public abstract class Weapon : PickupableItem
         if (weaponData.throwSound != null)
         {
             AudioSource.PlayClipAtPoint(weaponData.throwSound, transform.position, weaponData.throwSoundVolume);
+            // GameEvents.TriggerSoundEmitted(transform.position, weaponData.soundAlertRadius); // Removed as per request
         }
     }
 }

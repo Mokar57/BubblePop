@@ -17,18 +17,19 @@ MonoBehaviour:
   maxDurability: 2
   damageType: 1
   baseDamage: 50
-  throwForce: 10
+  throwForce: 25
   throwDamage: 100
   bounceForce: 1
-  slowDownDuration: 2
+  slowDownDuration: 0
   useSound: {fileID: 0}
   useSoundVolume: 1
   throwSound: {fileID: 0}
   throwSoundVolume: 1
-  heldSprite: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
-  droppedSprite: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
-  depletedSprite: {fileID: -5303914433169244003, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
-  attackRange: 2
+  soundAlertRadius: 0
+  heldSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
+  droppedSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
+  depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
+  attackRange: 1
   attackAngle: 90
   attackCooldown: 1
   knockbackForce: 10

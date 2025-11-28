@@ -17,9 +17,7 @@ public class RangedWeaponDataSO : WeaponDataSO
     [Tooltip("Speed of fired projectile")]
     public float projectileSpeed = 15f;
 
-    [Header("Sound Alert")]
-    [Tooltip("Radius that enemies can hear this weapon's gunshot")]
-    public float soundAlertRadius = 20f;
+    // soundAlertRadius moved to base WeaponDataSO
 
     [Header("Projectile Settings")]
     [Tooltip("Reference to ProjectileDataSO for additional projectile configuration")]

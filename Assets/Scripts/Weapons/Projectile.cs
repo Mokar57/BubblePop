@@ -11,11 +11,13 @@ public class Projectile : MonoBehaviour
     private Rigidbody2D rb;
     private bool isStuck = false;
     private int hitCount = 0;
+    private IItemHolder owner;
 
-    public void Initialize(DamageInfo info, ProjectileDataSO data)
+    public void Initialize(DamageInfo info, ProjectileDataSO data, IItemHolder itemOwner = null)
     {
         damageInfo = info;
         projectileData = data;
+        owner = itemOwner;
 
         rb = GetComponent<Rigidbody2D>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
@@ -39,7 +41,7 @@ public class Projectile : MonoBehaviour
         }
 
         // Auto-destroy
-        Destroy(gameObject, projectileData.lifetime);
+        // Destroy(gameObject, projectileData.lifetime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -59,6 +61,9 @@ public class Projectile : MonoBehaviour
             // Update knockback direction based on velocity
             damageInfo.knockbackDirection = rb.linearVelocity.normalized;
             target.TakeDamage(damageInfo);
+
+            // Notify owner
+            owner?.OnDamageDealt(damageInfo, target);
 
             hitCount++;
 
@@ -98,7 +103,7 @@ public class Projectile : MonoBehaviour
         }
 
         // Destroy after stuck duration
-        Destroy(gameObject, projectileData.stuckDuration);
+        // Destroy(gameObject, projectileData.stuckDuration);
     }
 
     private System.Collections.IEnumerator WobbleRoutine()

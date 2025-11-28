@@ -85,6 +85,7 @@ GameObject:
   - component: {fileID: 9098328513698841382}
   - component: {fileID: 4545356152958220809}
   - component: {fileID: 6482578936393969676}
+  - component: {fileID: 6683834709029597627}
   - component: {fileID: 2510889999578025272}
   m_Layer: 0
   m_Name: RangedEnemy
@@ -428,6 +429,22 @@ MonoBehaviour:
   meleeHoldPosition: {fileID: 2432630766753788145}
   rangedHoldPosition: {fileID: 2442067725035175452}
   canUseItems: 1
+--- !u!114 &6683834709029597627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8784797368900934643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8abdf7e130f7eb43a0ba84dc09d1087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounceController
+  settings: {fileID: 11400000, guid: 71c45e7ed16225d439991ba724e8e0ca, type: 2}
+  wallLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
 --- !u!114 &2510889999578025272
 MonoBehaviour:
   m_ObjectHideFlags: 0

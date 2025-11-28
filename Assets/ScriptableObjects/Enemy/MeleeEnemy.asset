@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Enemy
   enemyType: 0
+  postBluntAttackWaitTime: 0
   maxHealth: 100
   patrolSpeed: 4
-  investigationSpeed: 2.5
+  investigationSpeed: 5
   acceleration: 16
   angularSpeed: 120
   chaseSpeed: 8
@@ -33,22 +34,23 @@ MonoBehaviour:
   proximityTriggerTime: 0.5
   enableProximityDetection: 1
   enableContactDetection: 1
-  soundDetectionRange: 151.1
+  soundDetectionRange: 35
   soundInvestigationDuration: 5
   soundSearchRotationInterval: 2
   deathPuddlePrefab: {fileID: 3900286614151855705, guid: cb6cbc50c64bd8c468927223936cc291, type: 3}
   deathSounds: []
   deathSoundVolume: 1
   canUseWeapons: 1
-  weaponAttackRange: 1
+  weaponAttackRange: 1.5
   weaponAttackCooldown: 1
-  meleeAttackRange: 0.8
+  meleeAttackRange: 1.5
   canSeekItems: 1
   itemSeekRadius: 5
-  itemPickupRadius: 1
+  itemPickupRadius: 0.59
   itemSeekInterval: 2
   preferPrimaryWeapons: 1
   onlySeekWhenUnarmed: 1
+  canCatchThrownWeapons: 1
   itemLayerMask:
     serializedVersion: 2
     m_Bits: 1024

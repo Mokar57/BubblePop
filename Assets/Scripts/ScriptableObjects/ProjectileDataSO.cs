@@ -15,7 +15,7 @@ public class ProjectileDataSO : ScriptableObject
     public float speed = 15f;
 
     [Tooltip("Maximum lifetime before auto-destroy (seconds)")]
-    public float lifetime = 5f;
+    public float lifetime = 999f;
 
     [Header("Wall Collision")]
     [Tooltip("Duration projectile stays stuck in wall before destroying")]

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5195324340763813140}
   - component: {fileID: 795960304887306142}
   - component: {fileID: 721935359946975642}
+  - component: {fileID: 71140458575460795}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -175,8 +176,24 @@ MonoBehaviour:
   maxHealth: 100
   damageColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
-  meleeHoldPosition: {fileID: 1917360178379948614}
-  rangedHoldPosition: {fileID: 2417923319815193911}
+  meleeHoldPosition: {fileID: 2417923319815193911}
+  rangedHoldPosition: {fileID: 1917360178379948614}
+--- !u!114 &71140458575460795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 413255319033087748}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8abdf7e130f7eb43a0ba84dc09d1087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BounceController
+  settings: {fileID: 11400000, guid: aa4a6d030ae7d804fa5b2273500bf2b8, type: 2}
+  wallLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
 --- !u!1 &3500976671359035914
 GameObject:
   m_ObjectHideFlags: 0

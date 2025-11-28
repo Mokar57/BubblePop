@@ -39,9 +39,9 @@ public class MeleeWeapon : Weapon
         }
 
         // Detect hits
-        Vector2 attackOrigin = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(holdType).position : (Vector2)transform.position;
+        Vector2 attackOrigin = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(HoldType).position : (Vector2)transform.position;
         // Use Up as forward since PlayerControls uses transform.up for rotation
-        Vector2 attackDirection = currentHolder != null ? currentHolder.GetHoldPosition(holdType).up : transform.up;
+        Vector2 attackDirection = currentHolder != null ? currentHolder.GetHoldPosition(HoldType).up : transform.up;
 
         // Calculate hit position based on range
         Vector2 hitPos = attackOrigin + (attackDirection * (meleeData.attackRange * 0.5f));
@@ -49,10 +49,12 @@ public class MeleeWeapon : Weapon
         // OverlapCircle to find targets
         Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, meleeData.attackRange);
 
+        bool hitEnemy = false;
+
         foreach (var hit in hits)
         {
             // Skip self
-            if (hit.gameObject == currentHolder?.GetHoldPosition(holdType).gameObject) continue;
+            if (hit.gameObject == currentHolder?.GetHoldPosition(HoldType).gameObject) continue;
 
             // Check for IDamageable
             if (hit.TryGetComponent<IDamageable>(out var target))
@@ -78,11 +80,19 @@ public class MeleeWeapon : Weapon
 
                     // Apply damage
                     target.TakeDamage(damageInfo);
+
+                    // Notify holder
+                    currentHolder?.OnDamageDealt(damageInfo, target);
+
+                    hitEnemy = true;
                 }
             }
         }
 
-        ReduceDurability();
+        if (hitEnemy)
+        {
+            ReduceDurability();
+        }
     }
 
     private void OnDrawGizmosSelected()

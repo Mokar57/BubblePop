@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -7828792885910264634}
   - component: {fileID: 5726949436171551877}
   - component: {fileID: 3828771355216900713}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,7 +81,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 2
   m_Sprite: {fileID: 9175497086867798595, guid: 785bd191419f02e4486727654e343b65, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -168,4 +168,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a46a1c215e63126469c26e53fe44c203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Projectile
-  projectileData: {fileID: 11400000, guid: 40b73bb664f014442aa9c132046945e5, type: 2}

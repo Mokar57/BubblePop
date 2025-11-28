@@ -47,6 +47,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public EnemyWeaponController WeaponController { get; private set; }
     public EnemyItemSeeker ItemSeeker { get; private set; }
     public EnemyProximityDetector ProximityDetector { get; private set; }
+    public BounceController BounceController { get; private set; }
     public NavMeshAgent Agent { get; private set; }
 
     // State pattern instances
@@ -57,6 +58,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public SeekItemState SeekItemStateInstance { get; private set; }
     public InvestigateState InvestigateStateInstance { get; private set; }
     public StunnedState StunnedStateInstance { get; private set; }
+    public WaitState WaitStateInstance { get; private set; }
 
     // Target tracking (public for states)
     public Transform Target { get; private set; }
@@ -87,6 +89,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         WeaponController = GetComponent<EnemyWeaponController>();
         ItemSeeker = GetComponent<EnemyItemSeeker>();
         ProximityDetector = GetComponent<EnemyProximityDetector>();
+        BounceController = GetComponent<BounceController>();
         Agent = GetComponent<NavMeshAgent>();
 
         // Initialize states
@@ -96,6 +99,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         SeekItemStateInstance = new SeekItemState(this);
         InvestigateStateInstance = new InvestigateState(this);
         StunnedStateInstance = new StunnedState(this);
+        WaitStateInstance = new WaitState(this);
     }
 
     private void Start()
@@ -145,6 +149,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     {
         // Don't update if dead
         if (Health.IsDead) return;
+
+        // Don't update if bouncing
+        if (BounceController != null && BounceController.IsBouncing) return;
 
         // Check for stun trigger
         if (StunController.IsStunTriggered && _currentState != StunnedStateInstance)
@@ -205,6 +212,12 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
         _currentState = newState; // Set new current state
         _currentState.EnterState(); // Call Enter on new state
+    }
+
+    public void TriggerWait(float duration)
+    {
+        WaitStateInstance.SetDuration(duration);
+        TransitionToState(WaitStateInstance);
     }
 
     #endregion

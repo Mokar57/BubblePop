@@ -15,7 +15,7 @@ public class StunnedState : AIStateBase
     {
         if (enemyAI.DebugMode)
             Debug.Log("Entering Stunned State");
-        
+
         // Initialize stun parameters from controller
         stunCenter = stunController.StunCenter;
         stunEndTime = Time.time + stunController.StunDuration;
@@ -94,7 +94,7 @@ public class StunnedState : AIStateBase
     {
         if (enemyAI.DebugMode)
             Debug.Log("Exiting Stunned State");
-        
+
         stunController.ResetStunTrigger();
         movementController.StopMovement();
     }

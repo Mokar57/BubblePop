@@ -59,20 +59,25 @@ public class EnemyItemSeeker : MonoBehaviour
     /// </summary>
     public PickupableItem FindBestItem()
     {
-        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, itemMask);
+        // Use AllLayers if mask is not set (value 0 usually means Nothing in LayerMask, but we want to find something)
+        int mask = itemMask.value != 0 ? itemMask.value : Physics2D.AllLayers;
+
+        Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, mask);
 
         Weapon bestItem = null;
         float closestDistance = float.MaxValue;
 
         foreach (Collider2D col in nearbyColliders)
         {
+            // Check for Weapon component (could be on parent if collider is child, but usually on same)
             Weapon item = col.GetComponent<Weapon>();
+            if (item == null) item = col.GetComponentInParent<Weapon>();
 
             if (item == null || item.IsBroken || !item.canBePickedByEnemies)
                 continue;
 
             // Skip if already held
-            if (item.transform.parent != null)
+            if (item.IsHeld)
                 continue;
 
             float distance = Vector2.Distance(transform.position, item.transform.position);

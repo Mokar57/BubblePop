@@ -44,7 +44,6 @@ GameObject:
   - component: {fileID: 5754433221955153294}
   - component: {fileID: 2839163480725023241}
   - component: {fileID: 7654536354220943669}
-  - component: {fileID: 619627552240976759}
   m_Layer: 10
   m_Name: NailGun
   m_TagString: Untagged
@@ -212,21 +211,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedWeapon
   itemName: Item
-  holdType: 0
   pickupRadius: 1
   pickupKey: 101
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
   weaponData: {fileID: 11400000, guid: 3932fbe2a817f0d4298bb56bb97eb26c, type: 2}
---- !u!114 &619627552240976759
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6894727181375628727}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f848d249c0c3fb44c87e6d2a4ad08ddf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ThrownItem

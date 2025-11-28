@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 1013382679183555017}
   - component: {fileID: 6269874751224178585}
   - component: {fileID: 8110130392176690207}
-  - component: {fileID: 5187473415333903616}
   m_Layer: 10
   m_Name: Bat
   m_TagString: Untagged
@@ -29,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3932926569630947352}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: 0.004331313, w: -0.99999064}
+  m_LocalRotation: {x: 0, y: 0, z: -0.004328352, w: 0.99999064}
   m_LocalPosition: {x: 2.614, y: -4.49, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
@@ -83,12 +82,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 10
-  m_Sprite: {fileID: -6883803119100222266, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.29, y: 1.98}
+  m_Size: {x: 1.072, y: 0.228}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -128,17 +127,17 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.010169476, y: 0.0029871464}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.23026316, y: 0.51374775}
+    pivot: {x: 0.5, y: 0.5}
     oldSize: {x: 1.072, y: 0.228}
-    newSize: {x: 1.29, y: 1.98}
+    newSize: {x: 1.072, y: 0.228}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1.3486726, y: 0.15494022}
+  m_Size: {x: 1, y: 0.11}
   m_EdgeRadius: 0
 --- !u!50 &6269874751224178585
 Rigidbody2D:
@@ -180,21 +179,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeapon
   itemName: Item
-  holdType: 0
   pickupRadius: 1
   pickupKey: 101
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
   weaponData: {fileID: 11400000, guid: 84752b89a7fd06845a23c3fba315f7f7, type: 2}
---- !u!114 &5187473415333903616
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3932926569630947352}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f848d249c0c3fb44c87e6d2a4ad08ddf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ThrownItem

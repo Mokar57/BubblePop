@@ -8,7 +8,12 @@ public class PickupableItem : MonoBehaviour
 {
     [Header("Pickup Settings")]
     public string itemName = "Item";
-    public ItemHoldType holdType = ItemHoldType.Melee;
+    // public ItemHoldType holdType = ItemHoldType.Melee; // Removed as per request, but base class might need it?
+    // Actually, PickupableItem is base for Weapon. If Weapon uses WeaponDataSO, PickupableItem might not know about it.
+    // But user said "Weapon scripts doesnt need them".
+    // Let's make holdType a virtual property that Weapon overrides.
+    public virtual ItemHoldType HoldType => ItemHoldType.Melee;
+
     public float pickupRadius = 1.5f;
     public KeyCode pickupKey = KeyCode.E;
     public bool canBePickedByEnemies = true;
@@ -17,6 +22,8 @@ public class PickupableItem : MonoBehaviour
     public GameObject pickupIndicator; // UI hint
 
     protected bool isHeld = false;
+    public bool IsHeld => isHeld;
+
     protected Collider2D itemCollider;
     protected Rigidbody2D itemRb;
     protected SpriteRenderer spriteRenderer;
@@ -43,8 +50,9 @@ public class PickupableItem : MonoBehaviour
     }
 
     // Called by Player/Enemy when they want to pick this up
-    public bool TryPickup(IItemHolder holder)
+    public virtual bool TryPickup(IItemHolder holder)
     {
+        if (!enabled) return false; // Cannot pickup if component is disabled
         if (isHeld) return false;
 
         // Check team restrictions if any
@@ -66,7 +74,7 @@ public class PickupableItem : MonoBehaviour
         if (pickupIndicator) pickupIndicator.SetActive(false);
 
         // Parent to holder
-        transform.SetParent(holder.GetHoldPosition(holdType));
+        transform.SetParent(holder.GetHoldPosition(HoldType));
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 

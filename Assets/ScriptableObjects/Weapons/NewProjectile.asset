@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileDataSO
   projectileName: Projectile
   speed: 15
-  lifetime: 5
+  lifetime: 999
   stuckDuration: 2
   enableWobbleAnimation: 1
   wobbleSpeed: 5

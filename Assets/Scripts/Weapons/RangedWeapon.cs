@@ -32,18 +32,17 @@ public class RangedWeapon : Weapon
         lastFireTime = Time.time;
 
         // Play fire sound (with alert radius if SoundManager exists)
-        // For now, simple play
         if (rangedData.useSound != null)
         {
             AudioSource.PlayClipAtPoint(rangedData.useSound, transform.position, rangedData.useSoundVolume);
-            // TODO: Trigger GameEvents.OnSoundEmitted(transform.position, rangedData.soundAlertRadius);
+            GameEvents.TriggerSoundEmitted(transform.position, rangedData.soundAlertRadius);
         }
 
         // Spawn Projectile
         if (rangedData.projectilePrefab != null)
         {
-            Vector2 spawnPos = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(holdType).position : (Vector2)transform.position;
-            Quaternion spawnRot = currentHolder != null ? currentHolder.GetHoldPosition(holdType).rotation : transform.rotation;
+            Vector2 spawnPos = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(HoldType).position : (Vector2)transform.position;
+            Quaternion spawnRot = currentHolder != null ? currentHolder.GetHoldPosition(HoldType).rotation : transform.rotation;
 
             GameObject projObj = Instantiate(rangedData.projectilePrefab, spawnPos, spawnRot);
 
@@ -60,10 +59,25 @@ public class RangedWeapon : Weapon
                 );
 
                 // Initialize Projectile
-                projectile.Initialize(damageInfo, rangedData.projectileData);
+                projectile.Initialize(damageInfo, rangedData.projectileData, currentHolder);
             }
         }
 
         ReduceDurability();
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // If rangedData is null (e.g. in editor before play), try to cast weaponData
+        if (rangedData == null && weaponData != null)
+        {
+            rangedData = weaponData as RangedWeaponDataSO;
+        }
+
+        if (rangedData != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, rangedData.soundAlertRadius);
+        }
     }
 }

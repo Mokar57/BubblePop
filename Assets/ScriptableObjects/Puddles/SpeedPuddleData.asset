@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5d3a3e964269e146b60b6256cda5aab, type: 3}
   m_Name: SpeedPuddleData
   m_EditorClassIdentifier: Assembly-CSharp::SpeedPuddleDataSO
-  zoneRadius: 3
-  speedMultiplier: 2
+  zoneRadius: 2
+  speedMultiplier: 1.5
   zoneDuration: 999
   affectedLayers:
     serializedVersion: 2

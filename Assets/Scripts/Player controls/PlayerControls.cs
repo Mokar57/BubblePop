@@ -41,9 +41,12 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
     public Transform meleeHoldPosition;
     public Transform rangedHoldPosition;
     private Weapon currentWeapon;
+    private BounceController bounceController;
 
     private void Start()
     {
+        bounceController = GetComponent<BounceController>();
+
         // Store original speed for speed boost functionality
         originalMoveSpeed = moveSpeed;
 
@@ -132,6 +135,8 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
 
     void Move()
     {
+        if (bounceController != null && bounceController.IsBouncing) return;
+
         float currentMoveSpeed = originalMoveSpeed * speedBoostMultiplier;
         rb.linearVelocity = new Vector2(moveDirection.x * currentMoveSpeed, moveDirection.y * currentMoveSpeed);
     }
@@ -168,6 +173,11 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
         {
             currentWeapon = null;
         }
+    }
+
+    public void OnDamageDealt(DamageInfo damageInfo, IDamageable target)
+    {
+        // Player specific logic when dealing damage (e.g. XP, stats)
     }
 
     #endregion
@@ -240,9 +250,33 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
         if (isDead) return;
         if (damageInfo.sourceTeam == Team.Player) return; // Friendly fire check
 
-        TakeDamage(damageInfo.damageAmount);
-
-        // TODO: Handle Bounce if damageInfo.damageType == DamageType.Blunt
+        if (damageInfo.damageType == DamageType.Blunt)
+        {
+            if (TryGetComponent<BounceController>(out var bounceController))
+            {
+                if (bounceController.IsBouncing)
+                {
+                    // Already bouncing -> Second hit kills
+                    currentHealth = 0;
+                    Die();
+                }
+                else
+                {
+                    // Not bouncing -> First hit triggers bounce. No damage.
+                    bounceController.StartBounce(damageInfo.knockbackDirection);
+                }
+            }
+            else
+            {
+                // Fallback
+                TakeDamage(damageInfo.damageAmount);
+            }
+        }
+        else
+        {
+            // Normal damage
+            TakeDamage(damageInfo.damageAmount);
+        }
     }
 
     // Legacy TakeDamage for compatibility if needed, or internal use

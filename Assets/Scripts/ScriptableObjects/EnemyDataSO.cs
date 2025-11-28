@@ -11,6 +11,10 @@ public class EnemyDataSO : ScriptableObject
     public string enemyName = "Enemy";
     public EnemyType enemyType = EnemyType.Melee;
 
+    [Header("Combat Behavior")]
+    [Tooltip("Time to wait after landing a blunt attack on player (recoil/pause)")]
+    public float postBluntAttackWaitTime = 1.5f;
+
     [Header("Health")]
     [Tooltip("Maximum health of this enemy")]
     public float maxHealth = 100f;
@@ -117,6 +121,9 @@ public class EnemyDataSO : ScriptableObject
 
     [Tooltip("Only seek items when unarmed?")]
     public bool onlySeekWhenUnarmed = true;
+
+    [Tooltip("Can this enemy catch thrown weapons mid-air?")]
+    public bool canCatchThrownWeapons = false;
 
     [Tooltip("Layer mask for detecting items")]
     public LayerMask itemLayerMask;

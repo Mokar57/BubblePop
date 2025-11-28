@@ -26,6 +26,19 @@ public class EnemySoundDetector : MonoBehaviour
 
     private void Start()
     {
+        UpdateDetectionRange();
+    }
+
+    private void Update()
+    {
+        // Optional: Check for runtime changes in editor if needed
+#if UNITY_EDITOR
+        UpdateDetectionRange();
+#endif
+    }
+
+    private void UpdateDetectionRange()
+    {
         // Initialize detection range from ScriptableObject or override
         if (enemyData != null)
         {
@@ -34,7 +47,6 @@ public class EnemySoundDetector : MonoBehaviour
         else
         {
             detectionRange = detectionRangeOverride > 0 ? detectionRangeOverride : 15f;
-            Debug.LogWarning($"{gameObject.name}: No EnemyDataSO assigned! Using default sound detection range.");
         }
     }
 
@@ -89,7 +101,13 @@ public class EnemySoundDetector : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         // Draw sound detection range
-        float drawRange = detectionRange > 0 ? detectionRange : (detectionRangeOverride > 0 ? detectionRangeOverride : 15f);
+        float drawRange = detectionRange;
+
+        // If not playing, calculate what it would be
+        if (!Application.isPlaying)
+        {
+            drawRange = detectionRangeOverride > 0 ? detectionRangeOverride : (enemyData != null ? enemyData.soundDetectionRange : 15f);
+        }
 
         Gizmos.color = new Color(0f, 1f, 1f, 0.3f); // Cyan with transparency
         Gizmos.DrawWireSphere(transform.position, drawRange);

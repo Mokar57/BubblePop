@@ -27,7 +27,7 @@ public class SeekItemState : AIStateBase
         }
 
         // 2. Validate target item
-        bool isTargetValid = targetItem != null && targetItem.transform.parent == null;
+        bool isTargetValid = targetItem != null && !targetItem.IsHeld;
         if (isTargetValid && targetItem.TryGetComponent<Weapon>(out var weapon))
         {
             if (weapon.IsBroken) isTargetValid = false;
@@ -63,8 +63,12 @@ public class SeekItemState : AIStateBase
         LookWhereMoving();
 
         // 4. Check distance and pickup
+        // Use 2D distance check (ignore Z)
         float distanceToItem = Vector2.Distance(enemyAI.transform.position, targetItem.transform.position);
-        if (distanceToItem <= itemSeeker.GetPickupRadius())
+
+        // Ensure we are close enough. Sometimes NavMesh stops slightly before.
+        // Increase tolerance slightly or check if we are stopped.
+        if (distanceToItem <= itemSeeker.GetPickupRadius() * 1.2f)
         {
             bool success = targetItem.TryPickup(weaponController);
             if (success)
@@ -74,6 +78,20 @@ public class SeekItemState : AIStateBase
             else
             {
                 // Failed to pickup (maybe someone else got it?), clear target
+                targetItem = null;
+            }
+        }
+        else if (movementController.IsStopped() && distanceToItem < itemSeeker.GetPickupRadius() * 2f)
+        {
+            // We are stopped and close, try pickup anyway (NavMesh might have stopped us early)
+            bool success = targetItem.TryPickup(weaponController);
+            if (success)
+            {
+                TransitionAfterPickup();
+            }
+            else
+            {
+                // Failed to pickup, clear target to avoid getting stuck
                 targetItem = null;
             }
         }

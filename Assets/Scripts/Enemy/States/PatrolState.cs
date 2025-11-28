@@ -162,6 +162,23 @@ public class PatrolState : AIStateBase
 
     private bool CheckTransitions()
     {
+        // 1. If unarmed, prioritize finding a weapon
+        if (!weaponController.HasWeapon())
+        {
+            // Only switch if we actually find an item nearby, otherwise we'll loop infinitely
+            // Or we can switch to SeekItemState and let it handle the search logic (it has a timer)
+            // But SeekItemState switches back to Patrol if it finds nothing.
+            // So we should only switch if SeekItemState hasn't just failed.
+
+            // Better approach: Periodically check for items while patrolling if unarmed.
+            // For now, let's just check if there is an item nearby.
+            if (enemyAI.ItemSeeker.FindBestItem() != null)
+            {
+                enemyAI.TransitionToState(enemyAI.SeekItemStateInstance);
+                return true;
+            }
+        }
+
         if (enemyAI.IsPlayerDetected())
         {
             if (weaponController.HasWeapon())

@@ -88,6 +88,7 @@ public class EnemyMovementController : MonoBehaviour
 
     // Public state queries
     public bool IsStuck => isStuck;
+    public bool IsStopped() => agent != null && agent.velocity.magnitude < 0.1f;
 
     private void Awake()
     {

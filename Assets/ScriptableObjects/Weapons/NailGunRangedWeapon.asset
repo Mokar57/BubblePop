@@ -13,23 +13,23 @@ MonoBehaviour:
   m_Name: NailGunRangedWeapon
   m_EditorClassIdentifier: Assembly-CSharp::RangedWeaponDataSO
   weaponName: Weapon
-  holdType: 0
+  holdType: 1
   maxDurability: 3
   damageType: 0
-  baseDamage: 25
-  throwForce: 10
+  baseDamage: 100
+  throwForce: 15
   throwDamage: 100
   bounceForce: 1
-  slowDownDuration: 1
-  useSound: {fileID: 0}
+  slowDownDuration: 0
+  useSound: {fileID: 8300000, guid: 0f796ae148e81a44e9424437a61d8ce6, type: 3}
   useSoundVolume: 1
-  throwSound: {fileID: 0}
+  throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
+  soundAlertRadius: 7
   heldSprite: {fileID: -965272607947795289, guid: 99392a0b042f4d64d8dda668c35e3c2b, type: 3}
   droppedSprite: {fileID: 130435258968749653, guid: a2205c0d7c8a1ff46b5d09a64294aa56, type: 3}
   depletedSprite: {fileID: 8741980072048425201, guid: 3d902cca632705b409fe83d0ca467c25, type: 3}
   projectilePrefab: {fileID: 8696534751382374328, guid: ccab4126e4966cf418aeaed09a1f5b75, type: 3}
   fireCooldown: 0.5
   projectileSpeed: 15
-  soundAlertRadius: 20
   projectileData: {fileID: 11400000, guid: 40b73bb664f014442aa9c132046945e5, type: 2}

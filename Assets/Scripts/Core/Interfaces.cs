@@ -25,6 +25,11 @@ public interface IItemHolder
     /// Called when an item is dropped by this holder
     /// </summary>
     void OnItemDropped(GameObject item);
+
+    /// <summary>
+    /// Called when the holder deals damage with an item
+    /// </summary>
+    void OnDamageDealt(DamageInfo damageInfo, IDamageable target);
 }
 
 /// <summary>

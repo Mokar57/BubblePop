@@ -8,17 +8,65 @@ public class EnemyWeaponController : MonoBehaviour, IItemHolder
 
     [Header("Current Item")]
     private Weapon currentWeapon;
+    public bool IsHoldingWeapon => currentWeapon != null;
 
     [Header("Settings")]
     public bool canUseItems = true;
 
     private EnemyAI enemyAI;
+    private BounceController bounceController;
 
     private void Start()
     {
         enemyAI = GetComponent<EnemyAI>();
+        bounceController = GetComponent<BounceController>();
+
+        if (bounceController != null)
+        {
+            bounceController.OnBounceStart += HandleBounceStart;
+        }
+
         if (meleeHoldPosition == null) meleeHoldPosition = transform;
         if (rangedHoldPosition == null) rangedHoldPosition = transform;
+
+        // Check for pre-assigned or child weapon
+        if (currentWeapon == null)
+        {
+            currentWeapon = GetComponentInChildren<Weapon>();
+        }
+
+        if (currentWeapon != null)
+        {
+            // Ensure the weapon knows it's held by us
+            // We pass 'this' which is IItemHolder
+            // This will also set the parent to the correct hold position if not already
+            currentWeapon.OnPickedUp(this);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (bounceController != null)
+        {
+            bounceController.OnBounceStart -= HandleBounceStart;
+        }
+    }
+
+    private void HandleBounceStart()
+    {
+        if (bounceController != null && bounceController.settings != null && bounceController.settings.dropWeaponOnBounce)
+        {
+            DropCurrentWeapon();
+        }
+    }
+
+    private void DropCurrentWeapon()
+    {
+        if (currentWeapon != null)
+        {
+            // Just drop it at current position
+            currentWeapon.Drop();
+        }
     }
 
     #region IItemHolder Implementation
@@ -48,6 +96,20 @@ public class EnemyWeaponController : MonoBehaviour, IItemHolder
             currentWeapon = null;
         }
         // GameEvents.TriggerItemDropped(item, gameObject);
+    }
+
+    public void OnDamageDealt(DamageInfo damageInfo, IDamageable target)
+    {
+        // Check if we hit the player with a blunt weapon
+        if (damageInfo.damageType == DamageType.Blunt && target.GetTeam() == Team.Player)
+        {
+            // Pause AI to simulate recoil/stun effect on player
+            if (enemyAI != null)
+            {
+                float waitTime = (enemyAI.enemyData != null) ? enemyAI.enemyData.postBluntAttackWaitTime : 1.5f;
+                enemyAI.TriggerWait(waitTime);
+            }
+        }
     }
 
     #endregion

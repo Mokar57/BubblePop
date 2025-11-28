@@ -104,17 +104,29 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         }
         else if (damageInfo.damageType == DamageType.Blunt)
         {
-            // Blunt damage = trigger bounce (handled by BounceController)
-            // Still apply damage
-            currentHealth -= damageInfo.damageAmount;
-            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+            // Blunt damage logic: First hit bounces, second hit (while bouncing) kills
+            if (TryGetComponent<BounceController>(out var bounceController))
+            {
+                if (bounceController.IsBouncing)
+                {
+                    // Already bouncing -> Second hit kills
+                    currentHealth = 0;
+                }
+                else
+                {
+                    // Not bouncing -> First hit triggers bounce. 
+                    // Target is immune to death from blunt damage unless already bouncing.
+                    bounceController.StartBounce(damageInfo.knockbackDirection);
+                    return; // Exit early to avoid death check
+                }
+            }
+            else
+            {
+                // Fallback if no BounceController
+                currentHealth -= damageInfo.damageAmount;
+            }
 
-            // TODO: Trigger bounce if BounceController exists (Phase 6)
-            // BounceController bounceController = GetComponent<BounceController>();
-            // if (bounceController != null)
-            // {
-            //     bounceController.StartBounce(damageInfo.knockbackDirection, damageInfo.knockbackForce);
-            // }
+            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
         }
 
         // Visual feedback
