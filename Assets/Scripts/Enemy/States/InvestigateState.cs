@@ -28,7 +28,7 @@ public class InvestigateState : AIStateBase
         
         // Start moving to the sound source
         movementController.SetEnabled(true);
-        movementController.ChaseTarget(investigationPosition);
+        movementController.MoveTo(investigationPosition, EnemyMovementController.SpeedType.Investigation);
     }
 
     public override void UpdateState()
@@ -144,7 +144,7 @@ public class InvestigateState : AIStateBase
         );
         
         currentSearchTarget = (Vector3)investigationPosition + offset;
-        movementController.ChaseTarget(currentSearchTarget);
+        movementController.MoveTo(currentSearchTarget, EnemyMovementController.SpeedType.Investigation);
     }
 
     private void PickNewLookDirection()

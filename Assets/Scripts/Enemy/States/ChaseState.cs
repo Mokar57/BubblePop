@@ -5,7 +5,7 @@ public class ChaseState : AIStateBase
 {
     private float lastUpdateTime;
     private const float UPDATE_RATE = 0.1f; // From EnemyAI
-    
+
     // Attack vars
     private float lastAttackTime;
     private float attackRange;
@@ -13,7 +13,7 @@ public class ChaseState : AIStateBase
     private float attackCooldown;
     private LayerMask obstacleMask;
 
-    public ChaseState(EnemyAI context) : base(context) 
+    public ChaseState(EnemyAI context) : base(context)
     {
         // Initialize settings from EnemyData
         if (enemyAI.enemyData != null)
@@ -28,10 +28,10 @@ public class ChaseState : AIStateBase
             meleeRange = 2f;
             attackCooldown = 1f;
         }
-        
+
         // Default obstacle mask (everything except Ignore Raycast, Player, Enemy, etc if needed)
         // Ideally this should come from config, but for now we use a sensible default
-        obstacleMask = LayerMask.GetMask("Default", "Obstacle", "Wall"); 
+        obstacleMask = LayerMask.GetMask("Default", "Obstacle", "Wall");
     }
 
     public override void EnterState()
@@ -39,7 +39,7 @@ public class ChaseState : AIStateBase
         // Ensure the movement controller is active for chasing
         movementController.SetEnabled(true);
         // Ensure EnemyAI knows we are chasing (this flag is used by transitions)
-        enemyAI.SetHasDetectedTarget(true); 
+        enemyAI.SetHasDetectedTarget(true);
     }
 
     public override void UpdateState()
@@ -64,23 +64,33 @@ public class ChaseState : AIStateBase
 
         // Transition Logic
         CheckTransitions();
-        
+
         // Vision Logic
         UpdateChaseVision();
     }
 
     private void UpdateChaseVision()
     {
+        // Hotline Miami style: Very fast/snappy rotation
+        float snappyRotationSpeed = enemyAI.enemyData.chaseRotationSpeed;
+
         // If we have a target and can see it, look at it
         if (enemyAI.Target != null && visionSystem.CanSeeTarget())
         {
             Vector3 dirToTarget = (enemyAI.Target.position - enemyAI.transform.position).normalized;
-            visionSystem.RotateVisionTowards(dirToTarget, enemyAI.enemyData.rotationSpeed);
+            visionSystem.RotateVisionTowards(dirToTarget, snappyRotationSpeed);
         }
         else
         {
-            // Otherwise look where we are going
-            LookWhereMoving();
+            // Otherwise look where we are going, but faster than normal
+            if (movementController.IsMoving())
+            {
+                Vector3 moveDirection = movementController.GetMovementDirection();
+                if (moveDirection.magnitude > 0.1f)
+                {
+                    visionSystem.RotateVisionTowards(moveDirection, snappyRotationSpeed);
+                }
+            }
         }
     }
 
@@ -96,11 +106,11 @@ public class ChaseState : AIStateBase
             return;
         }
 
-        GameObject currentWeapon = weaponController.GetCurrentWeapon();
-        PickupableItem weaponItem = currentWeapon.GetComponent<PickupableItem>();
+        GameObject currentWeaponObj = weaponController.GetCurrentWeapon();
+        Weapon currentWeapon = currentWeaponObj.GetComponent<Weapon>();
 
         // Check if depleted
-        if (weaponItem != null && weaponItem.IsDepleted())
+        if (currentWeapon != null && currentWeapon.IsBroken)
         {
             ThrowDepletedWeapon();
             enemyAI.TransitionToState(enemyAI.SeekItemStateInstance);
@@ -115,14 +125,14 @@ public class ChaseState : AIStateBase
         bool canSee = visionSystem.CanSeeTarget();
         bool hasLOS = HasLineOfSight(enemyAI.Target.position);
 
-        if (weaponItem.holdType == ItemHoldType.Primary) // Ranged
+        if (currentWeapon is RangedWeapon)
         {
             if (distanceToTarget <= attackRange && canSee && hasLOS)
             {
                 canAttack = true;
             }
         }
-        else if (weaponItem.holdType == ItemHoldType.Secondary) // Melee
+        else // Assume Melee or default
         {
             if (distanceToTarget <= meleeRange && hasLOS)
             {
@@ -132,14 +142,6 @@ public class ChaseState : AIStateBase
 
         if (canAttack)
         {
-            // Trigger Animation
-            // if (enemyAI.Animator != null)
-            // {
-            //     enemyAI.Animator.SetTrigger("Attack");
-            //     // Pass weapon type to animator (true = Melee, false = Ranged)
-            //     enemyAI.Animator.SetBool("IsMelee", weaponItem.holdType == ItemHoldType.Secondary);
-            // }
-
             weaponController.PerformAttack(enemyAI.Target.position);
             lastAttackTime = Time.time;
         }
@@ -152,22 +154,22 @@ public class ChaseState : AIStateBase
             if (enemyAI.PersistentChase && enemyAI.Target != null)
             {
                 float distanceToTarget = Vector3.Distance(enemyAI.transform.position, enemyAI.Target.position);
-                if (distanceToTarget > movementController.MaxChaseDistance) 
+                if (distanceToTarget > movementController.MaxChaseDistance)
                 {
                     // Too far - give up chase
                     enemyAI.SetHasDetectedTarget(false);
-                    enemyAI.TransitionToState(enemyAI.PatrolStateInstance); 
+                    enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
                 }
             }
             else if (!visionSystem.CanSeeTarget()) // Lost sight, not persistent chase or target is null
             {
                 // Go to last known position (SearchState)
-                enemyAI.TransitionToState(enemyAI.SearchStateInstance); 
+                enemyAI.TransitionToState(enemyAI.SearchStateInstance);
             }
         }
         else // No longer detected target
         {
-            enemyAI.TransitionToState(enemyAI.PatrolStateInstance); 
+            enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
         }
     }
 
@@ -199,7 +201,7 @@ public class ChaseState : AIStateBase
         foreach (var hit in hits)
         {
             if (hit.collider == null) continue;
-            
+
             // Ignore self and children
             if (hit.collider.gameObject == enemyAI.gameObject || hit.collider.transform.IsChildOf(enemyAI.transform))
                 continue;
@@ -236,6 +238,48 @@ public class ChaseState : AIStateBase
             enemyAI.LastSeenTime = Time.time;
         }
 
-        movementController.ChaseTarget(destinationPosition);
+        // Handle movement based on Enemy Type
+        if (enemyAI.enemyData != null && enemyAI.enemyData.enemyType == EnemyType.Ranged)
+        {
+            float distanceToTarget = Vector3.Distance(enemyAI.transform.position, destinationPosition);
+            float stopRange = attackRange * 0.8f; // Stop a bit before max range
+
+            if (distanceToTarget > stopRange)
+            {
+                // Move closer
+                movementController.ChaseTarget(destinationPosition);
+            }
+            else if (distanceToTarget < attackRange * 0.4f)
+            {
+                // Too close! Back away slightly if possible (optional, for now just stop or move to safe distance)
+                // Simple implementation: Stop moving if in good range
+                movementController.StopMovement();
+
+                // Advanced: Move away from target
+                // Vector3 dirAway = (enemyAI.transform.position - destinationPosition).normalized;
+                // Vector3 fleePos = enemyAI.transform.position + dirAway * 2f;
+                // movementController.MoveTo(fleePos, EnemyMovementController.SpeedType.Chase);
+            }
+            else
+            {
+                // In sweet spot
+                movementController.StopMovement();
+            }
+        }
+        else
+        {
+            // Melee behavior (default) - just chase
+
+            // Check for direct line of sight for aggressive "Hotline Miami" chase
+            // If we can see the target, move directly towards them (ignoring path smoothing)
+            if (visionSystem.CanSeeTarget())
+            {
+                movementController.MoveDirectly(destinationPosition);
+            }
+            else
+            {
+                movementController.ChaseTarget(destinationPosition);
+            }
+        }
     }
 }

@@ -9,6 +9,7 @@ public class EnemyDataSO : ScriptableObject
 {
     [Header("Basic Info")]
     public string enemyName = "Enemy";
+    public EnemyType enemyType = EnemyType.Melee;
 
     [Header("Health")]
     [Tooltip("Maximum health of this enemy")]
@@ -18,14 +19,24 @@ public class EnemyDataSO : ScriptableObject
     [Tooltip("Speed when patrolling waypoints")]
     public float patrolSpeed = 2f;
 
-    [Tooltip("Speed when chasing the player")]
-    public float chaseSpeed = 3.5f;
+
+    [Tooltip("Speed when investigating a sound")]
+    public float investigationSpeed = 2.5f;
 
     [Tooltip("NavMeshAgent acceleration")]
     public float acceleration = 8f;
 
     [Tooltip("NavMeshAgent angular speed")]
     public float angularSpeed = 120f;
+
+    [Header("Chase Movement")]
+    [Tooltip("Speed when chasing the player")]
+    public float chaseSpeed = 3.5f;
+    [Tooltip("Acceleration when chasing (High for snappy movement)")]
+    public float chaseAcceleration = 100f;
+    [Tooltip("Angular speed when chasing (High for instant turns)")]
+    public float chaseAngularSpeed = 180f;
+    public float chaseRotationSpeed = 3600f;
 
     [Header("Vision Settings")]
     [Tooltip("How far the enemy can see")]
@@ -66,10 +77,7 @@ public class EnemyDataSO : ScriptableObject
 
     [Header("Death Effects")]
     [Tooltip("Prefab to spawn on death (soap puddle, speed boost zone, etc.)")]
-    public GameObject deathEffectPrefab;
-
-    [Tooltip("Size of the puddle/effect spawned on death")]
-    public float puddleSize = 1f;
+    public GameObject deathPuddlePrefab;
 
     [Tooltip("Death sound clips (plays random)")]
     public AudioClip[] deathSounds;
@@ -119,4 +127,10 @@ public class EnemyDataSO : ScriptableObject
 
     [Tooltip("Once spotted, chase forever until too far")]
     public bool persistentChase = true;
+}
+
+public enum EnemyType
+{
+    Melee,
+    Ranged
 }

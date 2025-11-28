@@ -23,7 +23,7 @@ public class EnemyItemSeeker : MonoBehaviour
     [SerializeField] private LayerMask itemLayerMaskOverride;
 
     private EnemyWeaponController weaponController;
-    
+
     // Runtime values
     private float seekRadius;
     private float pickupRadius;
@@ -60,39 +60,42 @@ public class EnemyItemSeeker : MonoBehaviour
     public PickupableItem FindBestItem()
     {
         Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, itemMask);
-        
-        PickupableItem bestItem = null;
+
+        Weapon bestItem = null;
         float closestDistance = float.MaxValue;
-        
+
         foreach (Collider2D col in nearbyColliders)
         {
-            PickupableItem item = col.GetComponent<PickupableItem>();
-            
-            if (item == null || item.IsDepleted() || !item.canBePickedByEnemies)
+            Weapon item = col.GetComponent<Weapon>();
+
+            if (item == null || item.IsBroken || !item.canBePickedByEnemies)
                 continue;
-            
+
             // Skip if already held
             if (item.transform.parent != null)
                 continue;
-            
+
             float distance = Vector2.Distance(transform.position, item.transform.position);
-            
-            // Prefer primary weapons if configured
-            if (preferPrimaryItems && item.holdType == ItemHoldType.Primary)
+
+            // Prefer Ranged weapons if configured (assuming Primary = Ranged)
+            bool isRanged = item is RangedWeapon;
+            bool bestIsRanged = bestItem != null && bestItem is RangedWeapon;
+
+            if (preferPrimaryItems && isRanged)
             {
-                if (bestItem == null || bestItem.holdType != ItemHoldType.Primary || distance < closestDistance)
+                if (bestItem == null || !bestIsRanged || distance < closestDistance)
                 {
                     bestItem = item;
                     closestDistance = distance;
                 }
             }
-            else if (bestItem == null || (bestItem.holdType != ItemHoldType.Primary && distance < closestDistance))
+            else if (bestItem == null || (!bestIsRanged && distance < closestDistance))
             {
                 bestItem = item;
                 closestDistance = distance;
             }
         }
-        
+
         return bestItem;
     }
 

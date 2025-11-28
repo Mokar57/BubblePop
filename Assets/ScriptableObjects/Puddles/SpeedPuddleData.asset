@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5d3a3e964269e146b60b6256cda5aab, type: 3}
+  m_Name: SpeedPuddleData
+  m_EditorClassIdentifier: Assembly-CSharp::SpeedPuddleDataSO
+  zoneRadius: 3
+  speedMultiplier: 2
+  zoneDuration: 999
+  affectedLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fadeOutDuration: 1
+  showZoneVisual: 1
+  zoneEffect: {fileID: 0}

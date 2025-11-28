@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 6482578936393969676}
   - component: {fileID: 2510889999578025272}
   m_Layer: 0
-  m_Name: RangedEnemy
+  m_Name: MeleeEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -265,7 +265,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a0fdcd5cc8e29a4f9fe4d30bb77e17d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: 3dcf16523d526574da36f842b15646fb, type: 2}
+  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   autoFindPlayerOverride: 0
   persistentChaseOverride: 0
   debugMode: 0
@@ -281,7 +281,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67de63b14025db842a99620cf2090dba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyData: {fileID: 11400000, guid: 3dcf16523d526574da36f842b15646fb, type: 2}
+  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   seekRadiusOverride: 0
   pickupRadiusOverride: 0
   itemLayerMaskOverride:
@@ -299,7 +299,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85fe0608cabab654aae1da08d4453400, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  enemyData: {fileID: 11400000, guid: 3dcf16523d526574da36f842b15646fb, type: 2}
+  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   maxHealthOverride: 0
   damageColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.1
@@ -315,7 +315,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95d22689106594d4c9933b9546f024a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyVisionSystem
-  enemyData: {fileID: 11400000, guid: 3dcf16523d526574da36f842b15646fb, type: 2}
+  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   visionRangeOverride: 0
   visionAngleOverride: 0
   obstacleLayerMaskOverride:
@@ -334,7 +334,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93361e9cb19add24bad8ec16851a3033, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovementController
-  enemyData: {fileID: 11400000, guid: 3dcf16523d526574da36f842b15646fb, type: 2}
+  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   enablePatrol: 1
   patrolWaypoints: []
   loopPatrol: 1
@@ -347,6 +347,7 @@ MonoBehaviour:
   timeoutWaitDuration: 2
   patrolSpeedOverride: 0
   chaseSpeedOverride: 0
+  investigationSpeedOverride: 0
   stopDistance: 1
   maxChaseDistance: 50
 --- !u!114 &4783484216242003377
@@ -390,7 +391,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 953a315b4b0e8d2489b0f9cf3cb2b908, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySoundInvestigator
-  enemyData: {fileID: 11400000, guid: 3dcf16523d526574da36f842b15646fb, type: 2}
+  enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   investigationDurationOverride: 0
   rotationIntervalOverride: 0
   searchRadius: 3
@@ -424,11 +425,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4bb3d0b498fbdde429b05c28b03313fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyWeaponController
-  primaryHoldPosition: {fileID: 2442067725035175452}
-  secondaryHoldPosition: {fileID: 2432630766753788145}
-  currentPrimaryItem: {fileID: 0}
-  currentSecondaryItem: {fileID: 0}
-  throwForce: 10
+  meleeHoldPosition: {fileID: 2432630766753788145}
+  rangedHoldPosition: {fileID: 2442067725035175452}
   canUseItems: 1
 --- !u!114 &2510889999578025272
 MonoBehaviour:

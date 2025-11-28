@@ -229,15 +229,9 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     /// </summary>
     private void SpawnDeathEffect()
     {
-        if (enemyData != null && enemyData.deathEffectPrefab != null)
+        if (enemyData != null && enemyData.deathPuddlePrefab != null)
         {
-            GameObject deathEffect = Instantiate(enemyData.deathEffectPrefab, transform.position, Quaternion.identity);
-
-            // Scale effect based on puddleSize
-            if (enemyData.puddleSize > 0)
-            {
-                deathEffect.transform.localScale = Vector3.one * enemyData.puddleSize;
-            }
+            Instantiate(enemyData.deathPuddlePrefab, transform.position, Quaternion.identity);
         }
     }
 

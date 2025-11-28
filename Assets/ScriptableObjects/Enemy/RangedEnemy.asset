@@ -10,17 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9bbbdac2490e0d5458c8cb46a7dea796, type: 3}
-  m_Name: MeleeEnemy
+  m_Name: RangedEnemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Enemy
+  enemyType: 1
   maxHealth: 100
-  patrolSpeed: 2
-  chaseSpeed: 12
+  patrolSpeed: 4
+  investigationSpeed: 2.5
   acceleration: 16
   angularSpeed: 120
+  chaseSpeed: 8
+  chaseAcceleration: 4
+  chaseAngularSpeed: 360
+  chaseRotationSpeed: 3600
   visionRange: 6
   visionAngle: 100
-  rotationSpeed: 720
+  rotationSpeed: 240
   visionObstacleMask:
     serializedVersion: 2
     m_Bits: 2048
@@ -31,12 +36,12 @@ MonoBehaviour:
   soundDetectionRange: 151.1
   soundInvestigationDuration: 5
   soundSearchRotationInterval: 2
-  deathEffectPrefab: {fileID: 0}
-  puddleSize: 1
-  deathSounds: []
+  deathPuddlePrefab: {fileID: 3900286614151855705, guid: cb6cbc50c64bd8c468927223936cc291, type: 3}
+  deathSounds:
+  - {fileID: 8300000, guid: 692bb93d7b84c434bafae49961e534e6, type: 3}
   deathSoundVolume: 1
   canUseWeapons: 1
-  weaponAttackRange: 1
+  weaponAttackRange: 6
   weaponAttackCooldown: 1
   meleeAttackRange: 1
   canSeekItems: 1

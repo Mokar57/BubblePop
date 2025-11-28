@@ -51,6 +51,7 @@ public class EnemyMovementController : MonoBehaviour
     [Tooltip("Leave at 0 to use enemyData values")]
     public float patrolSpeedOverride = 0f;
     public float chaseSpeedOverride = 0f;
+    public float investigationSpeedOverride = 0f;
 
     [Header("Chase Settings")]
     [Tooltip("Distance to stop from target when chasing")]
@@ -64,8 +65,10 @@ public class EnemyMovementController : MonoBehaviour
     // Movement speeds
     private float patrolSpeed;
     private float chaseSpeed;
+    private float investigationSpeed;
     private float originalPatrolSpeed;
     private float originalChaseSpeed;
+    private float originalInvestigationSpeed;
 
     // Speed boost
     private float speedBoostMultiplier = 1f;
@@ -78,7 +81,7 @@ public class EnemyMovementController : MonoBehaviour
 
     // Patrol state
     // Logic moved to PatrolState
-    
+
     // Stuck detection
     private float stuckTimer = 0f;
     private bool isStuck = false;
@@ -110,9 +113,9 @@ public class EnemyMovementController : MonoBehaviour
     private void UpdateRotationBasedOnVision()
     {
         if (visionSystem == null) return;
-        
+
         Vector3 visionDirection = visionSystem.GetVisionDirection();
-        
+
         if (visionDirection.magnitude > 0.01f)
         {
             float angle = Mathf.Atan2(visionDirection.y, visionDirection.x) * Mathf.Rad2Deg;
@@ -127,16 +130,19 @@ public class EnemyMovementController : MonoBehaviour
         {
             patrolSpeed = patrolSpeedOverride > 0 ? patrolSpeedOverride : enemyData.patrolSpeed;
             chaseSpeed = chaseSpeedOverride > 0 ? chaseSpeedOverride : enemyData.chaseSpeed;
+            investigationSpeed = investigationSpeedOverride > 0 ? investigationSpeedOverride : enemyData.investigationSpeed;
         }
         else
         {
             patrolSpeed = patrolSpeedOverride > 0 ? patrolSpeedOverride : 2f;
             chaseSpeed = chaseSpeedOverride > 0 ? chaseSpeedOverride : 3.5f;
+            investigationSpeed = investigationSpeedOverride > 0 ? investigationSpeedOverride : 2.5f;
             Debug.LogWarning($"{gameObject.name}: No EnemyDataSO assigned! Using default speeds.");
         }
 
         originalPatrolSpeed = patrolSpeed;
         originalChaseSpeed = chaseSpeed;
+        originalInvestigationSpeed = investigationSpeed;
     }
 
     /// <summary>
@@ -179,17 +185,38 @@ public class EnemyMovementController : MonoBehaviour
     /// <summary>
     /// Move to a specific position
     /// </summary>
-    public void MoveTo(Vector3 position, bool isChasing = false)
+    public void MoveTo(Vector3 position, SpeedType speedType = SpeedType.Patrol)
     {
         if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
 
-        float baseSpeed = isChasing ? chaseSpeed : patrolSpeed;
-        SetSpeed(baseSpeed);
-        
-        agent.stoppingDistance = isChasing ? stopDistance : 0f;
+        SetSpeedType(speedType);
+
+        agent.stoppingDistance = (speedType == SpeedType.Chase) ? stopDistance : 0f;
         agent.SetDestination(position);
-        
+
         // Reset stuck state when starting new move
+        isStuck = false;
+        stuckTimer = 0f;
+    }
+
+    /// <summary>
+    /// Moves directly towards the target position, bypassing some pathfinding smoothing.
+    /// Useful for aggressive chasing when line of sight is clear.
+    /// </summary>
+    public void MoveDirectly(Vector3 targetPosition)
+    {
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh) return;
+
+        SetSpeedType(SpeedType.Chase);
+
+        // Set destination normally to ensure agent knows where to go
+        agent.SetDestination(targetPosition);
+
+        // Force velocity towards target for "direct" feel
+        Vector3 direction = (targetPosition - transform.position).normalized;
+        agent.velocity = direction * chaseSpeed * speedBoostMultiplier;
+
+        // Reset stuck state
         isStuck = false;
         stuckTimer = 0f;
     }
@@ -214,7 +241,7 @@ public class EnemyMovementController : MonoBehaviour
         if (agent == null || !agent.enabled || !agent.isOnNavMesh) return false;
 
         if (agent.pathPending) return false;
-        
+
         float dist = agent.remainingDistance;
         return dist != float.PositiveInfinity && dist <= reachDistance;
     }
@@ -225,7 +252,7 @@ public class EnemyMovementController : MonoBehaviour
 
     private void UpdateStuckDetection()
     {
-        if (agent == null || !agent.enabled || !agent.hasPath) 
+        if (agent == null || !agent.enabled || !agent.hasPath)
         {
             isStuck = false;
             stuckTimer = 0f;
@@ -260,7 +287,7 @@ public class EnemyMovementController : MonoBehaviour
     /// </summary>
     public void ChaseTarget(Vector3 targetPosition)
     {
-        MoveTo(targetPosition, true);
+        MoveTo(targetPosition, SpeedType.Chase);
     }
 
     #endregion
@@ -302,6 +329,51 @@ public class EnemyMovementController : MonoBehaviour
         if (agent != null)
         {
             agent.speed = currentBaseSpeed * speedBoostMultiplier;
+        }
+    }
+
+    /// <summary>
+    /// Set speed based on type
+    /// </summary>
+    public enum SpeedType
+    {
+        Patrol,
+        Chase,
+        Investigation
+    }
+
+    public void SetSpeedType(SpeedType type)
+    {
+        float speed = patrolSpeed;
+        // Default values from EnemyData or standard defaults
+        float acceleration = (enemyData != null) ? enemyData.acceleration : 8f;
+        float angularSpeed = (enemyData != null) ? enemyData.angularSpeed : 120f;
+
+        switch (type)
+        {
+            case SpeedType.Chase:
+                speed = chaseSpeed;
+                // Apply snappy movement for chase
+                if (enemyData != null)
+                {
+                    acceleration = enemyData.chaseAcceleration;
+                    angularSpeed = enemyData.chaseAngularSpeed;
+                }
+                else
+                {
+                    Debug.LogWarning("No EnemyData assigned");
+                }
+                break;
+            case SpeedType.Investigation:
+                speed = investigationSpeed;
+                break;
+        }
+        SetSpeed(speed);
+
+        if (agent != null)
+        {
+            agent.acceleration = acceleration;
+            agent.angularSpeed = angularSpeed;
         }
     }
 

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f83bb6831d447344aae01ce4700b2760, type: 3}
+  m_Name: NewProjectile
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileDataSO
+  projectileName: Projectile
+  speed: 15
+  lifetime: 5
+  stuckDuration: 2
+  enableWobbleAnimation: 1
+  wobbleSpeed: 5
+  wobbleAmplitude: 0.1
+  canPassThrough: 1
+  maxHitCount: 0
+  enableTrail: 1
+  trailWidth: 0.1
+  trailColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  trailTime: 0.3
+  hitEffectPrefab: {fileID: 0}
+  wallHitEffectPrefab: {fileID: 0}

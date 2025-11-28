@@ -9,6 +9,7 @@ public class WeaponDataSO : ScriptableObject
 {
     [Header("Basic Info")]
     public string weaponName = "Weapon";
+    public ItemHoldType holdType = ItemHoldType.Melee;
 
     [Header("Durability")]
     [Tooltip("Maximum number of times this weapon can be used before breaking")]
@@ -24,6 +25,16 @@ public class WeaponDataSO : ScriptableObject
     [Header("Throwing")]
     [Tooltip("Force applied when weapon is thrown")]
     public float throwForce = 10f;
+
+    [Tooltip("Damage dealt when thrown weapon hits an enemy")]
+    public float throwDamage = 100f;
+
+    [Tooltip("Force multiplier when bouncing off walls/enemies (0-1)")]
+    [Range(0f, 1f)]
+    public float bounceForce = 0.3f;
+
+    [Tooltip("How long it takes to slow down to a stop after hitting something")]
+    public float slowDownDuration = 1f;
 
     [Header("Audio")]
     [Tooltip("Sound played when weapon is used (attack)")]

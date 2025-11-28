@@ -9,7 +9,7 @@ public interface IItemHolder
     /// <summary>
     /// Get the transform position where items should be held
     /// </summary>
-    Transform GetHoldPosition();
+    Transform GetHoldPosition(ItemHoldType holdType);
 
     /// <summary>
     /// Get the team of the entity holding the item
@@ -59,12 +59,13 @@ public interface ISpeedBoostable
     /// Apply speed boost with given multiplier
     /// </summary>
     void ApplySpeedBoost(float multiplier);
-    
+
     /// <summary>
     /// Remove currently applied speed boost
     /// </summary>
-    void RemoveSpeedBoost();
-    
+    /// <param name="fadeDuration">Time in seconds to fade out the boost. 0 for instant removal.</param>
+    void RemoveSpeedBoost(float fadeDuration = 0f);
+
     /// <summary>
     /// Check if speed boost is currently active
     /// </summary>

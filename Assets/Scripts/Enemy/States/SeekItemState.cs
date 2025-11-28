@@ -12,7 +12,7 @@ public class SeekItemState : AIStateBase
     {
         if (enemyAI.DebugMode)
             Debug.Log("Entering Seek Item State");
-        
+
         movementController.SetEnabled(true);
         FindAndSetTargetItem();
     }
@@ -27,7 +27,13 @@ public class SeekItemState : AIStateBase
         }
 
         // 2. Validate target item
-        if (targetItem == null || targetItem.IsDepleted() || targetItem.transform.parent != null)
+        bool isTargetValid = targetItem != null && targetItem.transform.parent == null;
+        if (isTargetValid && targetItem.TryGetComponent<Weapon>(out var weapon))
+        {
+            if (weapon.IsBroken) isTargetValid = false;
+        }
+
+        if (!isTargetValid)
         {
             // Try to find a new one periodically
             if (Time.time - lastSearchTime > SEARCH_INTERVAL)
@@ -52,7 +58,7 @@ public class SeekItemState : AIStateBase
 
         // 3. Move towards item
         movementController.MoveTo(targetItem.transform.position);
-        
+
         // Standard vision behavior
         LookWhereMoving();
 
@@ -60,7 +66,7 @@ public class SeekItemState : AIStateBase
         float distanceToItem = Vector2.Distance(enemyAI.transform.position, targetItem.transform.position);
         if (distanceToItem <= itemSeeker.GetPickupRadius())
         {
-            bool success = targetItem.TryPickupByEnemy(weaponController);
+            bool success = targetItem.TryPickup(weaponController);
             if (success)
             {
                 TransitionAfterPickup();
@@ -81,7 +87,7 @@ public class SeekItemState : AIStateBase
     private void TransitionAfterPickup()
     {
         enemyAI.OnWeaponAcquired();
-        
+
         if (enemyAI.IsPlayerDetected())
         {
             enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
@@ -96,7 +102,7 @@ public class SeekItemState : AIStateBase
     {
         if (enemyAI.DebugMode)
             Debug.Log("Exiting Seek Item State");
-        
+
         targetItem = null;
     }
 }

@@ -24,3 +24,12 @@ public enum DamageType
     Blunt      // Causes bounce/knockback (baseball bat, fan projectiles)
 }
 
+/// <summary>
+/// Determines how an item is held
+/// </summary>
+public enum ItemHoldType
+{
+    Melee,
+    Ranged
+}
+

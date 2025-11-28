@@ -29,7 +29,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     [Header("Chase Settings")]
     [Tooltip("Once spotted, chase forever until too far (Overrides SO if true)")]
     public bool persistentChaseOverride = false;
-    
+
     public bool PersistentChase => persistentChaseOverride || (enemyData != null && enemyData.persistentChase);
 
     [Header("Debug")]
@@ -69,6 +69,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     // Speed boost
     private bool isSpeedBoosted = false;
     private float speedBoostMultiplier = 1f;
+    private float currentSpeedBoostFadeTime = 0f;
+    private float initialFadeDuration = 0f;
+    private bool isFadingBoost = false;
 
     #region Initialization
 
@@ -158,6 +161,33 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         }
 
         _currentState?.UpdateState(); // Update the current active state
+
+        UpdateSpeedBoostFade();
+    }
+
+    private void UpdateSpeedBoostFade()
+    {
+        if (isFadingBoost)
+        {
+            currentSpeedBoostFadeTime -= Time.deltaTime;
+
+            if (currentSpeedBoostFadeTime <= 0)
+            {
+                // Fade complete
+                isFadingBoost = false;
+                isSpeedBoosted = false;
+                speedBoostMultiplier = 1f;
+                MovementController.RemoveSpeedBoost();
+            }
+            else
+            {
+                // Calculate interpolated multiplier
+                // Lerp from stored multiplier to 1
+                float t = currentSpeedBoostFadeTime / initialFadeDuration;
+                float currentMultiplier = Mathf.Lerp(1f, speedBoostMultiplier, t);
+                MovementController.ApplySpeedBoost(currentMultiplier);
+            }
+        }
     }
 
     #endregion
@@ -196,7 +226,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         SetHasDetectedTarget(true); // Set hasDetectedTarget via public setter
         SetTarget(detectedTarget); // Set target via public setter
         LastKnownTargetPosition = detectedTarget.position;
-        
+
         // This event might trigger a state change, e.g., from Patrol to Chase/SeekItem
         // The current state's UpdateState will handle the transition
     }
@@ -255,7 +285,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         VisionSystem.SetTarget(newTarget);
         if (ProximityDetector != null) ProximityDetector.SetTarget(newTarget);
         // Reset hasDetectedTarget if a new target is set or target is lost
-        if (newTarget == null) SetHasDetectedTarget(false); 
+        if (newTarget == null) SetHasDetectedTarget(false);
     }
 
     public void SetHasDetectedTarget(bool detected)
@@ -270,7 +300,11 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     public void ApplySpeedBoost(float multiplier)
     {
-        if (!isSpeedBoosted)
+        // If we were fading, stop fading and apply new boost
+        bool wasFading = isFadingBoost;
+        isFadingBoost = false;
+
+        if (!isSpeedBoosted || wasFading || multiplier > speedBoostMultiplier)
         {
             speedBoostMultiplier = multiplier;
             isSpeedBoosted = true;
@@ -278,13 +312,25 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         }
     }
 
-    public void RemoveSpeedBoost()
+    public void RemoveSpeedBoost(float fadeDuration = 0f)
     {
         if (isSpeedBoosted)
         {
-            speedBoostMultiplier = 1f;
-            isSpeedBoosted = false;
-            MovementController.RemoveSpeedBoost();
+            if (fadeDuration > 0f)
+            {
+                // Start fading
+                isFadingBoost = true;
+                initialFadeDuration = fadeDuration;
+                currentSpeedBoostFadeTime = fadeDuration;
+            }
+            else
+            {
+                // Instant removal
+                speedBoostMultiplier = 1f;
+                isSpeedBoosted = false;
+                isFadingBoost = false;
+                MovementController.RemoveSpeedBoost();
+            }
         }
     }
 
@@ -298,7 +344,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     {
         return (Target != null && VisionSystem.CanSeeTarget()) || ProximityDetected;
     }
-    
+
     public bool IsSoundHeard()
     {
         return SoundInvestigator.HasDetectedSoundStatus;
@@ -309,7 +355,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public void SetVisionDirection(Vector3 direction) => VisionSystem.SetVisionDirection(direction);
     public bool IsMoving() => MovementController.IsMoving();
     public float DistanceToTarget() => Target != null ? Vector3.Distance(transform.position, Target.position) : float.MaxValue;
-    
+
     public void ResetDetection()
     {
         SetHasDetectedTarget(false);

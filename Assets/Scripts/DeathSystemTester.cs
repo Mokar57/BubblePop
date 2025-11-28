@@ -9,7 +9,7 @@ public class DeathSystemTester : MonoBehaviour
     [Header("Test Settings")]
     [Tooltip("Player objesine referans (otomatik bulunur)")]
     public PlayerControls player;
-    
+
     [Tooltip("Test için kullanılacak damage miktarı")]
     public float testDamage = 50f;
 
@@ -19,7 +19,7 @@ public class DeathSystemTester : MonoBehaviour
         if (player == null)
         {
             player = FindFirstObjectByType<PlayerControls>();
-            
+
             if (player == null)
             {
                 Debug.LogWarning("DeathSystemTester: Player bulunamadı!");
@@ -34,7 +34,7 @@ public class DeathSystemTester : MonoBehaviour
         {
             TestDamage();
         }
-        
+
         // L tuşu ile instant death test
         if (Input.GetKeyDown(KeyCode.L))
         {
@@ -51,7 +51,8 @@ public class DeathSystemTester : MonoBehaviour
         if (player != null)
         {
             Debug.Log($"DeathSystemTester: Giving {testDamage} damage to player");
-            player.TakeDamage(testDamage);
+            DamageInfo info = new DamageInfo(testDamage, DamageType.Piercing, Team.Enemy, gameObject, Vector2.zero, 0f);
+            player.TakeDamage(info);
         }
         else
         {
@@ -68,7 +69,8 @@ public class DeathSystemTester : MonoBehaviour
         if (player != null)
         {
             Debug.Log("DeathSystemTester: Instantly killing player");
-            player.TakeDamage(1000f); // Yüksek damage
+            DamageInfo info = new DamageInfo(1000f, DamageType.Piercing, Team.Enemy, gameObject, Vector2.zero, 0f);
+            player.TakeDamage(info); // Yüksek damage
         }
         else
         {

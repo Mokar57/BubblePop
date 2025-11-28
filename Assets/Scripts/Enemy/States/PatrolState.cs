@@ -13,7 +13,7 @@ public class PatrolState : AIStateBase
     {
         if (enemyAI.DebugMode)
             Debug.Log("Entering Patrol State");
-        
+
         if (movementController.enablePatrol && movementController.patrolWaypoints.Count > 0)
         {
             currentWaypointIndex = 0;
@@ -43,7 +43,7 @@ public class PatrolState : AIStateBase
         {
             HandleMoving();
         }
-        
+
         // Standard vision behavior
         LookWhereMoving();
     }
@@ -68,12 +68,20 @@ public class PatrolState : AIStateBase
     private void HandleWaiting()
     {
         waitTimer -= Time.deltaTime;
-        
+
         // Rotate towards waypoint direction while waiting
         Waypoint current = GetCurrentWaypoint();
         if (current != null)
         {
-            enemyAI.SetVisionDirection(current.WaitDirection);
+            // Smoothly rotate instead of snapping
+            if (enemyAI.enemyData != null)
+            {
+                visionSystem.RotateVisionTowards(current.WaitDirection, enemyAI.enemyData.rotationSpeed);
+            }
+            else
+            {
+                visionSystem.RotateVisionTowards(current.WaitDirection, 90f); // Default speed
+            }
         }
 
         if (waitTimer <= 0f)
@@ -86,7 +94,7 @@ public class PatrolState : AIStateBase
     {
         isWaiting = true;
         movementController.StopMovement();
-        
+
         Waypoint current = GetCurrentWaypoint();
         if (current != null)
         {
@@ -111,7 +119,7 @@ public class PatrolState : AIStateBase
     {
         isWaiting = false;
         List<Waypoint> waypoints = movementController.patrolWaypoints;
-        
+
         if (movementController.randomPatrolOrder)
         {
             int newIndex;
@@ -138,7 +146,7 @@ public class PatrolState : AIStateBase
                 }
             }
         }
-        
+
         MoveToCurrentWaypoint();
     }
 
