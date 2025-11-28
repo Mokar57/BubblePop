@@ -8,15 +8,11 @@ using UnityEngine;
 public class MeleeWeaponDataSO : WeaponDataSO
 {
     [Header("Melee Attack Settings")]
-    [Tooltip("Range of melee attack")]
-    public float attackRange = 2f;
-
     [Tooltip("Angle of attack cone in degrees (360 = full circle)")]
     [Range(0f, 360f)]
     public float attackAngle = 90f;
 
-    [Tooltip("Cooldown between attacks in seconds")]
-    public float attackCooldown = 1f;
+    // attackCooldown moved to base WeaponDataSO
 
     [Header("Knockback (for Blunt damage)")]
     [Tooltip("Force of knockback applied to enemies")]

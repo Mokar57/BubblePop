@@ -27,7 +27,15 @@ public class RangedWeapon : Weapon
             Debug.LogError($"{name}: RangedData is null! Cannot attack.");
             return;
         }
-        if (Time.time < lastFireTime + rangedData.fireCooldown) return;
+
+        // Determine Cooldown based on holder
+        float cooldown = rangedData.playerAttackCooldown;
+        if (currentHolder != null && currentHolder.GetTeam() == Team.Enemy)
+        {
+            cooldown = rangedData.enemyAttackCooldown;
+        }
+
+        if (Time.time < lastFireTime + cooldown) return;
 
         lastFireTime = Time.time;
 

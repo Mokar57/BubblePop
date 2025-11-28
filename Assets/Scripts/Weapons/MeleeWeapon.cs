@@ -27,7 +27,15 @@ public class MeleeWeapon : Weapon
             Debug.LogError($"{name}: MeleeData is null! Cannot attack.");
             return;
         }
-        if (Time.time < lastAttackTime + meleeData.attackCooldown) return;
+
+        // Determine Cooldown based on holder
+        float cooldown = meleeData.playerAttackCooldown;
+        if (currentHolder != null && currentHolder.GetTeam() == Team.Enemy)
+        {
+            cooldown = meleeData.enemyAttackCooldown;
+        }
+
+        if (Time.time < lastAttackTime + cooldown) return;
 
         lastAttackTime = Time.time;
 
@@ -43,11 +51,18 @@ public class MeleeWeapon : Weapon
         // Use Up as forward since PlayerControls uses transform.up for rotation
         Vector2 attackDirection = currentHolder != null ? currentHolder.GetHoldPosition(HoldType).up : transform.up;
 
+        // Determine Range based on holder
+        float range = weaponData.playerAttackRange;
+        if (currentHolder != null && currentHolder.GetTeam() == Team.Enemy)
+        {
+            range = weaponData.enemyAttackRange;
+        }
+
         // Calculate hit position based on range
-        Vector2 hitPos = attackOrigin + (attackDirection * (meleeData.attackRange * 0.5f));
+        Vector2 hitPos = attackOrigin + (attackDirection * (range * 0.5f));
 
         // OverlapCircle to find targets
-        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, meleeData.attackRange);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, range);
 
         bool hitEnemy = false;
 
@@ -97,10 +112,15 @@ public class MeleeWeapon : Weapon
 
     private void OnDrawGizmosSelected()
     {
-        if (meleeData != null)
+        if (weaponData != null)
         {
+            // Draw Player Range (Green)
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(transform.position + (transform.up * (weaponData.playerAttackRange * 0.5f)), weaponData.playerAttackRange);
+
+            // Draw Enemy Range (Red)
             Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + (transform.up * (meleeData.attackRange * 0.5f)), meleeData.attackRange);
+            Gizmos.DrawWireSphere(transform.position + (transform.up * (weaponData.enemyAttackRange * 0.5f)), weaponData.enemyAttackRange);
         }
     }
 }

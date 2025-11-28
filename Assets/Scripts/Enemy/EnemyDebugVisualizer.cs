@@ -141,13 +141,27 @@ public class EnemyDebugVisualizer : MonoBehaviour
         // Draw weapon ranges
         if (showWeaponRanges && enemyData != null)
         {
-            // Ranged attack range
-            Gizmos.color = new Color(1f, 0f, 0f, 1f);
-            Gizmos.DrawWireSphere(pos, enemyData.weaponAttackRange);
+            float rangeToDraw = 0f;
 
-            // Melee attack range
-            Gizmos.color = new Color(1f, 1f, 0f, 1f);
-            Gizmos.DrawWireSphere(pos, enemyData.meleeAttackRange);
+            // Check for current weapon
+            if (enemyAI != null && enemyAI.WeaponController != null && enemyAI.WeaponController.IsHoldingWeapon)
+            {
+                var weaponObj = enemyAI.WeaponController.GetCurrentWeapon();
+                if (weaponObj != null)
+                {
+                    var weapon = weaponObj.GetComponent<Weapon>();
+                    if (weapon != null && weapon.Data != null)
+                    {
+                        rangeToDraw = weapon.Data.enemyAttackRange;
+                    }
+                }
+            }
+
+            if (rangeToDraw > 0)
+            {
+                Gizmos.color = new Color(1f, 0f, 0f, 1f); // Red for weapon
+                Gizmos.DrawWireSphere(pos, rangeToDraw);
+            }
         }
 
         // Draw patrol path
@@ -224,22 +238,22 @@ public class EnemyDebugVisualizer : MonoBehaviour
         // Refresh vision system reference if needed
         if (visionSystem == null)
             visionSystem = GetComponent<EnemyVisionSystem>();
-        
+
         if (visionSystem == null) return;
 
         // Get vision parameters (works in edit mode and runtime)
         float visionRange = visionSystem.GetVisionRange();
         float visionAngle = visionSystem.GetVisionAngle();
-        
+
         // Use default values if not initialized yet (edit mode)
         if (visionRange <= 0)
         {
-            visionRange = visionSystem.visionRangeOverride > 0 ? visionSystem.visionRangeOverride : 
+            visionRange = visionSystem.visionRangeOverride > 0 ? visionSystem.visionRangeOverride :
                          (enemyData != null ? enemyData.visionRange : 8f);
         }
         if (visionAngle <= 0)
         {
-            visionAngle = visionSystem.visionAngleOverride > 0 ? visionSystem.visionAngleOverride : 
+            visionAngle = visionSystem.visionAngleOverride > 0 ? visionSystem.visionAngleOverride :
                          (enemyData != null ? enemyData.visionAngle : 60f);
         }
 

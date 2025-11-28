@@ -8,27 +8,10 @@ public class ChaseState : AIStateBase
 
     // Attack vars
     private float lastAttackTime;
-    private float attackRange;
-    private float meleeRange;
-    private float attackCooldown;
     private LayerMask obstacleMask;
 
     public ChaseState(EnemyAI context) : base(context)
     {
-        // Initialize settings from EnemyData
-        if (enemyAI.enemyData != null)
-        {
-            attackRange = enemyAI.enemyData.weaponAttackRange;
-            meleeRange = enemyAI.enemyData.meleeAttackRange;
-            attackCooldown = enemyAI.enemyData.weaponAttackCooldown;
-        }
-        else
-        {
-            attackRange = 10f;
-            meleeRange = 2f;
-            attackCooldown = 1f;
-        }
-
         // Default obstacle mask (everything except Ignore Raycast, Player, Enemy, etc if needed)
         // Ideally this should come from config, but for now we use a sensible default
         obstacleMask = LayerMask.GetMask("Default", "Obstacle", "Wall");
@@ -117,27 +100,28 @@ public class ChaseState : AIStateBase
             return;
         }
 
+        // --- Determine Attack Stats ---
+        float currentAttackCooldown = 1f;
+        float currentAttackRange = 1.5f;
+
+        if (currentWeapon != null && currentWeapon.Data != null)
+        {
+            currentAttackCooldown = currentWeapon.Data.enemyAttackCooldown;
+            currentAttackRange = currentWeapon.Data.enemyAttackRange; // Use explicit enemy attack range
+        }
+
         // Check cooldown
-        if (Time.time - lastAttackTime < attackCooldown) return;
+        if (Time.time - lastAttackTime < currentAttackCooldown) return;
 
         float distanceToTarget = Vector3.Distance(enemyAI.transform.position, enemyAI.Target.position);
         bool canAttack = false;
-        bool canSee = visionSystem.CanSeeTarget();
         bool hasLOS = HasLineOfSight(enemyAI.Target.position);
 
-        if (currentWeapon is RangedWeapon)
+        // Simple check: Are we close enough and have LOS?
+        // We add a small buffer (e.g. 10%) to the range so we don't jitter at the edge
+        if (distanceToTarget <= currentAttackRange * 1.1f && hasLOS)
         {
-            if (distanceToTarget <= attackRange && canSee && hasLOS)
-            {
-                canAttack = true;
-            }
-        }
-        else // Assume Melee or default
-        {
-            if (distanceToTarget <= meleeRange && hasLOS)
-            {
-                canAttack = true;
-            }
+            canAttack = true;
         }
 
         if (canAttack)
@@ -238,27 +222,44 @@ public class ChaseState : AIStateBase
             enemyAI.LastSeenTime = Time.time;
         }
 
-        // Handle movement based on Enemy Type
-        if (enemyAI.enemyData != null && enemyAI.enemyData.enemyType == EnemyType.Ranged)
+        // --- NEW LOGIC: Movement based on WEAPON, not Enemy Type ---
+
+        float desiredDistance = 1.5f; // Default melee range
+
+        if (enemyAI.WeaponController.IsHoldingWeapon)
         {
-            float distanceToTarget = Vector3.Distance(enemyAI.transform.position, destinationPosition);
-            float stopRange = attackRange * 0.8f; // Stop a bit before max range
+            var weapon = enemyAI.WeaponController.GetCurrentWeapon().GetComponent<Weapon>();
+            if (weapon != null && weapon.Data != null)
+            {
+                // Stand slightly inside the max attack range (e.g. 90%) to ensure we can hit
+                desiredDistance = weapon.Data.enemyAttackRange * 0.9f;
+            }
+        }
+
+        // We consider it "ranged behavior" if the ideal range is significant (e.g. > 3m)
+        // or strictly based on hold type if you prefer.
+        bool isRangedBehavior = desiredDistance > 3.0f;
+
+        float distanceToTarget = Vector3.Distance(enemyAI.transform.position, destinationPosition);
+
+        if (isRangedBehavior)
+        {
+            // Ranged / Kiting Behavior
+            float stopRange = desiredDistance;
+            float retreatRange = desiredDistance * 0.5f; // Too close!
 
             if (distanceToTarget > stopRange)
             {
                 // Move closer
                 movementController.ChaseTarget(destinationPosition);
             }
-            else if (distanceToTarget < attackRange * 0.4f)
+            else if (distanceToTarget < retreatRange)
             {
-                // Too close! Back away slightly if possible (optional, for now just stop or move to safe distance)
+                // Too close! Back away slightly
                 // Simple implementation: Stop moving if in good range
                 movementController.StopMovement();
 
-                // Advanced: Move away from target
-                // Vector3 dirAway = (enemyAI.transform.position - destinationPosition).normalized;
-                // Vector3 fleePos = enemyAI.transform.position + dirAway * 2f;
-                // movementController.MoveTo(fleePos, EnemyMovementController.SpeedType.Chase);
+                // Optional: Add code here to actually move the NavMeshAgent away from the player
             }
             else
             {
@@ -268,17 +269,24 @@ public class ChaseState : AIStateBase
         }
         else
         {
-            // Melee behavior (default) - just chase
+            // Melee / Aggressive Behavior
+            // Move until we are within the ideal range (which is usually close for melee)
 
-            // Check for direct line of sight for aggressive "Hotline Miami" chase
-            // If we can see the target, move directly towards them (ignoring path smoothing)
-            if (visionSystem.CanSeeTarget())
+            if (distanceToTarget <= desiredDistance)
             {
-                movementController.MoveDirectly(destinationPosition);
+                movementController.StopMovement();
             }
             else
             {
-                movementController.ChaseTarget(destinationPosition);
+                // Check for direct line of sight for aggressive "Hotline Miami" chase
+                if (visionSystem.CanSeeTarget())
+                {
+                    movementController.MoveDirectly(destinationPosition);
+                }
+                else
+                {
+                    movementController.ChaseTarget(destinationPosition);
+                }
             }
         }
     }

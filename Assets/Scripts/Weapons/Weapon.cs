@@ -8,6 +8,7 @@ public abstract class Weapon : PickupableItem
 {
     [Header("Weapon Data")]
     [SerializeField] protected WeaponDataSO weaponData;
+    public WeaponDataSO Data => weaponData;
 
     public override ItemHoldType HoldType => weaponData != null ? weaponData.holdType : base.HoldType;
 

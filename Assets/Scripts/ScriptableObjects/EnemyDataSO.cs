@@ -9,7 +9,6 @@ public class EnemyDataSO : ScriptableObject
 {
     [Header("Basic Info")]
     public string enemyName = "Enemy";
-    public EnemyType enemyType = EnemyType.Melee;
 
     [Header("Combat Behavior")]
     [Tooltip("Time to wait after landing a blunt attack on player (recoil/pause)")]
@@ -94,15 +93,6 @@ public class EnemyDataSO : ScriptableObject
     [Tooltip("Can this enemy pick up and use weapons?")]
     public bool canUseWeapons = true;
 
-    [Tooltip("Attack range when using ranged weapons")]
-    public float weaponAttackRange = 10f;
-
-    [Tooltip("Cooldown between weapon attacks")]
-    public float weaponAttackCooldown = 1f;
-
-    [Tooltip("Attack range when using melee weapons")]
-    public float meleeAttackRange = 2f;
-
     [Header("Item Seeking")]
     [Tooltip("Can this enemy automatically seek and pick up items?")]
     public bool canSeekItems = true;
@@ -134,10 +124,4 @@ public class EnemyDataSO : ScriptableObject
 
     [Tooltip("Once spotted, chase forever until too far")]
     public bool persistentChase = true;
-}
-
-public enum EnemyType
-{
-    Melee,
-    Ranged
 }

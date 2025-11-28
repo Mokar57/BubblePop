@@ -11,8 +11,7 @@ public class RangedWeaponDataSO : WeaponDataSO
     [Tooltip("Projectile prefab to spawn when firing")]
     public GameObject projectilePrefab;
 
-    [Tooltip("Cooldown between shots in seconds")]
-    public float fireCooldown = 0.5f;
+    // fireCooldown moved to base WeaponDataSO as attackCooldown
 
     [Tooltip("Speed of fired projectile")]
     public float projectileSpeed = 15f;

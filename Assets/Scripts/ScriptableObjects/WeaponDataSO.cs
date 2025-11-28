@@ -11,6 +11,20 @@ public class WeaponDataSO : ScriptableObject
     public string weaponName = "Weapon";
     public ItemHoldType holdType = ItemHoldType.Melee;
 
+    [Header("Enemy Usage Settings")]
+    [Tooltip("Range of attack for ENEMY")]
+    public float enemyAttackRange = 1.5f;
+
+    [Tooltip("Cooldown between attacks for ENEMIES")]
+    public float enemyAttackCooldown = 1.5f;
+
+    [Header("Player Usage Settings")]
+    [Tooltip("Range of attack for PLAYER")]
+    public float playerAttackRange = 2f;
+
+    [Tooltip("Cooldown between attacks for PLAYER")]
+    public float playerAttackCooldown = 0.5f;
+
     [Header("Durability")]
     [Tooltip("Maximum number of times this weapon can be used before breaking")]
     public int maxDurability = 10;
