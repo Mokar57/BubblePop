@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RangedWeaponDataSO
   weaponName: Weapon
   holdType: 1
+  enemyAttackRange: 8
+  enemyAttackCooldown: 1.5
+  playerAttackRange: 2
+  playerAttackCooldown: 0.5
   maxDurability: 3
   damageType: 0
   baseDamage: 100
@@ -30,6 +34,5 @@ MonoBehaviour:
   droppedSprite: {fileID: 130435258968749653, guid: a2205c0d7c8a1ff46b5d09a64294aa56, type: 3}
   depletedSprite: {fileID: 8741980072048425201, guid: 3d902cca632705b409fe83d0ca467c25, type: 3}
   projectilePrefab: {fileID: 8696534751382374328, guid: ccab4126e4966cf418aeaed09a1f5b75, type: 3}
-  fireCooldown: 0.5
   projectileSpeed: 15
   projectileData: {fileID: 11400000, guid: 40b73bb664f014442aa9c132046945e5, type: 2}

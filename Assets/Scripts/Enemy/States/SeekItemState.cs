@@ -106,13 +106,22 @@ public class SeekItemState : AIStateBase
     {
         enemyAI.OnWeaponAcquired();
 
-        if (enemyAI.IsPlayerDetected())
+        // Check if we still remember the player (either seen or in memory)
+        if (enemyAI.IsPlayerDetected() || enemyAI.IsTargetRemembered())
         {
             enemyAI.TransitionToState(enemyAI.ChaseStateInstance);
         }
         else
         {
-            enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
+            // If we have a last known position but memory expired, maybe search?
+            if (enemyAI.HasDetectedTarget)
+            {
+                enemyAI.TransitionToState(enemyAI.SearchStateInstance);
+            }
+            else
+            {
+                enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
+            }
         }
     }
 

@@ -27,11 +27,21 @@ public class ChaseState : AIStateBase
 
     public override void UpdateState()
     {
-        // Update last known position if we can see target
-        if (enemyAI.Target != null && visionSystem.CanSeeTarget())
+        // Update last known position if we can see target OR remember them
+        bool canSee = visionSystem.CanSeeTarget();
+        bool remembers = enemyAI.IsTargetRemembered();
+
+        if (enemyAI.Target != null && (canSee || remembers))
         {
             enemyAI.LastKnownTargetPosition = enemyAI.Target.position;
-            enemyAI.LastSeenTime = Time.time;
+            enemyAI.LastSeenTime = Time.time; // Refresh memory while we "know" where they are? 
+            // Actually, if we only "remember" them, we shouldn't refresh LastSeenTime otherwise memory never expires if we keep chasing.
+            // We should only refresh LastSeenTime if we ACTUALLY see them.
+            if (canSee)
+            {
+                enemyAI.LastSeenTime = Time.time;
+            }
+
             enemyAI.SetHasDetectedTarget(true);
         }
 
@@ -145,7 +155,7 @@ public class ChaseState : AIStateBase
                     enemyAI.TransitionToState(enemyAI.PatrolStateInstance);
                 }
             }
-            else if (!visionSystem.CanSeeTarget()) // Lost sight, not persistent chase or target is null
+            else if (!visionSystem.CanSeeTarget() && !enemyAI.IsTargetRemembered()) // Lost sight AND memory expired
             {
                 // Go to last known position (SearchState)
                 enemyAI.TransitionToState(enemyAI.SearchStateInstance);
@@ -248,7 +258,16 @@ public class ChaseState : AIStateBase
             float stopRange = desiredDistance;
             float retreatRange = desiredDistance * 0.5f; // Too close!
 
-            if (distanceToTarget > stopRange)
+            // Check LOS for Ranged
+            bool hasLOS = HasLineOfSight(destinationPosition);
+
+            if (!hasLOS)
+            {
+                // If we don't have LOS, we MUST move to find it, even if we are within stopRange.
+                // We treat this as needing to get closer or move to the target's position to re-establish LOS.
+                movementController.ChaseTarget(destinationPosition);
+            }
+            else if (distanceToTarget > stopRange)
             {
                 // Move closer
                 movementController.ChaseTarget(destinationPosition);

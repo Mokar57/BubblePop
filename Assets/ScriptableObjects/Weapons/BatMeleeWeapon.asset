@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponDataSO
   weaponName: Weapon
   holdType: 0
+  enemyAttackRange: 1.5
+  enemyAttackCooldown: 1.5
+  playerAttackRange: 5
+  playerAttackCooldown: 0.5
   maxDurability: 2
   damageType: 1
   baseDamage: 50
@@ -21,17 +25,15 @@ MonoBehaviour:
   throwDamage: 100
   bounceForce: 1
   slowDownDuration: 0
-  useSound: {fileID: 0}
+  useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
   useSoundVolume: 1
-  throwSound: {fileID: 0}
+  throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
   soundAlertRadius: 0
   heldSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   droppedSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
-  attackRange: 1
   attackAngle: 90
-  attackCooldown: 1
   knockbackForce: 10
   hitLayerMask:
     serializedVersion: 2

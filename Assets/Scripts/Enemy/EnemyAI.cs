@@ -100,6 +100,8 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         InvestigateStateInstance = new InvestigateState(this);
         StunnedStateInstance = new StunnedState(this);
         WaitStateInstance = new WaitState(this);
+
+        LastSeenTime = -1000f; // Initialize to past so we don't remember target at start
     }
 
     private void Start()
@@ -239,6 +241,7 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
         SetHasDetectedTarget(true); // Set hasDetectedTarget via public setter
         SetTarget(detectedTarget); // Set target via public setter
         LastKnownTargetPosition = detectedTarget.position;
+        LastSeenTime = Time.time; // Update seen time for memory
 
         // This event might trigger a state change, e.g., from Patrol to Chase/SeekItem
         // The current state's UpdateState will handle the transition
@@ -356,6 +359,18 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
     public bool IsPlayerDetected()
     {
         return (Target != null && VisionSystem.CanSeeTarget()) || ProximityDetected;
+    }
+
+    public bool IsTargetRemembered()
+    {
+        if (Target == null) return false;
+        if (enemyData == null) return false;
+
+        // If we can currently see them, we definitely remember them
+        if (VisionSystem.CanSeeTarget()) return true;
+
+        // Otherwise check memory duration
+        return (Time.time - LastSeenTime) <= enemyData.memoryDuration;
     }
 
     public bool IsSoundHeard()

@@ -49,6 +49,9 @@ public class EnemyDataSO : ScriptableObject
     [Range(0f, 360f)]
     public float visionAngle = 60f;
 
+    [Tooltip("How long the enemy remembers the player's position after losing sight")]
+    public float memoryDuration = 2.0f;
+
     [Tooltip("Rotation speed for vision direction (degrees per second)")]
     public float rotationSpeed = 90f;
 

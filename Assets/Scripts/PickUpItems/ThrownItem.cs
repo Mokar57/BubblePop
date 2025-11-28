@@ -52,36 +52,43 @@ public class ThrownItem : MonoBehaviour
             enemyAI.enemyData != null &&
             enemyAI.enemyData.canCatchThrownWeapons)
         {
-            // Check if enemy already has a weapon
-            bool alreadyHasWeapon = false;
-            if (collision.gameObject.TryGetComponent<EnemyWeaponController>(out var enemyWeaponController))
-            {
-                alreadyHasWeapon = enemyWeaponController.IsHoldingWeapon;
-            }
+            // Check if enemy is incapacitated (Bouncing or Stunned) - cannot catch
+            bool isBouncing = enemyAI.BounceController != null && enemyAI.BounceController.IsBouncing;
+            bool isStunned = enemyAI.StunController != null && enemyAI.StunController.IsStunned();
 
-            // Only try to catch if they don't have a weapon
-            if (!alreadyHasWeapon)
+            if (!isBouncing && !isStunned)
             {
-                // Try to catch
-                if (collision.gameObject.TryGetComponent<IItemHolder>(out var catcherHolder))
+                // Check if enemy already has a weapon
+                bool alreadyHasWeapon = false;
+                if (collision.gameObject.TryGetComponent<EnemyWeaponController>(out var enemyWeaponController))
                 {
-                    // Attempt pickup
-                    if (TryGetComponent<PickupableItem>(out var pickupItem))
+                    alreadyHasWeapon = enemyWeaponController.IsHoldingWeapon;
+                }
+
+                // Only try to catch if they don't have a weapon
+                if (!alreadyHasWeapon)
+                {
+                    // Try to catch
+                    if (collision.gameObject.TryGetComponent<IItemHolder>(out var catcherHolder))
                     {
-                        // Temporarily enable pickup for the catch action
-                        pickupItem.enabled = true;
-
-                        // We need to ensure the item is in a state to be picked up
-                        // If we pick it up, we should destroy ThrownItem component immediately
-                        if (pickupItem.TryPickup(catcherHolder))
+                        // Attempt pickup
+                        if (TryGetComponent<PickupableItem>(out var pickupItem))
                         {
-                            // Successful catch
-                            Destroy(this); // Remove ThrownItem component
-                            return; // Skip damage and bounce
-                        }
+                            // Temporarily enable pickup for the catch action
+                            pickupItem.enabled = true;
 
-                        // If catch failed, re-disable
-                        pickupItem.enabled = false;
+                            // We need to ensure the item is in a state to be picked up
+                            // If we pick it up, we should destroy ThrownItem component immediately
+                            if (pickupItem.TryPickup(catcherHolder))
+                            {
+                                // Successful catch
+                                Destroy(this); // Remove ThrownItem component
+                                return; // Skip damage and bounce
+                            }
+
+                            // If catch failed, re-disable
+                            pickupItem.enabled = false;
+                        }
                     }
                 }
             }
