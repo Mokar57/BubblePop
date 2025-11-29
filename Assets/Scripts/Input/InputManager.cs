@@ -32,6 +32,7 @@ public class InputManager : MonoBehaviour
     public event System.Action OnAttackPressed;
     public event System.Action OnThrowPressed;
     public event System.Action OnPickupPressed;
+    public event System.Action OnRestartPressed;
 
     #endregion
 
@@ -79,6 +80,9 @@ public class InputManager : MonoBehaviour
 
         // Pickup - button press
         controls.Player.Pickup.performed += ctx => OnPickupPressed?.Invoke();
+
+        // Restart - button press
+        controls.Player.RestartButton.performed += ctx => OnRestartPressed?.Invoke();
 
         // Camera pan extend - hold button
         controls.Player.ExtendCameraPan.performed += ctx => IsExtendingCameraPan = true;

@@ -67,6 +67,12 @@ public class LevelManager : MonoBehaviour
         GameEvents.OnPlayerDied += HandlePlayerDeath;
         GameEvents.OnEnemySpawned += RegisterEnemy;
         GameEvents.OnEnemyDied += UnregisterEnemy;
+        
+        // Subscribe to input events
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnRestartPressed += RestartLevel;
+        }
     }
 
     private void OnDisable()
@@ -75,6 +81,12 @@ public class LevelManager : MonoBehaviour
         GameEvents.OnPlayerDied -= HandlePlayerDeath;
         GameEvents.OnEnemySpawned -= RegisterEnemy;
         GameEvents.OnEnemyDied -= UnregisterEnemy;
+        
+        // Unsubscribe from input events
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnRestartPressed -= RestartLevel;
+        }
     }
 
     /// <summary>
