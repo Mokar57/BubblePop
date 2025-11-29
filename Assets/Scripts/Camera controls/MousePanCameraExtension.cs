@@ -71,8 +71,11 @@ public class MousePanCameraExtension : CinemachineExtension
                 return Vector3.zero;
         }
 
+        if (InputManager.Instance == null)
+            return Vector3.zero;
+
         // Get mouse position in viewport space (0-1 range)
-        Vector3 mouseViewportPos = cachedMainCamera.ScreenToViewportPoint(Input.mousePosition);
+        Vector3 mouseViewportPos = cachedMainCamera.ScreenToViewportPoint(InputManager.Instance.MousePosition);
 
         // Apply edge threshold - only pan when mouse is near edges
         Vector2 panDirection = Vector2.zero;
@@ -107,7 +110,7 @@ public class MousePanCameraExtension : CinemachineExtension
 
         // Determine max pan distance based on shift key
         float currentMaxPan = maxPanDistance;
-        if (Input.GetKey(extendedPanKey))
+        if (InputManager.Instance != null && InputManager.Instance.IsExtendingCameraPan)
         {
             currentMaxPan += shiftExtraPanDistance;
         }

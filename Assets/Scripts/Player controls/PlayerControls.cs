@@ -67,6 +67,53 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
 
         if (meleeHoldPosition == null) meleeHoldPosition = transform;
         if (rangedHoldPosition == null) rangedHoldPosition = transform;
+
+        // Subscribe to input events
+        SubscribeToInputEvents();
+    }
+
+    private void OnDestroy()
+    {
+        // Unsubscribe from input events to prevent memory leaks
+        UnsubscribeFromInputEvents();
+    }
+
+    private void SubscribeToInputEvents()
+    {
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnAttackPressed += HandleAttack;
+            InputManager.Instance.OnThrowPressed += HandleThrow;
+            InputManager.Instance.OnPickupPressed += TryPickupItem;
+        }
+    }
+
+    private void UnsubscribeFromInputEvents()
+    {
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnAttackPressed -= HandleAttack;
+            InputManager.Instance.OnThrowPressed -= HandleThrow;
+            InputManager.Instance.OnPickupPressed -= TryPickupItem;
+        }
+    }
+
+    private void HandleAttack()
+    {
+        if (isDead) return;
+        if (currentWeapon != null)
+        {
+            currentWeapon.TryAttack();
+        }
+    }
+
+    private void HandleThrow()
+    {
+        if (isDead) return;
+        if (currentWeapon != null)
+        {
+            currentWeapon.Throw(transform.up);
+        }
     }
 
     private void Update()
@@ -75,31 +122,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
 
         ProcessInput();
         UpdateSpeedBoostFade();
-
-        // Attack Input
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (currentWeapon != null)
-            {
-                currentWeapon.TryAttack();
-            }
-        }
-
-        // Throw Input
-        if (Input.GetMouseButtonDown(1))
-        {
-            if (currentWeapon != null)
-            {
-                currentWeapon.Throw(transform.up);
-                // OnItemDropped will be called by Weapon.Throw -> currentHolder.OnItemDropped
-            }
-        }
-
-        // Pickup Input (E)
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            TryPickupItem();
-        }
     }
 
     private void TryPickupItem()
@@ -128,10 +150,10 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
 
     private void HandleRotation()
     {
-        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        if (InputManager.Instance == null) return;
 
-        // Use Rigidbody position instead of Transform for better physics sync
-        Vector2 direction = (Vector2)mousePosition - rb.position;
+        // Use InputManager's pre-calculated mouse world position
+        Vector2 direction = InputManager.Instance.GetMouseDirectionFrom(rb.position);
 
         // Check squared distance to prevent spinning when mouse is too close
         if (direction.sqrMagnitude > rotationDeadzone)
@@ -146,10 +168,10 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
 
     void ProcessInput()
     {
-        float moveX = Input.GetAxisRaw("Horizontal");
-        float moveY = Input.GetAxisRaw("Vertical");
+        if (InputManager.Instance == null) return;
 
-        moveDirection = new Vector2(moveX, moveY);
+        // Get movement input from InputManager
+        moveDirection = InputManager.Instance.MoveInput;
     }
 
     void Move()
