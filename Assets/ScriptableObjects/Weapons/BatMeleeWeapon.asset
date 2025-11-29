@@ -16,7 +16,7 @@ MonoBehaviour:
   holdType: 0
   enemyAttackRange: 1.5
   enemyAttackCooldown: 1.5
-  playerAttackRange: 5
+  playerAttackRange: 1.5
   playerAttackCooldown: 0.5
   maxDurability: 2
   damageType: 1

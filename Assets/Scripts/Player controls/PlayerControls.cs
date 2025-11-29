@@ -7,6 +7,10 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
     public float moveSpeed = 5f;
     public Rigidbody2D rb;
 
+    [Header("Rotation Settings")]
+    [Tooltip("Minimum distance from player for mouse rotation (squared distance)")]
+    public float rotationDeadzone = 0.1f;
+
     // Speed boost variables
     private float originalMoveSpeed;
     private float speedBoostMultiplier = 1f;
@@ -19,6 +23,7 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
     private bool isFadingBoost = false;
 
     private Vector2 moveDirection;
+    private Vector2 lastValidMouseDirection = Vector2.up;
 
     [Header("Health Settings")]
     public float maxHealth = 100f;
@@ -71,12 +76,6 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
         ProcessInput();
         UpdateSpeedBoostFade();
 
-        Vector3 mousePosition = Input.mousePosition;
-        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
-
-        Vector2 direction = new Vector2(mousePosition.x - transform.position.x, mousePosition.y - transform.position.y);
-        transform.up = direction;
-
         // Attack Input
         if (Input.GetMouseButtonDown(0))
         {
@@ -122,7 +121,27 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
     private void FixedUpdate()
     {
         if (isDead) return;
+
         Move();
+        HandleRotation();
+    }
+
+    private void HandleRotation()
+    {
+        Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+        // Use Rigidbody position instead of Transform for better physics sync
+        Vector2 direction = (Vector2)mousePosition - rb.position;
+
+        // Check squared distance to prevent spinning when mouse is too close
+        if (direction.sqrMagnitude > rotationDeadzone)
+        {
+            // Calculate the exact angle
+            float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
+
+            // Apply immediately via Physics engine
+            rb.MoveRotation(targetAngle);
+        }
     }
 
     void ProcessInput()
@@ -138,7 +157,10 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
         if (bounceController != null && bounceController.IsBouncing) return;
 
         float currentMoveSpeed = originalMoveSpeed * speedBoostMultiplier;
-        rb.linearVelocity = new Vector2(moveDirection.x * currentMoveSpeed, moveDirection.y * currentMoveSpeed);
+
+        // Normalize diagonal movement so player doesn't move faster diagonally
+        Vector2 normalizedDirection = moveDirection.normalized;
+        rb.linearVelocity = normalizedDirection * currentMoveSpeed;
     }
 
     #region IItemHolder Implementation
