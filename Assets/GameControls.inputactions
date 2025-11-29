@@ -28,7 +28,7 @@
                     "name": "Throw",
                     "type": "Button",
                     "id": "3c4d5e6f-7890-abcd-ef12-345678901234",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -37,7 +37,7 @@
                     "name": "Pickup",
                     "type": "Button",
                     "id": "4d5e6f78-90ab-cdef-1234-567890123456",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -55,6 +55,15 @@
                     "name": "ExtendCameraPan",
                     "type": "Button",
                     "id": "6f789012-3456-7890-abcd-ef1234567890",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RestartButton",
+                    "type": "Button",
+                    "id": "f9929cf6-5558-4a3f-a43f-dfd318521490",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -224,6 +233,17 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "ExtendCameraPan",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bbee6d4a-faed-455d-a513-eb4900d91b56",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RestartButton",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

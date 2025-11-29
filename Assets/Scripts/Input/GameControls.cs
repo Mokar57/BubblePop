@@ -114,7 +114,7 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""name"": ""Throw"",
                     ""type"": ""Button"",
                     ""id"": ""3c4d5e6f-7890-abcd-ef12-345678901234"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -123,7 +123,7 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""name"": ""Pickup"",
                     ""type"": ""Button"",
                     ""id"": ""4d5e6f78-90ab-cdef-1234-567890123456"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -141,6 +141,15 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""name"": ""ExtendCameraPan"",
                     ""type"": ""Button"",
                     ""id"": ""6f789012-3456-7890-abcd-ef1234567890"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RestartButton"",
+                    ""type"": ""Button"",
+                    ""id"": ""f9929cf6-5558-4a3f-a43f-dfd318521490"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -312,6 +321,17 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
                     ""action"": ""ExtendCameraPan"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bbee6d4a-faed-455d-a513-eb4900d91b56"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RestartButton"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -343,6 +363,7 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         m_Player_Pickup = m_Player.FindAction("Pickup", throwIfNotFound: true);
         m_Player_MousePosition = m_Player.FindAction("MousePosition", throwIfNotFound: true);
         m_Player_ExtendCameraPan = m_Player.FindAction("ExtendCameraPan", throwIfNotFound: true);
+        m_Player_RestartButton = m_Player.FindAction("RestartButton", throwIfNotFound: true);
     }
 
     ~@GameControls()
@@ -429,6 +450,7 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Pickup;
     private readonly InputAction m_Player_MousePosition;
     private readonly InputAction m_Player_ExtendCameraPan;
+    private readonly InputAction m_Player_RestartButton;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -464,6 +486,10 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/ExtendCameraPan".
         /// </summary>
         public InputAction @ExtendCameraPan => m_Wrapper.m_Player_ExtendCameraPan;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/RestartButton".
+        /// </summary>
+        public InputAction @RestartButton => m_Wrapper.m_Player_RestartButton;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -508,6 +534,9 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
             @ExtendCameraPan.started += instance.OnExtendCameraPan;
             @ExtendCameraPan.performed += instance.OnExtendCameraPan;
             @ExtendCameraPan.canceled += instance.OnExtendCameraPan;
+            @RestartButton.started += instance.OnRestartButton;
+            @RestartButton.performed += instance.OnRestartButton;
+            @RestartButton.canceled += instance.OnRestartButton;
         }
 
         /// <summary>
@@ -537,6 +566,9 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
             @ExtendCameraPan.started -= instance.OnExtendCameraPan;
             @ExtendCameraPan.performed -= instance.OnExtendCameraPan;
             @ExtendCameraPan.canceled -= instance.OnExtendCameraPan;
+            @RestartButton.started -= instance.OnRestartButton;
+            @RestartButton.performed -= instance.OnRestartButton;
+            @RestartButton.canceled -= instance.OnRestartButton;
         }
 
         /// <summary>
@@ -632,5 +664,12 @@ public partial class @GameControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnExtendCameraPan(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "RestartButton" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRestartButton(InputAction.CallbackContext context);
     }
 }

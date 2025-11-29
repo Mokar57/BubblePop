@@ -60,6 +60,20 @@ public static class GameEvents
     // ==================== COMBAT EVENTS ====================
 
     /// <summary>
+    /// Enemy spawned/registered event (enemy GameObject)
+    /// Used by LevelManager to track alive enemies
+    /// </summary>
+    public static event Action<GameObject> OnEnemySpawned;
+
+    /// <summary>
+    /// Trigger enemy spawned event
+    /// </summary>
+    public static void TriggerEnemySpawned(GameObject enemy)
+    {
+        OnEnemySpawned?.Invoke(enemy);
+    }
+
+    /// <summary>
     /// Enemy died event (enemy GameObject)
     /// </summary>
     public static event Action<GameObject> OnEnemyDied;
@@ -158,6 +172,22 @@ public static class GameEvents
         OnDoorOpened?.Invoke(position, stunRadius);
     }
 
+    // ==================== LEVEL EVENTS ====================
+
+    /// <summary>
+    /// All enemies cleared event
+    /// Triggered when last enemy dies
+    /// </summary>
+    public static event Action OnAllEnemiesCleared;
+
+    /// <summary>
+    /// Trigger all enemies cleared event
+    /// </summary>
+    public static void TriggerAllEnemiesCleared()
+    {
+        OnAllEnemiesCleared?.Invoke();
+    }
+
     // ==================== EVENT CLEANUP ====================
 
     /// <summary>
@@ -169,6 +199,7 @@ public static class GameEvents
         OnPlayerDied = null;
         OnLevelRestarted = null;
         OnSoundEmitted = null;
+        OnEnemySpawned = null;
         OnEnemyDied = null;
         OnEnemyHitByProjectile = null;
         OnEntityStartedBouncing = null;
@@ -176,5 +207,6 @@ public static class GameEvents
         OnItemPickedUp = null;
         OnItemDropped = null;
         OnDoorOpened = null;
+        OnAllEnemiesCleared = null;
     }
 }

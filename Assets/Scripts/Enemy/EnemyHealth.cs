@@ -32,9 +32,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
 
-    // Audio
-    private AudioSource audioSource;
-
     // Events
     public System.Action<float> OnHealthChanged;
     public System.Action OnEnemyDeath;
@@ -48,15 +45,6 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         spriteRenderer = GetComponent<SpriteRenderer>();
         enemyAI = GetComponent<EnemyAI>();
         weaponController = GetComponent<EnemyWeaponController>();
-
-        // Setup AudioSource
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-        audioSource.playOnAwake = false;
-        audioSource.spatialBlend = 0f; // 2D sound
     }
 
     private void Start()
@@ -248,11 +236,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     }
 
     /// <summary>
-    /// Play random death sound from enemyData
+    /// Play random death sound from enemyData using SoundManager
     /// </summary>
     private void PlayRandomDeathSound()
     {
-        if (audioSource != null && enemyData != null &&
+        if (SoundManager.Instance != null && enemyData != null &&
             enemyData.deathSounds != null && enemyData.deathSounds.Length > 0)
         {
             int randomIndex = Random.Range(0, enemyData.deathSounds.Length);
@@ -260,7 +248,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
             if (selectedSound != null)
             {
-                audioSource.PlayOneShot(selectedSound, enemyData.deathSoundVolume);
+                SoundManager.Instance.PlaySound(selectedSound, enemyData.deathSoundVolume);
             }
         }
     }

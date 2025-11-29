@@ -145,6 +145,12 @@ public abstract class Weapon : PickupableItem
 
     protected virtual void OnWeaponBroken()
     {
+        // Play break sound
+        if (weaponData.breakSound != null && SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySound(weaponData.breakSound, weaponData.breakSoundVolume);
+        }
+
         // Visual feedback for broken weapon
         if (weaponData.depletedSprite != null && GetComponent<SpriteRenderer>() is SpriteRenderer sr)
         {
@@ -226,10 +232,9 @@ public abstract class Weapon : PickupableItem
         }
 
         // Play throw sound
-        if (weaponData.throwSound != null)
+        if (weaponData.throwSound != null && SoundManager.Instance != null)
         {
-            AudioSource.PlayClipAtPoint(weaponData.throwSound, transform.position, weaponData.throwSoundVolume);
-            // GameEvents.TriggerSoundEmitted(transform.position, weaponData.soundAlertRadius); // Removed as per request
+            SoundManager.Instance.PlaySound(weaponData.throwSound, weaponData.throwSoundVolume);
         }
     }
 }

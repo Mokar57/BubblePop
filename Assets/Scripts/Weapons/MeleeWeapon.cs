@@ -40,10 +40,10 @@ public class MeleeWeapon : Weapon
         lastAttackTime = Time.time;
 
         // Play attack sound
-        if (meleeData.useSound != null)
+        if (meleeData.useSound != null && SoundManager.Instance != null)
         {
-            // Use SoundManager if available, otherwise simple play
-            AudioSource.PlayClipAtPoint(meleeData.useSound, transform.position, meleeData.useSoundVolume);
+            Vector2 soundPosition = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(HoldType).position : (Vector2)transform.position;
+            SoundManager.Instance.PlaySound(meleeData.useSound, meleeData.useSoundVolume);
         }
 
         // Detect hits

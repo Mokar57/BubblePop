@@ -68,6 +68,13 @@ public class WeaponDataSO : ScriptableObject
     [Tooltip("Radius of sound alert when used/thrown")]
     public float soundAlertRadius = 10f;
 
+    [Tooltip("Sound played when weapon breaks (durability reaches 0)")]
+    public AudioClip breakSound;
+
+    [Tooltip("Volume of break sound")]
+    [Range(0f, 1f)]
+    public float breakSoundVolume = 0.8f;
+
     [Header("Visuals")]
     [Tooltip("Sprite shown when weapon is held")]
     public Sprite heldSprite;

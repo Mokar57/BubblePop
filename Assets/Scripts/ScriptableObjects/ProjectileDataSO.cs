@@ -56,4 +56,12 @@ public class ProjectileDataSO : ScriptableObject
 
     [Tooltip("Prefab to spawn on wall hit")]
     public GameObject wallHitEffectPrefab;
+
+    [Header("Audio")]
+    [Tooltip("Sound played when projectile hits a wall")]
+    public AudioClip wallHitSound;
+
+    [Tooltip("Volume of wall hit sound")]
+    [Range(0f, 1f)]
+    public float wallHitSoundVolume = 0.7f;
 }

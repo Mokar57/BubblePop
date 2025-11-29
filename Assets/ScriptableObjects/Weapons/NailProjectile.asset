@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f83bb6831d447344aae01ce4700b2760, type: 3}
-  m_Name: NewProjectile
+  m_Name: NailProjectile
   m_EditorClassIdentifier: Assembly-CSharp::ProjectileDataSO
   projectileName: Projectile
   speed: 15
@@ -27,3 +27,5 @@ MonoBehaviour:
   trailTime: 0.3
   hitEffectPrefab: {fileID: 0}
   wallHitEffectPrefab: {fileID: 0}
+  wallHitSound: {fileID: 0}
+  wallHitSoundVolume: 0.7

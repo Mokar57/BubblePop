@@ -1,6 +1,6 @@
 ﻿<Solution>
   <Project Path="NavMeshPlusEditor.csproj" />
   <Project Path="SimpleFolderIcon.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="NavMeshPlus.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
 </Solution>

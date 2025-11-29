@@ -93,6 +93,12 @@ public class Projectile : MonoBehaviour
         rb.linearVelocity = Vector2.zero;
         rb.bodyType = RigidbodyType2D.Kinematic;
 
+        // Play wall hit sound
+        if (projectileData.wallHitSound != null && SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlaySound(projectileData.wallHitSound, projectileData.wallHitSoundVolume);
+        }
+
         // Parent to wall so it moves with it (optional)
         transform.SetParent(wall.transform);
 

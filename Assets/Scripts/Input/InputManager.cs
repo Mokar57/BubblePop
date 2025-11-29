@@ -19,6 +19,7 @@ public class InputManager : MonoBehaviour
     // Mouse
     public Vector2 MousePosition { get; private set; }
     public Vector2 MouseWorldPosition { get; private set; }
+    public Vector2 MouseDirection { get; private set; }
 
     // Camera
     public bool IsExtendingCameraPan { get; private set; }
@@ -94,6 +95,10 @@ public class InputManager : MonoBehaviour
             Vector3 worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPosition.x, screenPosition.y, 0));
             MouseWorldPosition = new Vector2(worldPos.x, worldPos.y);
         }
+
+        // Calculate direction from center of screen
+        Vector2 screenCenter = new Vector2(Screen.width / 2, Screen.height / 2);
+        MouseDirection = (screenPosition - screenCenter).normalized;
     }
 
     #region Helper Methods

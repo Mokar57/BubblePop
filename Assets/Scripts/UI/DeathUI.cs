@@ -2,27 +2,28 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Player öldüğünde gösterilecek UI'ı yöneten decoupled script
-/// Event sistemi üzerinden player death'i dinler
+/// Death UI manager - decoupled from player
+/// Listens to GameEvents.OnPlayerDied and shows death screen
+/// Connects to LevelManager for restart functionality
 /// </summary>
 public class DeathUI : MonoBehaviour
 {
     [Header("UI References")]
-    [Tooltip("Ölüm ekranı paneli (CanvasGroup veya GameObject)")]
+    [Tooltip("Death screen panel (requires CanvasGroup for fade animation)")]
     public GameObject deathPanel;
-    
-    [Tooltip("Restart butonu")]
+
+    [Tooltip("Restart button - calls LevelManager.RestartLevel()")]
     public Button restartButton;
-    
+
     [Header("Optional References")]
-    [Tooltip("Quit butonu (opsiyonel)")]
+    [Tooltip("Quit button - calls LevelManager.QuitGame()")]
     public Button quitButton;
-    
+
     [Header("Animation Settings")]
-    [Tooltip("UI fade-in animasyonu için süre")]
+    [Tooltip("Duration of UI fade-in animation (seconds)")]
     public float fadeInDuration = 0.5f;
-    
-    [Tooltip("UI gösterilmeden önceki delay")]
+
+    [Tooltip("Delay before showing UI after death (seconds)")]
     public float showDelay = 1f;
 
     private LevelManager levelManager;
@@ -30,32 +31,32 @@ public class DeathUI : MonoBehaviour
 
     private void Awake()
     {
-        // CanvasGroup varsa al (fade animasyonu için)
+        // Get CanvasGroup for fade animation (optional)
         canvasGroup = deathPanel.GetComponent<CanvasGroup>();
-        
-        // LevelManager'ı bul
+
+        // Find LevelManager in scene
         levelManager = FindFirstObjectByType<LevelManager>();
-        
+
         if (levelManager == null)
         {
-            Debug.LogError("DeathUI: LevelManager bulunamadı! Sahnede LevelManager olmalı.");
+            Debug.LogError("DeathUI: LevelManager not found! Scene must have a LevelManager component.");
         }
-        
-        // UI'ı başlangıçta gizle
+
+        // Hide UI initially
         HideDeathPanel();
     }
 
     private void OnEnable()
     {
-        // Event'e subscribe ol
+        // Subscribe to player death event
         GameEvents.OnPlayerDied += HandlePlayerDeath;
-        
-        // Button click eventlerini bağla
+
+        // Connect button click events
         if (restartButton != null)
         {
             restartButton.onClick.AddListener(OnRestartButtonClicked);
         }
-        
+
         if (quitButton != null)
         {
             quitButton.onClick.AddListener(OnQuitButtonClicked);
@@ -64,15 +65,15 @@ public class DeathUI : MonoBehaviour
 
     private void OnDisable()
     {
-        // Event'ten unsubscribe ol
+        // Unsubscribe from events (prevent memory leaks)
         GameEvents.OnPlayerDied -= HandlePlayerDeath;
-        
-        // Button click eventlerini kaldır
+
+        // Remove button listeners
         if (restartButton != null)
         {
             restartButton.onClick.RemoveListener(OnRestartButtonClicked);
         }
-        
+
         if (quitButton != null)
         {
             quitButton.onClick.RemoveListener(OnQuitButtonClicked);
@@ -80,13 +81,13 @@ public class DeathUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Player öldüğünde çağrılır
+    /// Called when player dies (via GameEvents)
     /// </summary>
     private void HandlePlayerDeath()
     {
         Debug.Log("DeathUI: Player death detected, showing death panel");
-        
-        // Delay ile UI'ı göster
+
+        // Show UI with delay
         if (showDelay > 0)
         {
             Invoke(nameof(ShowDeathPanel), showDelay);
@@ -98,19 +99,19 @@ public class DeathUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Ölüm panelini gösterir
+    /// Show the death panel with fade-in animation
     /// </summary>
     private void ShowDeathPanel()
     {
         if (deathPanel == null)
         {
-            Debug.LogError("DeathUI: Death panel referansı atanmamış!");
+            Debug.LogError("DeathUI: Death panel reference not assigned!");
             return;
         }
 
         deathPanel.SetActive(true);
-        
-        // Fade-in animasyonu
+
+        // Fade-in animation
         if (canvasGroup != null && fadeInDuration > 0)
         {
             StartCoroutine(FadeIn());
@@ -119,21 +120,21 @@ public class DeathUI : MonoBehaviour
         {
             canvasGroup.alpha = 1f;
         }
-        
-        // Cursor'u göster (oyun sırasında gizliyse)
+
+        // Show cursor (in case it was hidden during gameplay)
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
 
     /// <summary>
-    /// Ölüm panelini gizler
+    /// Hide the death panel
     /// </summary>
     private void HideDeathPanel()
     {
         if (deathPanel != null)
         {
             deathPanel.SetActive(false);
-            
+
             if (canvasGroup != null)
             {
                 canvasGroup.alpha = 0f;
@@ -142,47 +143,48 @@ public class DeathUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Fade-in animasyonu
+    /// Fade-in animation coroutine
     /// </summary>
     private System.Collections.IEnumerator FadeIn()
     {
         float elapsedTime = 0f;
         canvasGroup.alpha = 0f;
-        
+
         while (elapsedTime < fadeInDuration)
         {
-            elapsedTime += Time.unscaledDeltaTime; // unscaledDeltaTime kullan (time scale 0 olsa bile çalışır)
+            elapsedTime += Time.unscaledDeltaTime; // Use unscaled time (works even if Time.timeScale = 0)
             canvasGroup.alpha = Mathf.Clamp01(elapsedTime / fadeInDuration);
             yield return null;
         }
-        
+
         canvasGroup.alpha = 1f;
     }
 
     /// <summary>
-    /// Restart butonuna basıldığında
+    /// Called when restart button is clicked
+    /// Calls LevelManager.RestartLevel() to reload current scene
     /// </summary>
     private void OnRestartButtonClicked()
     {
         Debug.Log("DeathUI: Restart button clicked");
-        
+
         if (levelManager != null)
         {
             levelManager.RestartLevel();
         }
         else
         {
-            Debug.LogError("DeathUI: LevelManager bulunamadı!");
+            Debug.LogError("DeathUI: LevelManager not found!");
         }
     }
 
     /// <summary>
-    /// Quit butonuna basıldığında
+    /// Called when quit button is clicked
     /// </summary>
     private void OnQuitButtonClicked()
     {
         Debug.Log("DeathUI: Quit button clicked");
-        
+
         if (levelManager != null)
         {
             levelManager.QuitGame();

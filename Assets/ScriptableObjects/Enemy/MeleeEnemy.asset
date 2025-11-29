@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MeleeEnemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Enemy
-  postBluntAttackWaitTime: 0
+  postBluntAttackWaitTime: 0.5
   maxHealth: 100
   patrolSpeed: 4
   investigationSpeed: 5
@@ -25,7 +25,7 @@ MonoBehaviour:
   chaseRotationSpeed: 3600
   visionRange: 8
   visionAngle: 125
-  memoryDuration: 2
+  memoryDuration: 15
   rotationSpeed: 240
   visionObstacleMask:
     serializedVersion: 2

@@ -173,6 +173,12 @@ public class BounceController : MonoBehaviour
             Vector2 reflected = Vector2.Reflect(lastVelocity, normal);
             rb.linearVelocity = reflected * settings.wallBounceMultiplier;
             lastVelocity = rb.linearVelocity;
+
+            // Play wall bounce sound
+            if (settings.wallBounceSound != null && SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlaySound(settings.wallBounceSound, settings.wallBounceSoundVolume);
+            }
         }
     }
 }

@@ -2,24 +2,26 @@ using UnityEngine;
 
 /// <summary>
 /// Base class for any item that can be picked up by an IItemHolder
-/// Handles detection, input, and visual state switching
+/// Handles pickup logic, physics state, and visual indicators
+/// Input is handled by PlayerControls via InputManager (not by this class)
 /// </summary>
 public class PickupableItem : MonoBehaviour
 {
     [Header("Pickup Settings")]
     public string itemName = "Item";
-    // public ItemHoldType holdType = ItemHoldType.Melee; // Removed as per request, but base class might need it?
-    // Actually, PickupableItem is base for Weapon. If Weapon uses WeaponDataSO, PickupableItem might not know about it.
-    // But user said "Weapon scripts doesnt need them".
-    // Let's make holdType a virtual property that Weapon overrides.
+
+    [Tooltip("Virtual property - Weapon class overrides this using WeaponDataSO")]
     public virtual ItemHoldType HoldType => ItemHoldType.Melee;
 
+    [Tooltip("Detection radius for pickup indicator (used by trigger collider)")]
     public float pickupRadius = 1.5f;
-    public KeyCode pickupKey = KeyCode.E;
+
+    [Tooltip("Can enemies pick up this item?")]
     public bool canBePickedByEnemies = true;
 
     [Header("Visuals")]
-    public GameObject pickupIndicator; // UI hint
+    [Tooltip("UI indicator shown when player is in range (optional)")]
+    public GameObject pickupIndicator;
 
     protected bool isHeld = false;
     public bool IsHeld => isHeld;
@@ -35,33 +37,29 @@ public class PickupableItem : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    protected virtual void Update()
-    {
-        if (isHeld) return;
-
-        // Input handling for pickup could go here if we want the item to listen for input
-        // But usually the PlayerController handles the "E" press and looks for items.
-        // We'll leave this empty for now or add a simple check if needed.
-        if (Input.GetKeyDown(pickupKey) && pickupIndicator != null && pickupIndicator.activeSelf)
-        {
-            // Find player and try to pickup?
-            // Better to let PlayerController initiate this.
-        }
-    }
-
-    // Called by Player/Enemy when they want to pick this up
+    /// <summary>
+    /// Called by PlayerControls or EnemyWeaponController when attempting to pick up this item
+    /// Returns true if pickup was successful
+    /// </summary>
     public virtual bool TryPickup(IItemHolder holder)
     {
-        if (!enabled) return false; // Cannot pickup if component is disabled
+        if (!enabled) return false;
         if (isHeld) return false;
 
-        // Check team restrictions if any
-        if (!canBePickedByEnemies && holder.GetTeam() == Team.Enemy) return false;
+        // Team-based pickup restrictions
+        if (!canBePickedByEnemies && holder.GetTeam() == Team.Enemy)
+        {
+            return false;
+        }
 
         OnPickedUp(holder);
         return true;
     }
 
+    /// <summary>
+    /// Called when item is successfully picked up
+    /// Disables physics, parents to holder, and updates visual state
+    /// </summary>
     public virtual void OnPickedUp(IItemHolder holder)
     {
         isHeld = true;
@@ -70,43 +68,51 @@ public class PickupableItem : MonoBehaviour
         if (itemCollider) itemCollider.enabled = false;
         if (itemRb) itemRb.simulated = false;
 
-        // Visuals
+        // Hide pickup indicator
         if (pickupIndicator) pickupIndicator.SetActive(false);
 
-        // Parent to holder
+        // Parent to holder's hand position
         transform.SetParent(holder.GetHoldPosition(HoldType));
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
 
-        // Notify holder
+        // Notify holder that pickup was successful
         holder.OnItemPickedUp(gameObject);
     }
 
+    /// <summary>
+    /// Called when item is dropped by holder
+    /// Re-enables physics and unparents from holder
+    /// </summary>
     public virtual void OnDropped()
     {
         isHeld = false;
 
-        // Enable physics
+        // Re-enable physics
         if (itemCollider) itemCollider.enabled = true;
         if (itemRb) itemRb.simulated = true;
 
-        // Unparent
+        // Unparent from holder
         transform.SetParent(null);
-
-        // Reset rotation (optional, maybe lay flat)
-        // transform.rotation = Quaternion.identity; 
     }
 
+    /// <summary>
+    /// Shows pickup indicator when player enters trigger radius
+    /// Requires CircleCollider2D with "Is Trigger" enabled on this GameObject
+    /// </summary>
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (isHeld) return;
 
-        if (other.CompareTag("Player")) // Or check component
+        if (other.CompareTag("Player"))
         {
             if (pickupIndicator) pickupIndicator.SetActive(true);
         }
     }
 
+    /// <summary>
+    /// Hides pickup indicator when player exits trigger radius
+    /// </summary>
     private void OnTriggerExit2D(Collider2D other)
     {
         if (isHeld) return;

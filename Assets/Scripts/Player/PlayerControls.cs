@@ -152,18 +152,20 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
     {
         if (InputManager.Instance == null) return;
 
-        // Use InputManager's pre-calculated mouse world position
-        Vector2 direction = InputManager.Instance.GetMouseDirectionFrom(rb.position);
+        // Use InputManager's mouse direction from the screen center
+        Vector2 direction = InputManager.Instance.MouseDirection;
 
-        // Check squared distance to prevent spinning when mouse is too close
+        // Check if the mouse is outside the deadzone (not near the screen center)
         if (direction.sqrMagnitude > rotationDeadzone)
         {
-            // Calculate the exact angle
-            float targetAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
-
-            // Apply immediately via Physics engine
-            rb.MoveRotation(targetAngle);
+            lastValidMouseDirection = direction;
         }
+
+        // Calculate the exact angle from the last valid direction
+        float targetAngle = Mathf.Atan2(lastValidMouseDirection.y, lastValidMouseDirection.x) * Mathf.Rad2Deg - 90f;
+
+        // Apply immediately via Physics engine
+        rb.MoveRotation(targetAngle);
     }
 
     void ProcessInput()

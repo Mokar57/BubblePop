@@ -79,6 +79,12 @@ public class SpeedPuddle : MonoBehaviour
             {
                 entitiesInZone.Add(speedBoostable);
                 speedBoostable.ApplySpeedBoost(Multiplier);
+
+                // Play boost sound
+                if (puddleData != null && puddleData.boostSound != null && SoundManager.Instance != null)
+                {
+                    SoundManager.Instance.PlaySound(puddleData.boostSound, puddleData.boostSoundVolume);
+                }
             }
         }
     }

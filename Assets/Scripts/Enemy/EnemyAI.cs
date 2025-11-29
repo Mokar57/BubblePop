@@ -106,6 +106,9 @@ public class EnemyAI : MonoBehaviour, ISpeedBoostable
 
     private void Start()
     {
+        // Register with LevelManager via GameEvents
+        GameEvents.TriggerEnemySpawned(gameObject);
+
         // Subscribe to events
         Health.OnEnemyDeath += HandleDeath;
         ProximityDetector.OnPlayerDetected += HandleProximityDetection;

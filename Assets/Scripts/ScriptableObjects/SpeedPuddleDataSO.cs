@@ -16,4 +16,12 @@ public class SpeedPuddleDataSO : ScriptableObject
     [Header("Visuals")]
     public bool showZoneVisual = true;
     public GameObject zoneEffect;
+
+    [Header("Audio")]
+    [Tooltip("Sound played when entity enters speed boost zone")]
+    public AudioClip boostSound;
+
+    [Tooltip("Volume of boost sound")]
+    [Range(0f, 1f)]
+    public float boostSoundVolume = 0.7f;
 }

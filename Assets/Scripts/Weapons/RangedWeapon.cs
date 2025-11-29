@@ -39,11 +39,16 @@ public class RangedWeapon : Weapon
 
         lastFireTime = Time.time;
 
-        // Play fire sound (with alert radius if SoundManager exists)
-        if (rangedData.useSound != null)
+        // Play fire sound with enemy alert
+        if (rangedData.useSound != null && SoundManager.Instance != null)
         {
-            AudioSource.PlayClipAtPoint(rangedData.useSound, transform.position, rangedData.useSoundVolume);
-            GameEvents.TriggerSoundEmitted(transform.position, rangedData.soundAlertRadius);
+            Vector2 soundPosition = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(HoldType).position : (Vector2)transform.position;
+            SoundManager.Instance.PlaySoundWithAlert(
+                rangedData.useSound,
+                soundPosition,
+                rangedData.soundAlertRadius,
+                rangedData.useSoundVolume
+            );
         }
 
         // Spawn Projectile

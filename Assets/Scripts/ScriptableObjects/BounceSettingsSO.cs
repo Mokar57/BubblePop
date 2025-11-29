@@ -49,4 +49,12 @@ public class BounceSettingsSO : ScriptableObject
 
     [Tooltip("Enable color tint during bounce")]
     public bool enableColorTint = true;
+
+    [Header("Audio")]
+    [Tooltip("Sound played when bouncing off walls")]
+    public AudioClip wallBounceSound;
+
+    [Tooltip("Volume of wall bounce sound")]
+    [Range(0f, 1f)]
+    public float wallBounceSoundVolume = 0.8f;
 }

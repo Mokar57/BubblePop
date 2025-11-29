@@ -24,3 +24,5 @@ MonoBehaviour:
   dropWeaponOnBounce: 1
   bounceColor: {r: 1, g: 0.8, b: 0.3, a: 1}
   enableColorTint: 1
+  wallBounceSound: {fileID: 8300000, guid: 692bb93d7b84c434bafae49961e534e6, type: 3}
+  wallBounceSoundVolume: 0.8
