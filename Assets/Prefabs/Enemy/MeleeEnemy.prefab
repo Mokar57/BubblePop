@@ -337,7 +337,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovementController
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   enablePatrol: 1
-  patrolWaypoints: []
+  patrolWaypoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   loopPatrol: 1
   waypointReachDistance: 0.1
   randomPatrolOrder: 0
@@ -468,7 +474,7 @@ MonoBehaviour:
   showTextLabels: 1
   patrolColor: {r: 0, g: 1, b: 0, a: 1}
   chaseColor: {r: 1, g: 0, b: 0, a: 1}
-  stunnedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  stunnedColor: {r: 1, g: 1, b: 1, a: 1}
   idleColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   labelOffset: {x: 0, y: 2, z: 0}
   showHealth: 1

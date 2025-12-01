@@ -10,33 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f39ba13cbd025f4419d956496751a245, type: 3}
-  m_Name: BatMeleeWeapon
+  m_Name: CactusMeleeWeapon 1
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponDataSO
   weaponName: Weapon
   holdType: 0
-  enemyAttackRange: 1
-  enemyAttackCooldown: 1.2
-  playerAttackRange: 1
-  playerAttackCooldown: 0.5
-  maxDurability: 5
-  damageType: 1
+  enemyAttackRange: 0.75
+  enemyAttackCooldown: 1.5
+  playerAttackRange: 0.75
+  playerAttackCooldown: 1
+  maxDurability: 2
+  damageType: 0
   baseDamage: 50
-  throwForce: 25
+  throwForce: 30
   throwDamage: 100
   bounceForce: 1
   slowDownDuration: 0
   useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
-  useSoundVolume: 1
+  useSoundVolume: 0.74
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
   soundAlertRadius: 0
   breakSound: {fileID: 8300000, guid: 766c52aee0acd2145bb121a735910c90, type: 3}
   breakSoundVolume: 0.8
-  heldSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
-  droppedSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
-  depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
+  heldSprite: {fileID: -3114945307499743449, guid: 0c53be626f5301d489115bb41043f2e0, type: 3}
+  droppedSprite: {fileID: -3452738413785727319, guid: 6d658a3c827cf9941be9341e94a77808, type: 3}
+  depletedSprite: {fileID: -8810295398536185542, guid: a2d3e12bb8598c5468fee3bb5e4f6626, type: 3}
   attackAngle: 90
-  knockbackForce: 10
+  knockbackForce: 0
   hitLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
