@@ -15,7 +15,7 @@ MonoBehaviour:
   weaponName: Weapon
   holdType: 0
   enemyAttackRange: 1
-  enemyAttackCooldown: 1.2
+  enemyAttackCooldown: 1.4
   playerAttackRange: 1
   playerAttackCooldown: 0.5
   maxDurability: 5

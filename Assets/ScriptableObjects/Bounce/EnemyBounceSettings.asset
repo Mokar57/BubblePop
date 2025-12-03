@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EnemyBounceSettings
   m_EditorClassIdentifier: Assembly-CSharp::BounceSettingsSO
   bounceDuration: 2
-  bounceForce: 5
+  bounceForce: 10
   wallBounceMultiplier: 1
   maxBounces: 5
   minimumBounceVelocity: 0.5
@@ -22,7 +22,7 @@ MonoBehaviour:
   enableScreenShake: 0
   screenShakeIntensity: 0.2
   dropWeaponOnBounce: 1
-  bounceColor: {r: 1, g: 0.8, b: 0.3, a: 1}
+  bounceColor: {r: 1, g: 1, b: 1, a: 1}
   enableColorTint: 1
   wallBounceSound: {fileID: 8300000, guid: 692bb93d7b84c434bafae49961e534e6, type: 3}
   wallBounceSoundVolume: 0.8

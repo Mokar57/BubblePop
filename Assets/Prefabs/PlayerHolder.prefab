@@ -86,7 +86,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_Sprite: {fileID: -4317218362160957665, guid: c7a5b730983d4be4f9e3058f92676ff9, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.7647059}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -158,7 +158,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.92
+  m_Radius: 0.9
 --- !u!114 &339114205808531865
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -175,7 +175,7 @@ MonoBehaviour:
   rb: {fileID: 1006815383668347308}
   rotationDeadzone: 0.1
   maxHealth: 100
-  damageColor: {r: 1, g: 0, b: 0, a: 1}
+  damageColor: {r: 1, g: 0, b: 0, a: 0}
   flashDuration: 0.1
   meleeHoldPosition: {fileID: 6197810123998961597}
   rangedHoldPosition: {fileID: 8768348428566232675}

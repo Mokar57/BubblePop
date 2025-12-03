@@ -92,5 +92,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelExitTrigger
   nextSceneName: Ep2
-  transitionDelay: 0.5
+  transitionDelay: 0
   debugMode: 0

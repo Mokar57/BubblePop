@@ -20,7 +20,7 @@ MonoBehaviour:
   playerAttackCooldown: 1
   maxDurability: 2
   damageType: 0
-  baseDamage: 50
+  baseDamage: 100
   throwForce: 30
   throwDamage: 100
   bounceForce: 1

@@ -159,7 +159,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 15
   m_Sprite: {fileID: 407907198125173640, guid: 0001d447a30f7ff49a6febd7eb346b82, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.7647059}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -226,7 +226,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.5
+  m_Radius: 0.91
 --- !u!50 &2662765289795793543
 Rigidbody2D:
   serializedVersion: 5
@@ -302,7 +302,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   maxHealthOverride: 0
-  damageColor: {r: 1, g: 0, b: 0, a: 1}
+  damageColor: {r: 1, g: 0, b: 0, a: 0}
   flashDuration: 0.1
 --- !u!114 &7979743389041854394
 MonoBehaviour:
@@ -338,10 +338,6 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   enablePatrol: 1
   patrolWaypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
   loopPatrol: 1

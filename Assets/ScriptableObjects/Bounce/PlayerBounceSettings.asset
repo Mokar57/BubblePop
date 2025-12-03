@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PlayerBounceSettings
   m_EditorClassIdentifier: Assembly-CSharp::BounceSettingsSO
   bounceDuration: 1.5
-  bounceForce: 5
+  bounceForce: 10
   wallBounceMultiplier: 0.7
   maxBounces: 5
   minimumBounceVelocity: 0.5
