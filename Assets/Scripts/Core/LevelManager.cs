@@ -17,6 +17,9 @@ public class LevelManager : MonoBehaviour
     [Tooltip("Delay before restarting current scene (seconds)")]
     public float restartDelay = 0.5f;
 
+    [Tooltip("How long restart button must be held to restart (seconds)")]
+    public float restartHoldDuration = 2f;
+
     [Header("Exit Settings")]
     [Tooltip("GameObject to activate when all enemies are cleared (exit area trigger)")]
     public GameObject exitArea;
@@ -29,6 +32,10 @@ public class LevelManager : MonoBehaviour
     private bool isRestarting = false;
     private bool exitActivated = false;
     private HashSet<GameObject> aliveEnemies = new HashSet<GameObject>();
+
+    // Restart hold tracking
+    private float restartHoldTimer = 0f;
+    private bool isHoldingRestart = false;
 
     // Public getters
     public int AliveEnemyCount => aliveEnemies.Count;
@@ -45,6 +52,9 @@ public class LevelManager : MonoBehaviour
         }
 
         Instance = this;
+        
+        // Subscribe to scene loaded event for input re-subscription
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private void Start()
@@ -67,11 +77,59 @@ public class LevelManager : MonoBehaviour
         GameEvents.OnPlayerDied += HandlePlayerDeath;
         GameEvents.OnEnemySpawned += RegisterEnemy;
         GameEvents.OnEnemyDied += UnregisterEnemy;
-        
-        // Subscribe to input events
+    }
+    
+    private void Update()
+    {
+        // Check if restart button is being held
         if (InputManager.Instance != null)
         {
-            InputManager.Instance.OnRestartPressed += RestartLevel;
+            if (InputManager.Instance.IsRestartButtonHeld)
+            {
+                if (!isHoldingRestart)
+                {
+                    // Just started holding
+                    isHoldingRestart = true;
+                    restartHoldTimer = 0f;
+                    
+                    if (debugMode)
+                    {
+                        Debug.Log("LevelManager: Restart button hold started");
+                    }
+                }
+                
+                // Increment timer
+                restartHoldTimer += Time.unscaledDeltaTime; // Use unscaledDeltaTime in case time is paused
+                
+                // Check if held long enough
+                if (restartHoldTimer >= restartHoldDuration)
+                {
+                    if (debugMode)
+                    {
+                        Debug.Log($"LevelManager: Restart button held for {restartHoldDuration}s - restarting");
+                    }
+                    
+                    RestartLevel();
+                    
+                    // Reset hold state
+                    isHoldingRestart = false;
+                    restartHoldTimer = 0f;
+                }
+            }
+            else
+            {
+                // Button released before completion
+                if (isHoldingRestart)
+                {
+                    if (debugMode)
+                    {
+                        Debug.Log($"LevelManager: Restart button released after {restartHoldTimer:F2}s (required: {restartHoldDuration}s)");
+                    }
+                    
+                    isHoldingRestart = false;
+                    restartHoldTimer = 0f;
+                }
+            }
         }
     }
 
@@ -81,12 +139,22 @@ public class LevelManager : MonoBehaviour
         GameEvents.OnPlayerDied -= HandlePlayerDeath;
         GameEvents.OnEnemySpawned -= RegisterEnemy;
         GameEvents.OnEnemyDied -= UnregisterEnemy;
-        
-        // Unsubscribe from input events
-        if (InputManager.Instance != null)
-        {
-            InputManager.Instance.OnRestartPressed -= RestartLevel;
-        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Unsubscribe from scene loaded event
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    
+    /// <summary>
+    /// Called when a scene is loaded
+    /// </summary>
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // Reset hold state on scene load
+        isHoldingRestart = false;
+        restartHoldTimer = 0f;
     }
 
     /// <summary>
@@ -293,11 +361,19 @@ public class LevelManager : MonoBehaviour
     {
         if (debugMode)
         {
-            GUILayout.BeginArea(new Rect(10, 240, 300, 120));
+            GUILayout.BeginArea(new Rect(10, 240, 300, 150));
             GUILayout.Box("=== Level Manager ===");
             GUILayout.Label($"Alive Enemies: {aliveEnemies.Count}");
             GUILayout.Label($"Exit Activated: {exitActivated}");
             GUILayout.Label($"Exit Area: {(exitArea != null ? exitArea.name : "None")}");
+            
+            // Restart hold progress
+            if (isHoldingRestart)
+            {
+                float progress = (restartHoldTimer / restartHoldDuration) * 100f;
+                GUILayout.Label($"Restart Hold: {progress:F0}%");
+            }
+            
             if (GUILayout.Button("Force Activate Exit"))
             {
                 ForceActivateExit();

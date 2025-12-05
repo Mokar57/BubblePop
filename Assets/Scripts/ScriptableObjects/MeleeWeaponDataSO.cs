@@ -21,4 +21,26 @@ public class MeleeWeaponDataSO : WeaponDataSO
     [Header("Visual Feedback")]
     [Tooltip("Layer mask for what can be hit")]
     public LayerMask hitLayerMask = -1;
+
+    [Header("Hit Effect")]
+    [Tooltip("Enable visual hit effect at strike location")]
+    public bool showHitEffect = true;
+
+    [Tooltip("Color of the hit effect flash")]
+    public Color hitEffectColor = Color.white;
+
+    [Tooltip("Size of the hit effect area")]
+    public float hitEffectSize = 2f;
+
+    [Tooltip("Duration of the hit effect (seconds)")]
+    public float hitEffectDuration = 0.2f;
+
+    [Tooltip("Should the effect fade out?")]
+    public bool hitEffectFadeOut = true;
+
+    [Tooltip("Should the effect expand?")]
+    public bool hitEffectExpand = false;
+
+    [Tooltip("Expansion scale multiplier")]
+    public float hitEffectExpandScale = 1.5f;
 }

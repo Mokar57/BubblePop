@@ -11231,6 +11231,63 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2520042169480937198, guid: ba78d0ef8f2edac45b0e6bedba9a48c5, type: 3}
   m_PrefabInstance: {fileID: 878238379}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &302095790
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3932926569630947352, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_Name
+      value: Cactus
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.0967245
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16.018974
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.99999064
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.004328352
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.496
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
 --- !u!1 &321514567
 GameObject:
   m_ObjectHideFlags: 0
@@ -17090,6 +17147,10 @@ PrefabInstance:
       propertyPath: exitArea
       value: 
       objectReference: {fileID: 259260175}
+    - target: {fileID: 6225217124807853139, guid: f2ca89c7129414a4f9fe57562bbc8632, type: 3}
+      propertyPath: restartHoldDuration
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8770173507393503777, guid: f2ca89c7129414a4f9fe57562bbc8632, type: 3}
       propertyPath: m_LocalPosition.x
       value: 32.29357
@@ -19408,6 +19469,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
+--- !u!1001 &1940926155
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3932926569630947352, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_Name
+      value: Cactus (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 8.202873
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16.108889
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.99999064
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.004328352
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7270369155450996256, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: -0.496
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 3a8e91816b5713145a059b7187eb5f7c, type: 3}
 --- !u!1 &2010063326
 GameObject:
   m_ObjectHideFlags: 0
@@ -19999,3 +20117,5 @@ SceneRoots:
   - {fileID: 878238379}
   - {fileID: 8576496032073460501}
   - {fileID: 1690415959967973305}
+  - {fileID: 302095790}
+  - {fileID: 1940926155}

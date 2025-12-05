@@ -24,6 +24,9 @@ public class InputManager : MonoBehaviour
     // Camera
     public bool IsExtendingCameraPan { get; private set; }
 
+    // Restart
+    public bool IsRestartButtonHeld { get; private set; }
+
     #endregion
 
     #region Events
@@ -32,7 +35,6 @@ public class InputManager : MonoBehaviour
     public event System.Action OnAttackPressed;
     public event System.Action OnThrowPressed;
     public event System.Action OnPickupPressed;
-    public event System.Action OnRestartPressed;
 
     #endregion
 
@@ -81,8 +83,9 @@ public class InputManager : MonoBehaviour
         // Pickup - button press
         controls.Player.Pickup.performed += ctx => OnPickupPressed?.Invoke();
 
-        // Restart - button press
-        controls.Player.RestartButton.performed += ctx => OnRestartPressed?.Invoke();
+        // Restart - hold button (track held state)
+        controls.Player.RestartButton.performed += ctx => IsRestartButtonHeld = true;
+        controls.Player.RestartButton.canceled += ctx => IsRestartButtonHeld = false;
 
         // Camera pan extend - hold button
         controls.Player.ExtendCameraPan.performed += ctx => IsExtendingCameraPan = true;

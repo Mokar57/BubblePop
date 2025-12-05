@@ -19,7 +19,7 @@ MonoBehaviour:
   investigationSpeed: 5
   acceleration: 16
   angularSpeed: 120
-  chaseSpeed: 8
+  chaseSpeed: 7
   chaseAcceleration: 8
   chaseAngularSpeed: 180
   chaseRotationSpeed: 3600

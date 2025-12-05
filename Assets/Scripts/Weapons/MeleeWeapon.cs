@@ -104,10 +104,40 @@ public class MeleeWeapon : Weapon
             }
         }
 
+        // Spawn hit effect
+        if (meleeData.showHitEffect)
+        {
+            SpawnHitEffect(hitPos, attackDirection);
+        }
+
         if (hitEnemy)
         {
             ReduceDurability();
         }
+    }
+
+    /// <summary>
+    /// Spawns visual hit effect at the attack location
+    /// </summary>
+    private void SpawnHitEffect(Vector2 position, Vector2 direction)
+    {
+        GameObject effectObj = new GameObject("MeleeHitEffect");
+        effectObj.transform.position = position;
+        
+        // Rotate effect to face attack direction (optional)
+        if (direction != Vector2.zero)
+        {
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            effectObj.transform.rotation = Quaternion.Euler(0, 0, angle - 90f);
+        }
+
+        MeleeHitEffect effect = effectObj.AddComponent<MeleeHitEffect>();
+        effect.effectSize = new Vector2(meleeData.hitEffectSize, meleeData.hitEffectSize);
+        effect.duration = meleeData.hitEffectDuration;
+        effect.effectColor = meleeData.hitEffectColor;
+        effect.fadeOut = meleeData.hitEffectFadeOut;
+        effect.expand = meleeData.hitEffectExpand;
+        effect.expandScale = meleeData.hitEffectExpandScale;
     }
 
     private void OnDrawGizmosSelected()

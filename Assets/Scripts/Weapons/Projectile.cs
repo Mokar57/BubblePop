@@ -41,7 +41,7 @@ public class Projectile : MonoBehaviour
         }
 
         // Auto-destroy
-        // Destroy(gameObject, projectileData.lifetime);
+        Destroy(gameObject, projectileData.lifetime);
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -109,7 +109,7 @@ public class Projectile : MonoBehaviour
         }
 
         // Destroy after stuck duration
-        // Destroy(gameObject, projectileData.stuckDuration);
+        Destroy(gameObject, projectileData.stuckDuration);
     }
 
     private System.Collections.IEnumerator WobbleRoutine()
