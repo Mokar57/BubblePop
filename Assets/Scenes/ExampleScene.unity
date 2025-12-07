@@ -567,6 +567,10 @@ PrefabInstance:
       propertyPath: restartButton
       value: 
       objectReference: {fileID: 996982200}
+    - target: {fileID: 6225217124807853139, guid: f2ca89c7129414a4f9fe57562bbc8632, type: 3}
+      propertyPath: restartHoldDuration
+      value: 0.75
+      objectReference: {fileID: 0}
     - target: {fileID: 8770173507393503777, guid: f2ca89c7129414a4f9fe57562bbc8632, type: 3}
       propertyPath: m_LocalPosition.x
       value: 39.28408
