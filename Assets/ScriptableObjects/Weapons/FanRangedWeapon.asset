@@ -32,9 +32,9 @@ MonoBehaviour:
   soundAlertRadius: 7
   breakSound: {fileID: 8300000, guid: 766c52aee0acd2145bb121a735910c90, type: 3}
   breakSoundVolume: 0.8
-  heldSprite: {fileID: 3952322414003577344, guid: 146af1cc28d690a4d85b4a6025d04538, type: 3}
-  droppedSprite: {fileID: 3952322414003577344, guid: 146af1cc28d690a4d85b4a6025d04538, type: 3}
+  heldSprite: {fileID: -8970574912058710555, guid: 7e250c48bb0b5c846907824d15b76adb, type: 3}
+  droppedSprite: {fileID: -8970574912058710555, guid: 7e250c48bb0b5c846907824d15b76adb, type: 3}
   depletedSprite: {fileID: 3952322414003577344, guid: 146af1cc28d690a4d85b4a6025d04538, type: 3}
   projectilePrefab: {fileID: 8696534751382374328, guid: 08d5beffb818307458aa83589d5fee09, type: 3}
-  projectileSpeed: 8
+  projectileSpeed: 10
   projectileData: {fileID: 11400000, guid: c9c47c3931f80c641b023bcbbbbfc4f5, type: 2}

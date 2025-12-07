@@ -137,7 +137,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 0.11}
+  m_Size: {x: 0.94, y: 0.08}
   m_EdgeRadius: 0
 --- !u!50 &6269874751224178585
 Rigidbody2D:
@@ -180,7 +180,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeapon
   itemName: Item
   pickupRadius: 1
-  pickupKey: 101
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
   weaponData: {fileID: 11400000, guid: 84752b89a7fd06845a23c3fba315f7f7, type: 2}

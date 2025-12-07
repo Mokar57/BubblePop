@@ -10,39 +10,39 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f39ba13cbd025f4419d956496751a245, type: 3}
-  m_Name: CactusMeleeWeapon 1
+  m_Name: FlyracquetMeleeWeapon
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponDataSO
   weaponName: Weapon
   holdType: 0
   enemyAttackRange: 0.9
-  enemyAttackCooldown: 1.5
-  playerAttackRange: 0.75
-  playerAttackCooldown: 1
-  maxDurability: 2
-  damageType: 0
-  baseDamage: 100
-  throwForce: 30
+  enemyAttackCooldown: 1.2
+  playerAttackRange: 0.9
+  playerAttackCooldown: 0.8
+  maxDurability: 4
+  damageType: 1
+  baseDamage: 50
+  throwForce: 25
   throwDamage: 100
   bounceForce: 1
   slowDownDuration: 0
   useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
-  useSoundVolume: 0.74
+  useSoundVolume: 1
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
   soundAlertRadius: 0
   breakSound: {fileID: 8300000, guid: 766c52aee0acd2145bb121a735910c90, type: 3}
   breakSoundVolume: 0.8
-  heldSprite: {fileID: -3114945307499743449, guid: 0c53be626f5301d489115bb41043f2e0, type: 3}
-  droppedSprite: {fileID: -3452738413785727319, guid: 6d658a3c827cf9941be9341e94a77808, type: 3}
-  depletedSprite: {fileID: -8810295398536185542, guid: a2d3e12bb8598c5468fee3bb5e4f6626, type: 3}
+  heldSprite: {fileID: 2927708173110818932, guid: efde5f7370270ce4da907b8ef316dad2, type: 3}
+  droppedSprite: {fileID: 2927708173110818932, guid: efde5f7370270ce4da907b8ef316dad2, type: 3}
+  depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
   attackAngle: 90
-  knockbackForce: 0
+  knockbackForce: 13
   hitLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
   showHitEffect: 1
   hitEffectColor: {r: 1, g: 1, b: 1, a: 1}
-  hitEffectSize: 2
+  hitEffectSize: 1.2
   hitEffectDuration: 0.2
   hitEffectFadeOut: 1
   hitEffectExpand: 0

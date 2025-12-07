@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MeleeEnemy
   m_EditorClassIdentifier: Assembly-CSharp::EnemyDataSO
   enemyName: Enemy
-  postBluntAttackWaitTime: 0.5
+  postBluntAttackWaitTime: 0.8
   maxHealth: 100
   patrolSpeed: 4
   investigationSpeed: 5
@@ -43,7 +43,7 @@ MonoBehaviour:
   deathSoundVolume: 1
   canUseWeapons: 1
   canSeekItems: 1
-  itemSeekRadius: 5
+  itemSeekRadius: 8
   itemPickupRadius: 0.59
   itemSeekInterval: 2
   preferPrimaryWeapons: 1
