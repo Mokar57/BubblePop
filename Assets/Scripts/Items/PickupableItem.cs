@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 /// <summary>
 /// Base class for any item that can be picked up by an IItemHolder
@@ -23,12 +24,26 @@ public class PickupableItem : MonoBehaviour
     [Tooltip("UI indicator shown when player is in range (optional)")]
     public GameObject pickupIndicator;
 
+    [Header("Melee Rotation Animation")]
+    [Tooltip("Enable rotation animation for melee items during attack")]
+    public bool enableMeleeRotation = true;
+
+    [Tooltip("Rotation angle in degrees (positive = clockwise, negative = counter-clockwise)")]
+    public float rotationAngle = 90f;
+
+    [Tooltip("Duration of the rotation animation in seconds")]
+    public float rotationDuration = 0.3f;
+
+    [Tooltip("Time to wait before returning to original position in seconds")]
+    public float rotationHoldTime = 0.1f;
+
     protected bool isHeld = false;
     public bool IsHeld => isHeld;
 
     protected Collider2D itemCollider;
     protected Rigidbody2D itemRb;
     protected SpriteRenderer spriteRenderer;
+    private Coroutine rotationCoroutine;
 
     protected virtual void Awake()
     {
@@ -122,4 +137,76 @@ public class PickupableItem : MonoBehaviour
             if (pickupIndicator) pickupIndicator.SetActive(false);
         }
     }
+
+    /// <summary>
+    /// Triggers the rotation animation for melee items during attack
+    /// Called by Weapon class when attacking
+    /// </summary>
+    public void PlayAttackRotation()
+    {
+        if (!isHeld) return;
+        if (HoldType != ItemHoldType.Melee) return;
+        if (!enableMeleeRotation) return;
+        
+        StopRotationAnimation();
+        rotationCoroutine = StartCoroutine(AttackRotationCoroutine());
+    }
+
+    /// <summary>
+    /// Stops the rotation animation
+    /// </summary>
+    protected void StopRotationAnimation()
+    {
+        if (rotationCoroutine != null)
+        {
+            StopCoroutine(rotationCoroutine);
+            rotationCoroutine = null;
+        }
+    }
+
+    /// <summary>
+    /// Coroutine that handles the attack rotation animation
+    /// Rotates to target angle, holds briefly, then returns to original position
+    /// </summary>
+    private IEnumerator AttackRotationCoroutine()
+    {
+        Quaternion startRotation = transform.localRotation;
+        Quaternion targetRotation = startRotation * Quaternion.Euler(0, 0, rotationAngle);
+        float elapsedTime = 0f;
+
+        // Rotate to target angle
+        while (elapsedTime < rotationDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / rotationDuration;
+            // Use smoothstep for smoother animation
+            t = t * t * (3f - 2f * t);
+            transform.localRotation = Quaternion.Lerp(startRotation, targetRotation, t);
+            yield return null;
+        }
+
+        transform.localRotation = targetRotation;
+
+        // Hold at target angle
+        if (rotationHoldTime > 0)
+        {
+            yield return new WaitForSeconds(rotationHoldTime);
+        }
+
+        // Return to original angle
+        elapsedTime = 0f;
+        while (elapsedTime < rotationDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = elapsedTime / rotationDuration;
+            // Use smoothstep for smoother animation
+            t = t * t * (3f - 2f * t);
+            transform.localRotation = Quaternion.Lerp(targetRotation, startRotation, t);
+            yield return null;
+        }
+
+        transform.localRotation = startRotation;
+        rotationCoroutine = null;
+    }
+
 }

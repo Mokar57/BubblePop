@@ -15,9 +15,9 @@ MonoBehaviour:
   weaponName: Weapon
   holdType: 0
   enemyAttackRange: 0.9
-  enemyAttackCooldown: 1.5
+  enemyAttackCooldown: 1
   playerAttackRange: 0.75
-  playerAttackCooldown: 1
+  playerAttackCooldown: 0.9
   maxDurability: 2
   damageType: 0
   baseDamage: 100
@@ -26,7 +26,7 @@ MonoBehaviour:
   bounceForce: 1
   slowDownDuration: 0
   useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
-  useSoundVolume: 0.74
+  useSoundVolume: 0.44
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
   soundAlertRadius: 0

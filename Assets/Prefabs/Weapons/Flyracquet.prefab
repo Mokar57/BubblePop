@@ -131,7 +131,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 5.99, y: 2.27}
+    oldSize: {x: 1.089091, y: 0.41272727}
     newSize: {x: 1.072, y: 0.228}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -182,4 +182,8 @@ MonoBehaviour:
   pickupRadius: 1
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
+  enableMeleeRotation: 1
+  rotationAngle: 160
+  rotationDuration: 0.3
+  rotationHoldTime: 0.1
   weaponData: {fileID: 11400000, guid: 33575dd3eeb16f546a849b8290d5694f, type: 2}

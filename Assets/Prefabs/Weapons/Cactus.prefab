@@ -136,6 +136,10 @@ MonoBehaviour:
   pickupRadius: 1
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
+  enableMeleeRotation: 1
+  rotationAngle: 150
+  rotationDuration: 0.2
+  rotationHoldTime: 0.2
   weaponData: {fileID: 11400000, guid: 10d63635e3c8a2542af14ffe6dd56253, type: 2}
 --- !u!58 &7794390450304744146
 CircleCollider2D:

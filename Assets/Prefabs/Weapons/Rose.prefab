@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 3932926569630947352}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: -0.004328352, w: 0.99999064}
-  m_LocalPosition: {x: 2.614, y: -4.49, z: 0}
+  m_LocalPosition: {x: 2.626, y: -4.567, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -130,7 +130,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.4999996, y: 0.1669096}
     oldSize: {x: 0.308, y: 0.748}
     newSize: {x: 1.54, y: 3.74}
     adaptiveTilingThreshold: 0.5
@@ -182,4 +182,8 @@ MonoBehaviour:
   pickupRadius: 1
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
+  enableMeleeRotation: 1
+  rotationAngle: 45
+  rotationDuration: 0.2
+  rotationHoldTime: 0.05
   weaponData: {fileID: 11400000, guid: c8916eefe6c29a345997ed61ee27aad3, type: 2}

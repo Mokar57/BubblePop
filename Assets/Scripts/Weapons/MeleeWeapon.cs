@@ -39,6 +39,9 @@ public class MeleeWeapon : Weapon
 
         lastAttackTime = Time.time;
 
+        // Trigger rotation animation for melee weapon
+        PlayAttackRotation();
+
         // Play attack sound
         if (meleeData.useSound != null && SoundManager.Instance != null)
         {
