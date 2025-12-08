@@ -65,6 +65,13 @@ public class InputManager : MonoBehaviour
         controls?.Disable();
     }
 
+    private void Update()
+    {
+        // Continuously update mouse position every frame
+        // This ensures the mouse position is always current, even when not moving
+        UpdateMousePosition(Mouse.current.position.ReadValue());
+    }
+
     private void SetupInputCallbacks()
     {
         // Movement - continuous value

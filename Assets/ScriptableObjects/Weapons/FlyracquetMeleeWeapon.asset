@@ -36,7 +36,7 @@ MonoBehaviour:
   droppedSprite: {fileID: 2927708173110818932, guid: efde5f7370270ce4da907b8ef316dad2, type: 3}
   depletedSprite: {fileID: 3041088481278612462, guid: 3f2f6a5fefd6adc4faed43b202ddb71e, type: 3}
   attackAngle: 90
-  knockbackForce: 13
+  knockbackForce: 10
   hitLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295

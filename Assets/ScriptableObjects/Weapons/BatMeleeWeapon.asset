@@ -17,7 +17,7 @@ MonoBehaviour:
   enemyAttackRange: 1
   enemyAttackCooldown: 1.3
   playerAttackRange: 1
-  playerAttackCooldown: 1
+  playerAttackCooldown: 0.9
   maxDurability: 5
   damageType: 1
   baseDamage: 50
@@ -36,7 +36,14 @@ MonoBehaviour:
   droppedSprite: {fileID: 21300000, guid: 9e2f7ba860b174b498d638757bdfa60d, type: 3}
   depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
   attackAngle: 90
-  knockbackForce: 10
+  knockbackForce: 8
   hitLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  showHitEffect: 1
+  hitEffectColor: {r: 1, g: 1, b: 1, a: 1}
+  hitEffectSize: 2
+  hitEffectDuration: 0.2
+  hitEffectFadeOut: 1
+  hitEffectExpand: 0
+  hitEffectExpandScale: 1.5

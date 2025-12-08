@@ -152,13 +152,13 @@ public class PlayerControls : MonoBehaviour, ISpeedBoostable, IItemHolder, IDama
     {
         if (InputManager.Instance == null) return;
 
-        // Use InputManager's mouse direction from the screen center
-        Vector2 direction = InputManager.Instance.MouseDirection;
+        // Get mouse direction from the player's position (not screen center)
+        Vector2 direction = InputManager.Instance.GetMouseDirectionFrom(transform.position);
 
-        // Check if the mouse is outside the deadzone (not near the screen center)
+        // Check if the mouse is outside the deadzone (not near the player)
         if (direction.sqrMagnitude > rotationDeadzone)
         {
-            lastValidMouseDirection = direction;
+            lastValidMouseDirection = direction.normalized;
         }
 
         // Calculate the exact angle from the last valid direction
