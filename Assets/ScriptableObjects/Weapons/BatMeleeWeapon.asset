@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponDataSO
   weaponName: Weapon
   holdType: 0
-  enemyAttackRange: 1
+  enemyAttackRange: 1.5
   enemyAttackCooldown: 1.3
-  playerAttackRange: 1
+  playerAttackRange: 0.6
   playerAttackCooldown: 0.9
   maxDurability: 5
   damageType: 1
@@ -40,7 +40,7 @@ MonoBehaviour:
   hitLayerMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  showHitEffect: 1
+  showHitEffect: 0
   hitEffectColor: {r: 1, g: 1, b: 1, a: 1}
   hitEffectSize: 2
   hitEffectDuration: 0.2
