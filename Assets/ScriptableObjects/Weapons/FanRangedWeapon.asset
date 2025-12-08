@@ -15,10 +15,10 @@ MonoBehaviour:
   weaponName: Weapon
   holdType: 1
   enemyAttackRange: 8
-  enemyAttackCooldown: 1
+  enemyAttackCooldown: 0.4
   playerAttackRange: 2
-  playerAttackCooldown: 0.5
-  maxDurability: 3
+  playerAttackCooldown: 0.4
+  maxDurability: 5
   damageType: 1
   baseDamage: 100
   throwForce: 15
@@ -29,12 +29,12 @@ MonoBehaviour:
   useSoundVolume: 1
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
-  soundAlertRadius: 7
+  soundAlertRadius: 8
   breakSound: {fileID: 8300000, guid: 766c52aee0acd2145bb121a735910c90, type: 3}
   breakSoundVolume: 0.8
   heldSprite: {fileID: -8970574912058710555, guid: 7e250c48bb0b5c846907824d15b76adb, type: 3}
   droppedSprite: {fileID: -8970574912058710555, guid: 7e250c48bb0b5c846907824d15b76adb, type: 3}
-  depletedSprite: {fileID: 3952322414003577344, guid: 146af1cc28d690a4d85b4a6025d04538, type: 3}
+  depletedSprite: {fileID: -5031467761272859808, guid: 4491e69ef5aec1d409668d62c995be6e, type: 3}
   projectilePrefab: {fileID: 8696534751382374328, guid: 08d5beffb818307458aa83589d5fee09, type: 3}
   projectileSpeed: 10
   projectileData: {fileID: 11400000, guid: c9c47c3931f80c641b023bcbbbbfc4f5, type: 2}

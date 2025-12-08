@@ -34,7 +34,7 @@ MonoBehaviour:
   breakSoundVolume: 0.8
   heldSprite: {fileID: 8780078880246789422, guid: e2e78dbc763cdc542bcf0e61e9d599d9, type: 3}
   droppedSprite: {fileID: 8780078880246789422, guid: e2e78dbc763cdc542bcf0e61e9d599d9, type: 3}
-  depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
+  depletedSprite: {fileID: -5650215919869719148, guid: f562cc823ef2dcb43a4e8797dd951ae3, type: 3}
   attackAngle: 90
   knockbackForce: 10
   hitLayerMask:

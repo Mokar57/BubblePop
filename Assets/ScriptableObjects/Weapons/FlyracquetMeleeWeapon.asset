@@ -32,9 +32,9 @@ MonoBehaviour:
   soundAlertRadius: 0
   breakSound: {fileID: 8300000, guid: 766c52aee0acd2145bb121a735910c90, type: 3}
   breakSoundVolume: 0.8
-  heldSprite: {fileID: 2927708173110818932, guid: efde5f7370270ce4da907b8ef316dad2, type: 3}
+  heldSprite: {fileID: -6031532739864666445, guid: bf60d9bf03ff0384a8bbc8503df3ff71, type: 3}
   droppedSprite: {fileID: 2927708173110818932, guid: efde5f7370270ce4da907b8ef316dad2, type: 3}
-  depletedSprite: {fileID: 21300000, guid: 87a25bbf49cf3b144ae99baa6ca7e9ee, type: 3}
+  depletedSprite: {fileID: 3041088481278612462, guid: 3f2f6a5fefd6adc4faed43b202ddb71e, type: 3}
   attackAngle: 90
   knockbackForce: 13
   hitLayerMask:

@@ -26,6 +26,10 @@ public class MousePanCameraExtension : CinemachineExtension
     [Tooltip("Key to hold for extended camera pan")]
     public KeyCode extendedPanKey = KeyCode.LeftShift;
 
+    [Header("Bounds Settings")]
+    [Tooltip("Enable camera bounds restriction")]
+    public bool useBounds = true;
+
     private Vector3 currentPanOffset = Vector3.zero;
     private Camera cachedMainCamera;
 
@@ -59,7 +63,15 @@ public class MousePanCameraExtension : CinemachineExtension
         // Apply the offset to the camera position
         // state.RawPosition already contains the player position from Cinemachine's follow
         // We're just adding a slight offset towards the mouse
-        state.RawPosition += currentPanOffset;
+        Vector3 desiredPosition = state.RawPosition + currentPanOffset;
+
+        // Clamp to bounds if enabled and CameraBounds exists
+        if (useBounds && CameraBounds.Instance != null)
+        {
+            desiredPosition = CameraBounds.Instance.ClampPositionToBounds(desiredPosition, cachedMainCamera);
+        }
+
+        state.RawPosition = desiredPosition;
     }
 
     private Vector3 CalculateMousePanOffset()
