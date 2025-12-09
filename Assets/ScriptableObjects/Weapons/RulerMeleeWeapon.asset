@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MeleeWeaponDataSO
   weaponName: Weapon
   holdType: 0
-  enemyAttackRange: 1.7
+  enemyAttackRange: 1.5
   enemyAttackCooldown: 1.2
   playerAttackRange: 0.8
   playerAttackCooldown: 1.2

@@ -40519,7 +40519,7 @@ PrefabInstance:
       objectReference: {fileID: 1918115164}
     - target: {fileID: 4783484216242003377, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: debugMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6351230964340868058, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: m_LocalScale.x
@@ -40579,7 +40579,7 @@ PrefabInstance:
       objectReference: {fileID: 7416906759692662138}
     - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: debugMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7162906996643147603, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: randomPatrolOrder
@@ -40643,7 +40643,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9098328513698841382, guid: d04dfce2a4436e6439c7d52e3321b879, type: 3}
       propertyPath: debugMode
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -40867,14 +40867,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1545007072}
     m_Modifications:
-    - target: {fileID: 339114205808531865, guid: 062c8beaa6715fb44b3150efe618757c, type: 3}
-      propertyPath: rotationDeadzone
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6197810123998961597, guid: 062c8beaa6715fb44b3150efe618757c, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0.39
-      objectReference: {fileID: 0}
     - target: {fileID: 6986673053453427341, guid: 062c8beaa6715fb44b3150efe618757c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
