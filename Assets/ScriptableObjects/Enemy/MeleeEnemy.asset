@@ -31,11 +31,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2048
   proximityRadius: 2
-  proximityTriggerTime: 0.5
+  proximityTriggerTime: 1.2
   enableProximityDetection: 1
   enableContactDetection: 1
-  soundDetectionRange: 35
-  soundInvestigationDuration: 5
+  soundDetectionRange: 36
+  soundInvestigationDuration: 8
   soundSearchRotationInterval: 2
   deathPuddlePrefab: {fileID: 3900286614151855705, guid: cb6cbc50c64bd8c468927223936cc291, type: 3}
   deathSounds:
@@ -43,14 +43,20 @@ MonoBehaviour:
   deathSoundVolume: 1
   canUseWeapons: 1
   canSeekItems: 1
-  itemSeekRadius: 8
-  itemPickupRadius: 0.59
-  itemSeekInterval: 2
+  itemSeekRadius: 7
+  itemPickupRadius: 0.57
+  itemSeekInterval: 0.2
   preferPrimaryWeapons: 1
   onlySeekWhenUnarmed: 1
   canCatchThrownWeapons: 1
   itemLayerMask:
     serializedVersion: 2
     m_Bits: 1024
+  usePrioritySeekArea: 1
+  prioritySeekAreaRadius: 0.57
+  prioritySeekLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  onlySeekInPriorityArea: 0
   autoFindPlayer: 1
   persistentChase: 1

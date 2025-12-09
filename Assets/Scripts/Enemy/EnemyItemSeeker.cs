@@ -56,12 +56,39 @@ public class EnemyItemSeeker : MonoBehaviour
 
     /// <summary>
     /// Finds the best item to seek based on preferences and distance
+    /// Prioritizes items in the priority area if configured and enemy is unarmed
     /// </summary>
     public PickupableItem FindBestItem()
     {
+        // Check if we should prioritize the area
+        bool shouldCheckPriorityArea = enemyData != null && 
+                                        enemyData.usePrioritySeekArea && 
+                                        !weaponController.HasWeapon();
+
         // Use AllLayers if mask is not set (value 0 usually means Nothing in LayerMask, but we want to find something)
         int mask = itemMask.value != 0 ? itemMask.value : Physics2D.AllLayers;
 
+        // First, check priority area if enabled
+        if (shouldCheckPriorityArea)
+        {
+            Debug.Log($"{gameObject.name}: Checking priority area (radius: {enemyData.prioritySeekAreaRadius})");
+            PickupableItem priorityItem = FindItemInPriorityArea(mask);
+            if (priorityItem != null)
+            {
+                Debug.Log($"{gameObject.name}: Found priority item: {priorityItem.name} at {priorityItem.transform.position}");
+                return priorityItem;
+            }
+
+            Debug.Log($"{gameObject.name}: No item found in priority area. OnlySeekInPriority: {enemyData.onlySeekInPriorityArea}");
+
+            // If onlySeekInPriorityArea is true and no item found, return null
+            if (enemyData.onlySeekInPriorityArea)
+            {
+                return null;
+            }
+        }
+
+        // Otherwise, find items normally
         Collider2D[] nearbyColliders = Physics2D.OverlapCircleAll(transform.position, seekRadius, mask);
 
         Weapon bestItem = null;
@@ -104,6 +131,66 @@ public class EnemyItemSeeker : MonoBehaviour
         return bestItem;
     }
 
+    /// <summary>
+    /// Finds the best item within the priority seek area (centered on enemy)
+    /// </summary>
+    private PickupableItem FindItemInPriorityArea(int defaultMask)
+    {
+        if (enemyData == null) return null;
+
+        Vector2 areaCenter = transform.position;
+        float areaRadius = enemyData.prioritySeekAreaRadius;
+
+        // Use priority layer mask if set, otherwise use default mask
+        int mask = enemyData.prioritySeekLayerMask.value != 0 ? enemyData.prioritySeekLayerMask.value : defaultMask;
+
+        Debug.Log($"{gameObject.name}: Searching priority area at {areaCenter} with radius {areaRadius}, mask: {mask}");
+
+        // Find all items in the priority area
+        Collider2D[] areaColliders = Physics2D.OverlapCircleAll(areaCenter, areaRadius, mask);
+
+        Debug.Log($"{gameObject.name}: Found {areaColliders.Length} colliders in priority area");
+
+        Weapon bestItem = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (Collider2D col in areaColliders)
+        {
+            Weapon item = col.GetComponent<Weapon>();
+            if (item == null) item = col.GetComponentInParent<Weapon>();
+
+            if (item == null || item.IsBroken || !item.canBePickedByEnemies)
+                continue;
+
+            if (item.IsHeld)
+                continue;
+
+            Debug.Log($"{gameObject.name}: Valid weapon found in priority area: {item.name} at {item.transform.position}");
+
+            float distanceToEnemy = Vector2.Distance(transform.position, item.transform.position);
+
+            // Prefer Ranged weapons if configured
+            bool isRanged = item is RangedWeapon;
+            bool bestIsRanged = bestItem != null && bestItem is RangedWeapon;
+
+            if (preferPrimaryItems && isRanged)
+            {
+                if (bestItem == null || !bestIsRanged || distanceToEnemy < closestDistance)
+                {
+                    bestItem = item;
+                    closestDistance = distanceToEnemy;
+                }
+            }
+            else if (bestItem == null || (!bestIsRanged && distanceToEnemy < closestDistance))
+            {
+                bestItem = item;
+                closestDistance = distanceToEnemy;
+            }
+        }
+
+        return bestItem;
+    }
+
     public float GetPickupRadius() => pickupRadius;
 
     private void OnDrawGizmosSelected()
@@ -111,5 +198,12 @@ public class EnemyItemSeeker : MonoBehaviour
         float drawSeekRadius = seekRadius > 0 ? seekRadius : (seekRadiusOverride > 0 ? seekRadiusOverride : 10f);
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, drawSeekRadius);
+
+        // Draw priority seek area if enabled (centered on enemy)
+        if (enemyData != null && enemyData.usePrioritySeekArea)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, enemyData.prioritySeekAreaRadius);
+        }
     }
 }

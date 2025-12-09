@@ -303,7 +303,7 @@ MonoBehaviour:
   enemyData: {fileID: 11400000, guid: dd92c3ee7d771664d8a88c049dba6671, type: 2}
   maxHealthOverride: 0
   damageColor: {r: 1, g: 0, b: 0, a: 0}
-  flashDuration: 0.1
+  flashDuration: 0
 --- !u!114 &7979743389041854394
 MonoBehaviour:
   m_ObjectHideFlags: 0

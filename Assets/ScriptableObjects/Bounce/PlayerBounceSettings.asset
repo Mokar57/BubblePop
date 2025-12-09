@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2068fa2c031500439e5ba0ee046ea1f, type: 3}
   m_Name: PlayerBounceSettings
   m_EditorClassIdentifier: Assembly-CSharp::BounceSettingsSO
-  bounceDuration: 1.7
+  bounceDuration: 1.5
   bounceForce: 15
   wallBounceMultiplier: 0.7
-  maxBounces: 5
+  maxBounces: 3
   minimumBounceVelocity: 0.5
   linearDrag: 0.5
   angularDrag: 0.5

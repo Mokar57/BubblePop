@@ -121,6 +121,19 @@ public class EnemyDataSO : ScriptableObject
     [Tooltip("Layer mask for detecting items")]
     public LayerMask itemLayerMask;
 
+    [Header("Priority Seek Area")]
+    [Tooltip("Enable priority item seeking in a specific area when unarmed")]
+    public bool usePrioritySeekArea = false;
+
+    [Tooltip("Radius of the priority seek area (centered on enemy position)")]
+    public float prioritySeekAreaRadius = 5f;
+
+    [Tooltip("Layer mask for priority area item detection (leave as Nothing to use default itemLayerMask)")]
+    public LayerMask prioritySeekLayerMask;
+
+    [Tooltip("Only seek items in priority area when unarmed (ignore items outside)")]
+    public bool onlySeekInPriorityArea = false;
+
     [Header("Behavior Settings")]
     [Tooltip("Auto-find player on start")]
     public bool autoFindPlayer = true;
