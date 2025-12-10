@@ -109,6 +109,9 @@ public class EnemyDataSO : ScriptableObject
     [Tooltip("How often to search for nearby items (seconds)")]
     public float itemSeekInterval = 2f;
 
+    [Tooltip("How often to rescan for closer weapons while moving to a target item (seconds)")]
+    public float itemRescanInterval = 1f;
+
     [Tooltip("Prefer primary weapons (pistols) over secondary (melee)?")]
     public bool preferPrimaryWeapons = true;
 

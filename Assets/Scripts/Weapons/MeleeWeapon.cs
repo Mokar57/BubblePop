@@ -1,13 +1,18 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 /// <summary>
 /// Logic for melee weapons (Bat, Pipe, etc.)
-/// Uses OverlapCircle to detect and damage enemies
+/// Uses OnTriggerEnter2D to detect and damage enemies during attack
 /// </summary>
 public class MeleeWeapon : Weapon
 {
     private float lastAttackTime;
     private MeleeWeaponDataSO meleeData;
+    
+    // Attack state tracking
+    private bool isAttacking = false;
+    private HashSet<GameObject> hitTargets = new HashSet<GameObject>(); // Track hit targets to avoid multiple hits per attack
 
     public override void Initialize(WeaponDataSO data)
     {
@@ -39,6 +44,10 @@ public class MeleeWeapon : Weapon
 
         lastAttackTime = Time.time;
 
+        // Start attack state
+        isAttacking = true;
+        hitTargets.Clear();
+
         // Trigger rotation animation for melee weapon
         PlayAttackRotation();
 
@@ -49,72 +58,70 @@ public class MeleeWeapon : Weapon
             SoundManager.Instance.PlaySound(meleeData.useSound, meleeData.useSoundVolume);
         }
 
-        // Detect hits
-        Vector2 attackOrigin = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(HoldType).position : (Vector2)transform.position;
-        // Use Up as forward since PlayerControls uses transform.up for rotation
-        Vector2 attackDirection = currentHolder != null ? currentHolder.GetHoldPosition(HoldType).up : transform.up;
+        // End attack state after attack duration
+        float attackDuration = rotationDuration + rotationHoldTime;
+        Invoke(nameof(EndAttack), attackDuration);
+    }
 
-        // Determine Range based on holder
-        float range = weaponData.playerAttackRange;
-        if (currentHolder != null && currentHolder.GetTeam() == Team.Enemy)
+    /// <summary>
+    /// Called at the end of attack animation
+    /// </summary>
+    private void EndAttack()
+    {
+        isAttacking = false;
+        hitTargets.Clear();
+    }
+
+    /// <summary>
+    /// OnTriggerEnter2D - Detects collisions with enemies during attack
+    /// Deals damage based on damage type (Piercing or Blunt)
+    /// </summary>
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        // Only damage during attack state
+        if (!isAttacking) return;
+        if (!isHeld) return;
+        if (meleeData == null) return;
+
+        // Avoid hitting the same target multiple times in one attack
+        if (hitTargets.Contains(other.gameObject)) return;
+
+        // Check for IDamageable
+        if (other.TryGetComponent<IDamageable>(out var target))
         {
-            range = weaponData.enemyAttackRange;
-        }
+            // Check team (no friendly fire)
+            if (currentHolder != null && target.GetTeam() == currentHolder.GetTeam()) return;
 
-        // Calculate hit position based on range
-        Vector2 hitPos = attackOrigin + (attackDirection * (range * 0.5f));
+            // Calculate direction for knockback
+            Vector2 attackOrigin = currentHolder != null ? (Vector2)currentHolder.GetHoldPosition(HoldType).position : (Vector2)transform.position;
+            Vector2 dirToTarget = (other.transform.position - (Vector3)attackOrigin).normalized;
 
-        // OverlapCircle to find targets
-        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPos, range);
+            // Create DamageInfo
+            DamageInfo damageInfo = new DamageInfo(
+                meleeData.baseDamage,
+                meleeData.damageType,
+                currentHolder != null ? currentHolder.GetTeam() : Team.Neutral,
+                gameObject,
+                dirToTarget, // Knockback direction
+                meleeData.knockbackForce
+            );
 
-        bool hitEnemy = false;
+            // Apply damage
+            target.TakeDamage(damageInfo);
 
-        foreach (var hit in hits)
-        {
-            // Skip self
-            if (hit.gameObject == currentHolder?.GetHoldPosition(HoldType).gameObject) continue;
+            // Notify holder
+            currentHolder?.OnDamageDealt(damageInfo, target);
 
-            // Check for IDamageable
-            if (hit.TryGetComponent<IDamageable>(out var target))
+            // Mark target as hit
+            hitTargets.Add(other.gameObject);
+
+            // Show hit effect at collision point
+            if (meleeData.showHitEffect)
             {
-                // Check team (no friendly fire)
-                if (currentHolder != null && target.GetTeam() == currentHolder.GetTeam()) continue;
-
-                // Check angle (if we want cone attacks)
-                Vector2 dirToTarget = (hit.transform.position - (Vector3)attackOrigin).normalized;
-                float angle = Vector2.Angle(attackDirection, dirToTarget);
-
-                if (angle <= meleeData.attackAngle * 0.5f)
-                {
-                    // Create DamageInfo
-                    DamageInfo damageInfo = new DamageInfo(
-                        meleeData.baseDamage,
-                        meleeData.damageType,
-                        currentHolder != null ? currentHolder.GetTeam() : Team.Neutral,
-                        gameObject,
-                        dirToTarget, // Knockback direction
-                        meleeData.knockbackForce
-                    );
-
-                    // Apply damage
-                    target.TakeDamage(damageInfo);
-
-                    // Notify holder
-                    currentHolder?.OnDamageDealt(damageInfo, target);
-
-                    hitEnemy = true;
-                }
+                SpawnHitEffect(other.ClosestPoint(transform.position), dirToTarget);
             }
-        }
 
-        // Spawn hit effect
-        if (meleeData.showHitEffect)
-        {
-            SpawnHitEffect(hitPos, attackDirection);
-        }
-
-        if (hitEnemy)
-        {
+            // Reduce durability
             ReduceDurability();
         }
     }
@@ -145,15 +152,11 @@ public class MeleeWeapon : Weapon
 
     private void OnDrawGizmosSelected()
     {
-        if (weaponData != null)
+        // Draw weapon collider bounds for visualization
+        if (itemCollider != null)
         {
-            // Draw Player Range (Green)
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(transform.position + (transform.up * (weaponData.playerAttackRange * 0.5f)), weaponData.playerAttackRange);
-
-            // Draw Enemy Range (Red)
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position + (transform.up * (weaponData.enemyAttackRange * 0.5f)), weaponData.enemyAttackRange);
+            Gizmos.color = isAttacking ? Color.red : Color.yellow;
+            Gizmos.DrawWireCube(itemCollider.bounds.center, itemCollider.bounds.size);
         }
     }
 }

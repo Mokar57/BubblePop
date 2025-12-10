@@ -67,6 +67,9 @@ public abstract class Weapon : PickupableItem
         base.OnPickedUp(holder);
         currentHolder = holder;
 
+        // Enable trigger mode for collision detection during attacks
+        if (itemCollider) itemCollider.isTrigger = true;
+
         if (GetComponent<SpriteRenderer>() is SpriteRenderer sr)
         {
             if (currentDurability <= 0 && weaponData.depletedSprite != null)
@@ -87,6 +90,9 @@ public abstract class Weapon : PickupableItem
     {
         base.OnDropped();
         currentHolder = null;
+
+        // Disable trigger mode when dropped (becomes solid physics object)
+        if (itemCollider) itemCollider.isTrigger = false;
 
         if (GetComponent<SpriteRenderer>() is SpriteRenderer sr)
         {
@@ -173,7 +179,7 @@ public abstract class Weapon : PickupableItem
             holder.OnItemDropped(gameObject);
         }
 
-        // Detach
+        // Detach (OnDropped will disable trigger mode)
         OnDropped();
 
         // Ensure physics state for ground item
@@ -184,12 +190,6 @@ public abstract class Weapon : PickupableItem
             rb.angularVelocity = 0f;
             rb.linearDamping = 5f; // High drag to stop quickly
         }
-
-        // Ensure it's a trigger so it can be picked up
-        if (TryGetComponent<Collider2D>(out var col))
-        {
-            col.isTrigger = true;
-        }
     }
 
     /// <summary>
@@ -197,6 +197,9 @@ public abstract class Weapon : PickupableItem
     /// </summary>
     public void Throw(Vector2 direction)
     {
+        // Stop any active rotation animation to prevent visual glitches
+        StopRotationAnimation();
+
         // Cache thrower before dropping (which clears currentHolder)
         IItemHolder thrower = currentHolder;
         GameObject throwerObj = (thrower as MonoBehaviour)?.gameObject;

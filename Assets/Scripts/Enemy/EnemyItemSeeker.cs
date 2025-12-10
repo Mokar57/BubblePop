@@ -113,16 +113,25 @@ public class EnemyItemSeeker : MonoBehaviour
             bool isRanged = item is RangedWeapon;
             bool bestIsRanged = bestItem != null && bestItem is RangedWeapon;
 
-            if (preferPrimaryItems && isRanged)
+            // Priority logic: prefer ranged weapons, but always choose the closest within the same category
+            if (bestItem == null)
             {
-                if (bestItem == null || !bestIsRanged || distance < closestDistance)
-                {
-                    bestItem = item;
-                    closestDistance = distance;
-                }
+                bestItem = item;
+                closestDistance = distance;
             }
-            else if (bestItem == null || (!bestIsRanged && distance < closestDistance))
+            else if (preferPrimaryItems && isRanged && !bestIsRanged)
             {
+                // New item is ranged, best is not - switch only if reasonably close
+                bestItem = item;
+                closestDistance = distance;
+            }
+            else if (preferPrimaryItems && !isRanged && bestIsRanged)
+            {
+                // New item is melee, best is ranged - keep best (don't switch)
+            }
+            else if (distance < closestDistance)
+            {
+                // Same category or no preference - choose closest
                 bestItem = item;
                 closestDistance = distance;
             }
@@ -173,16 +182,25 @@ public class EnemyItemSeeker : MonoBehaviour
             bool isRanged = item is RangedWeapon;
             bool bestIsRanged = bestItem != null && bestItem is RangedWeapon;
 
-            if (preferPrimaryItems && isRanged)
+            // Priority logic: prefer ranged weapons, but always choose the closest within the same category
+            if (bestItem == null)
             {
-                if (bestItem == null || !bestIsRanged || distanceToEnemy < closestDistance)
-                {
-                    bestItem = item;
-                    closestDistance = distanceToEnemy;
-                }
+                bestItem = item;
+                closestDistance = distanceToEnemy;
             }
-            else if (bestItem == null || (!bestIsRanged && distanceToEnemy < closestDistance))
+            else if (preferPrimaryItems && isRanged && !bestIsRanged)
             {
+                // New item is ranged, best is not - switch only if reasonably close
+                bestItem = item;
+                closestDistance = distanceToEnemy;
+            }
+            else if (preferPrimaryItems && !isRanged && bestIsRanged)
+            {
+                // New item is melee, best is ranged - keep best (don't switch)
+            }
+            else if (distanceToEnemy < closestDistance)
+            {
+                // Same category or no preference - choose closest
                 bestItem = item;
                 closestDistance = distanceToEnemy;
             }

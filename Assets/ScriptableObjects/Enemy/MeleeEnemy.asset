@@ -43,9 +43,10 @@ MonoBehaviour:
   deathSoundVolume: 1
   canUseWeapons: 1
   canSeekItems: 1
-  itemSeekRadius: 7
+  itemSeekRadius: 8
   itemPickupRadius: 0.57
   itemSeekInterval: 0.2
+  itemRescanInterval: 1
   preferPrimaryWeapons: 1
   onlySeekWhenUnarmed: 1
   canCatchThrownWeapons: 1

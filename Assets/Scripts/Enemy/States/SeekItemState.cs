@@ -4,7 +4,7 @@ public class SeekItemState : AIStateBase
 {
     private PickupableItem targetItem;
     private float lastSearchTime;
-    private const float SEARCH_INTERVAL = 1f;
+    private float searchInterval;
 
     public SeekItemState(EnemyAI context) : base(context) { }
 
@@ -12,6 +12,9 @@ public class SeekItemState : AIStateBase
     {
         if (enemyAI.DebugMode)
             Debug.Log("Entering Seek Item State");
+
+        // Initialize search interval from enemy data (default to 1f if not set)
+        searchInterval = enemyAI.enemyData != null ? enemyAI.enemyData.itemRescanInterval : 1f;
 
         movementController.SetEnabled(true);
         FindAndSetTargetItem();
@@ -36,7 +39,7 @@ public class SeekItemState : AIStateBase
         if (!isTargetValid)
         {
             // Try to find a new one periodically
-            if (Time.time - lastSearchTime > SEARCH_INTERVAL)
+            if (Time.time - lastSearchTime > searchInterval)
             {
                 FindAndSetTargetItem();
                 lastSearchTime = Time.time;
@@ -56,13 +59,34 @@ public class SeekItemState : AIStateBase
             return;
         }
 
-        // 3. Move towards item
+        // 3. Periodically check if there's a closer weapon while moving to target
+        if (Time.time - lastSearchTime > searchInterval)
+        {
+            PickupableItem newBestItem = itemSeeker.FindBestItem();
+            if (newBestItem != null && newBestItem != targetItem)
+            {
+                float currentTargetDist = Vector2.Distance(enemyAI.transform.position, targetItem.transform.position);
+                float newTargetDist = Vector2.Distance(enemyAI.transform.position, newBestItem.transform.position);
+                
+                // Switch to the new target if it's closer
+                if (newTargetDist < currentTargetDist)
+                {
+                    if (enemyAI.DebugMode)
+                        Debug.Log($"{enemyAI.name}: Switching to closer weapon. Old dist: {currentTargetDist:F1}, New dist: {newTargetDist:F1}");
+                    
+                    targetItem = newBestItem;
+                }
+            }
+            lastSearchTime = Time.time;
+        }
+
+        // 4. Move towards item
         movementController.MoveTo(targetItem.transform.position);
 
         // Standard vision behavior
         LookWhereMoving();
 
-        // 4. Check distance and pickup
+        // 5. Check distance and pickup
         // Use 2D distance check (ignore Z)
         float distanceToItem = Vector2.Distance(enemyAI.transform.position, targetItem.transform.position);
 

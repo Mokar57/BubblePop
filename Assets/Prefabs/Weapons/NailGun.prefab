@@ -141,7 +141,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8448
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -214,4 +214,8 @@ MonoBehaviour:
   pickupRadius: 1
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
+  enableMeleeRotation: 1
+  rotationAngle: 90
+  rotationDuration: 0.3
+  rotationHoldTime: 0.1
   weaponData: {fileID: 11400000, guid: 3932fbe2a817f0d4298bb56bb97eb26c, type: 2}

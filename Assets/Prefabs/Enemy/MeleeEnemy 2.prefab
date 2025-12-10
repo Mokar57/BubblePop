@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2432630766753788145}
-  m_Layer: 8
+  m_Layer: 13
   m_Name: CloseRangeHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2442067725035175452}
-  m_Layer: 8
+  m_Layer: 13
   m_Name: GunHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,7 +87,7 @@ GameObject:
   - component: {fileID: 6482578936393969676}
   - component: {fileID: 4114950494138049985}
   - component: {fileID: 2510889999578025272}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: MeleeEnemy 2
   m_TagString: Enemy
   m_Icon: {fileID: 0}

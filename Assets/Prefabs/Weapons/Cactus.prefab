@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 172368637337580688}
   - component: {fileID: 6269874751224178585}
   - component: {fileID: 8110130392176690207}
-  - component: {fileID: 7794390450304744146}
+  - component: {fileID: 6417924764484683655}
   m_Layer: 10
   m_Name: Cactus
   m_TagString: Untagged
@@ -141,8 +141,8 @@ MonoBehaviour:
   rotationDuration: 0.2
   rotationHoldTime: 0.2
   weaponData: {fileID: 11400000, guid: 10d63635e3c8a2542af14ffe6dd56253, type: 2}
---- !u!58 &7794390450304744146
-CircleCollider2D:
+--- !u!61 &6417924764484683655
+BoxCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -157,7 +157,7 @@ CircleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 8448
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -175,5 +175,15 @@ CircleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Radius: 0.2
+  m_Offset: {x: 0.33, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.516, y: 0.416}
+    newSize: {x: 1.072, y: 0.228}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 0.82, y: 0.416}
+  m_EdgeRadius: 0

@@ -9,6 +9,10 @@ public class ThrownItem : MonoBehaviour
     private GameObject thrower;
     private WeaponDataSO data;
 
+    // Layer management
+    private const int PLAYER_LAYER = 8;
+    private const int ENEMY_LAYER = 13;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -24,6 +28,12 @@ public class ThrownItem : MonoBehaviour
         if (TryGetComponent<PickupableItem>(out var pickup))
         {
             pickup.enabled = false;
+        }
+
+        // Set exclude layers to nothing (can hit everyone while thrown)
+        if (itemCollider != null)
+        {
+            itemCollider.excludeLayers = 0;
         }
 
         // Ensure physics settings
@@ -197,6 +207,12 @@ public class ThrownItem : MonoBehaviour
         rb.angularVelocity = 0f;
         rb.linearDamping = 10f;
         rb.angularDamping = 10f;
+
+        // Restore exclude layers (Player and Enemy) now that item has stopped
+        if (itemCollider != null)
+        {
+            itemCollider.excludeLayers = (1 << PLAYER_LAYER) | (1 << ENEMY_LAYER);
+        }
 
         // Re-enable pickup
         if (TryGetComponent<PickupableItem>(out var pickup))

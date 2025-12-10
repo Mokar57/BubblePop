@@ -45,11 +45,40 @@ public class PickupableItem : MonoBehaviour
     protected SpriteRenderer spriteRenderer;
     private Coroutine rotationCoroutine;
 
+    // Layer management
+    private const int PLAYER_LAYER = 8;
+    private const int ENEMY_LAYER = 13;
+
     protected virtual void Awake()
     {
         itemCollider = GetComponent<Collider2D>();
         itemRb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        // Set initial exclude layers (on ground state)
+        SetGroundExcludeLayers();
+    }
+
+    /// <summary>
+    /// Sets exclude layers for ground state (excludes Player and Enemy)
+    /// </summary>
+    protected void SetGroundExcludeLayers()
+    {
+        if (itemCollider != null)
+        {
+            itemCollider.excludeLayers = (1 << PLAYER_LAYER) | (1 << ENEMY_LAYER);
+        }
+    }
+
+    /// <summary>
+    /// Sets exclude layers for held state (no exclusions - can hit everyone)
+    /// </summary>
+    protected void SetHeldExcludeLayers()
+    {
+        if (itemCollider != null)
+        {
+            itemCollider.excludeLayers = 0; // Nothing excluded
+        }
     }
 
     /// <summary>
@@ -79,9 +108,14 @@ public class PickupableItem : MonoBehaviour
     {
         isHeld = true;
 
-        // Disable physics
-        if (itemCollider) itemCollider.enabled = false;
-        if (itemRb) itemRb.simulated = false;
+        // Set to kinematic so collider follows transform (for weapon hits)
+        // Collider is NOT disabled - will be managed by Weapon class for trigger mode
+        if (itemRb)
+        {
+            itemRb.bodyType = RigidbodyType2D.Kinematic;
+            itemRb.linearVelocity = Vector2.zero;
+            itemRb.angularVelocity = 0f;
+        }
 
         // Hide pickup indicator
         if (pickupIndicator) pickupIndicator.SetActive(false);
@@ -90,6 +124,9 @@ public class PickupableItem : MonoBehaviour
         transform.SetParent(holder.GetHoldPosition(HoldType));
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
+
+        // Set exclude layers for held state (can hit enemies/players)
+        SetHeldExcludeLayers();
 
         // Notify holder that pickup was successful
         holder.OnItemPickedUp(gameObject);
@@ -103,12 +140,21 @@ public class PickupableItem : MonoBehaviour
     {
         isHeld = false;
 
-        // Re-enable physics
-        if (itemCollider) itemCollider.enabled = true;
-        if (itemRb) itemRb.simulated = true;
+        // Stop any active rotation animation when dropped
+        StopRotationAnimation();
+
+        // Re-enable physics as Dynamic
+        // Collider enable/disable is managed by Weapon class for trigger mode
+        if (itemRb)
+        {
+            itemRb.bodyType = RigidbodyType2D.Dynamic;
+        }
 
         // Unparent from holder
         transform.SetParent(null);
+
+        // Restore exclude layers for ground state
+        SetGroundExcludeLayers();
     }
 
     /// <summary>
@@ -155,7 +201,7 @@ public class PickupableItem : MonoBehaviour
     /// <summary>
     /// Stops the rotation animation
     /// </summary>
-    protected void StopRotationAnimation()
+    public void StopRotationAnimation()
     {
         if (rotationCoroutine != null)
         {
