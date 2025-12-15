@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 6c4bdfb2c09ea7749a00265683bfc305
+guid: 6362e4e2148c64643be7a4882c1caedf
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6699133303809333453
-    second: vantilatorkusbakisi_0
+      213: 5125743152202440416
+    second: yildizlar2_0
+  - first:
+      213: -4924165891625759389
+    second: yildizlar2_1
+  - first:
+      213: -669190314184168162
+    second: yildizlar2_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,12 +52,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 500
+  spritePixelsToUnits: 350
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,23 +106,67 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: vantilatorkusbakisi_0
+      name: yildizlar2_0
       rect:
         serializedVersion: 2
-        x: 552
-        y: 516
-        width: 316
-        height: 147
-      alignment: 9
-      pivot: {x: 0.4900727, y: 0.15854941}
+        x: 0
+        y: 1
+        width: 83
+        height: 78
+      alignment: 0
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: dc85b8c0f3a18fc50800000000000000
-      internalID: 6699133303809333453
+      spriteID: 0eedae45d3c422740800000000000000
+      internalID: 5125743152202440416
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: yildizlar2_1
+      rect:
+        serializedVersion: 2
+        x: 65
+        y: 59
+        width: 146
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 36d4d8ef539d9abb0800000000000000
+      internalID: -4924165891625759389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: yildizlar2_2
+      rect:
+        serializedVersion: 2
+        x: 216
+        y: 52
+        width: 81
+        height: 76
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1dabeb64fe86b6f0800000000000000
+      internalID: -669190314184168162
       vertices: []
       indices: 
       edges: []
@@ -125,7 +175,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: d74c3cbfbc789c3449e8c2a208ee644c
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      vantilatorkusbakisi_0: 6699133303809333453
+      yildizlar2_0: 5125743152202440416
+      yildizlar2_1: -4924165891625759389
+      yildizlar2_2: -669190314184168162
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

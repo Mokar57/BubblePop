@@ -21,6 +21,11 @@ public class BounceController : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Color originalColor;
 
+    // Stun Sprite
+    private GameObject stunSpriteObject;
+    private SpriteRenderer stunSpriteRenderer;
+    private float floatAnimationTimer;
+
     // Events
     public System.Action OnBounceStart;
     public System.Action OnBounceEnd;
@@ -81,6 +86,9 @@ public class BounceController : MonoBehaviour
             spriteRenderer.color = settings.bounceColor;
         }
 
+        // Show Stun Sprite
+        ShowStunSprite();
+
         bounceCoroutine = StartCoroutine(BounceRoutine());
     }
 
@@ -139,6 +147,9 @@ public class BounceController : MonoBehaviour
         {
             spriteRenderer.color = originalColor;
         }
+
+        // Hide Stun Sprite
+        HideStunSprite();
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -179,6 +190,86 @@ public class BounceController : MonoBehaviour
             {
                 SoundManager.Instance.PlaySound(settings.wallBounceSound, settings.wallBounceSoundVolume);
             }
+        }
+    }
+
+    private void Update()
+    {
+        // Update stun sprite position and animation
+        if (stunSpriteObject != null && stunSpriteObject.activeSelf)
+        {
+            UpdateStunSpritePosition();
+        }
+    }
+
+    private void ShowStunSprite()
+    {
+        if (settings == null || !settings.enableStunSprite || settings.stunSprite == null)
+            return;
+
+        // Create sprite object if it doesn't exist
+        if (stunSpriteObject == null)
+        {
+            stunSpriteObject = new GameObject($"{name}_StunSprite");
+            stunSpriteObject.transform.SetParent(transform);
+            
+            stunSpriteRenderer = stunSpriteObject.AddComponent<SpriteRenderer>();
+            stunSpriteRenderer.sprite = settings.stunSprite;
+            stunSpriteRenderer.sortingOrder = 100; // Render on top
+            
+            // Set sprite size
+            stunSpriteObject.transform.localScale = new Vector3(
+                settings.stunSpriteSize.x,
+                settings.stunSpriteSize.y,
+                1f
+            );
+        }
+
+        // Update sprite in case settings changed
+        if (stunSpriteRenderer != null)
+        {
+            stunSpriteRenderer.sprite = settings.stunSprite;
+        }
+
+        // Reset animation timer
+        floatAnimationTimer = 0f;
+
+        // Show sprite
+        stunSpriteObject.SetActive(true);
+        UpdateStunSpritePosition();
+    }
+
+    private void HideStunSprite()
+    {
+        if (stunSpriteObject != null)
+        {
+            stunSpriteObject.SetActive(false);
+        }
+    }
+
+    private void UpdateStunSpritePosition()
+    {
+        if (stunSpriteObject == null || settings == null) return;
+
+        Vector3 baseOffset = settings.stunSpriteOffset;
+        
+        // Add floating animation
+        if (settings.enableFloatingAnimation)
+        {
+            floatAnimationTimer += Time.deltaTime * settings.floatAnimationSpeed;
+            float floatOffset = Mathf.Sin(floatAnimationTimer * Mathf.PI * 2f) * settings.floatAnimationRange;
+            baseOffset.y += floatOffset;
+        }
+
+        stunSpriteObject.transform.localPosition = baseOffset;
+    }
+
+    private void OnDestroy()
+    {
+        // Clean up stun sprite
+        if (stunSpriteObject != null)
+        {
+            Destroy(stunSpriteObject);
         }
     }
 }

@@ -26,3 +26,10 @@ MonoBehaviour:
   enableColorTint: 1
   wallBounceSound: {fileID: 8300000, guid: fb8b245286660cc41bc124e80044ed22, type: 3}
   wallBounceSoundVolume: 0.8
+  stunSprite: {fileID: 21300000, guid: 6362e4e2148c64643be7a4882c1caedf, type: 3}
+  enableStunSprite: 1
+  stunSpriteOffset: {x: 0, y: 0}
+  stunSpriteSize: {x: 1, y: 1}
+  enableFloatingAnimation: 1
+  floatAnimationSpeed: 1
+  floatAnimationRange: 0.1

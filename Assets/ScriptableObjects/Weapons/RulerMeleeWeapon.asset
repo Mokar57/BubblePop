@@ -30,7 +30,7 @@ MonoBehaviour:
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}
   throwSoundVolume: 1
   soundAlertRadius: 0
-  breakSound: {fileID: 8300000, guid: 766c52aee0acd2145bb121a735910c90, type: 3}
+  breakSound: {fileID: 8300000, guid: c5933842192b10745a90df5ad6278f9e, type: 3}
   breakSoundVolume: 0.8
   heldSprite: {fileID: 8780078880246789422, guid: e2e78dbc763cdc542bcf0e61e9d599d9, type: 3}
   droppedSprite: {fileID: 8780078880246789422, guid: e2e78dbc763cdc542bcf0e61e9d599d9, type: 3}

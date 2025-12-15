@@ -57,4 +57,26 @@ public class BounceSettingsSO : ScriptableObject
     [Tooltip("Volume of wall bounce sound")]
     [Range(0f, 1f)]
     public float wallBounceSoundVolume = 0.8f;
+
+    [Header("Stun Visual Effect")]
+    [Tooltip("Sprite to show above character's head during bounce (e.g., stars, birds)")]
+    public Sprite stunSprite;
+
+    [Tooltip("Enable stun sprite effect during bounce")]
+    public bool enableStunSprite = true;
+
+    [Tooltip("Offset position above character's head (in units)")]
+    public Vector2 stunSpriteOffset = new Vector2(0f, 1.5f);
+
+    [Tooltip("Size of the stun sprite")]
+    public Vector2 stunSpriteSize = new Vector2(1f, 1f);
+
+    [Tooltip("Enable floating animation for stun sprite")]
+    public bool enableFloatingAnimation = true;
+
+    [Tooltip("Float animation speed (cycles per second)")]
+    public float floatAnimationSpeed = 2f;
+
+    [Tooltip("Float animation range (in units)")]
+    public float floatAnimationRange = 0.2f;
 }
