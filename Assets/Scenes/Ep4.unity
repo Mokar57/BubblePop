@@ -701,7 +701,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4098696392532321443, guid: 0806444132f654447ac6c6a752bdeb96, type: 3}
       propertyPath: m_SortingOrder
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4626327359654491835, guid: 0806444132f654447ac6c6a752bdeb96, type: 3}
       propertyPath: m_LocalPosition.x
@@ -852,6 +852,10 @@ PrefabInstance:
     - target: {fileID: 3874575419126689842, guid: edc2e3618d86bf24bab877cd40cfb06d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4214399978596212564, guid: edc2e3618d86bf24bab877cd40cfb06d, type: 3}
+      propertyPath: m_SortingOrder
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 6740743532130741549, guid: edc2e3618d86bf24bab877cd40cfb06d, type: 3}
       propertyPath: m_Name
@@ -2218,6 +2222,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4214399978596212564, guid: 3160d66f0aa2378449f4359637c763ae, type: 3}
+      propertyPath: m_SortingOrder
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 6740743532130741549, guid: 3160d66f0aa2378449f4359637c763ae, type: 3}
       propertyPath: m_Name
       value: "merdiven 4 a\xE7\u0131_1 2"
@@ -2683,7 +2691,7 @@ TilemapRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 2
+  m_SortingOrder: 4
   m_ChunkSize: {x: 32, y: 32, z: 32}
   m_ChunkCullingBounds: {x: 0.001960814, y: 0.001960814, z: 0}
   m_MaxChunkCount: 16
@@ -23935,6 +23943,10 @@ PrefabInstance:
     - target: {fileID: 7963989162710242988, guid: 0ff73fe1fb252a544bbc553a447fd0d2, type: 3}
       propertyPath: m_ChunkCullingBounds.y
       value: 0.001960814
+      objectReference: {fileID: 0}
+    - target: {fileID: 8015913778872384694, guid: 0ff73fe1fb252a544bbc553a447fd0d2, type: 3}
+      propertyPath: m_SortingOrder
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8015913778872384694, guid: 0ff73fe1fb252a544bbc553a447fd0d2, type: 3}
       propertyPath: m_ChunkCullingBounds.x

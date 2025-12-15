@@ -183,7 +183,7 @@ MonoBehaviour:
   canBePickedByEnemies: 1
   pickupIndicator: {fileID: 0}
   enableMeleeRotation: 1
-  rotationAngle: 45
+  rotationAngle: 60
   rotationDuration: 0.2
   rotationHoldTime: 0.05
   weaponData: {fileID: 11400000, guid: c8916eefe6c29a345997ed61ee27aad3, type: 2}

@@ -7,4 +7,13 @@ public class LevelMenu : MonoBehaviour
       string levelName = "Ep" + levelId;
         SceneManager.LoadScene(levelName);  
     }
+
+    public void QuitGame()
+    {
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        #else
+        Application.Quit();
+        #endif
+    }
 }

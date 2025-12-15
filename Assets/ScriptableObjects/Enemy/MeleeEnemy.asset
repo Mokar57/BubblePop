@@ -24,7 +24,7 @@ MonoBehaviour:
   chaseAngularSpeed: 180
   chaseRotationSpeed: 3600
   visionRange: 8
-  visionAngle: 125
+  visionAngle: 120
   memoryDuration: 15
   rotationSpeed: 240
   visionObstacleMask:
