@@ -25,6 +25,8 @@ MonoBehaviour:
   throwDamage: 100
   bounceForce: 1
   slowDownDuration: 0
+  triggerDelayAfterHit: 0.2
+  triggerTimeoutDuration: 1.5
   useSound: {fileID: 8300000, guid: 68498227a55e28f49914cd0ba677d56e, type: 3}
   useSoundVolume: 0.74
   throwSound: {fileID: 8300000, guid: a0d9bbcaaf2e5fa4a91b95b4c1ed2c4e, type: 3}

@@ -50,6 +50,12 @@ public class WeaponDataSO : ScriptableObject
     [Tooltip("How long it takes to slow down to a stop after hitting something")]
     public float slowDownDuration = 1f;
 
+    [Tooltip("Time after hitting an enemy before collider becomes trigger (seconds)")]
+    public float triggerDelayAfterHit = 0.2f;
+
+    [Tooltip("Time without hitting anything before collider becomes trigger (seconds)")]
+    public float triggerTimeoutDuration = 3f;
+
     [Header("Audio")]
     [Tooltip("Sound played when weapon is used (attack)")]
     public AudioClip useSound;

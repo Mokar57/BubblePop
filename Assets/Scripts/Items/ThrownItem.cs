@@ -8,6 +8,8 @@ public class ThrownItem : MonoBehaviour
     private bool isSlowingDown = false;
     private GameObject thrower;
     private WeaponDataSO data;
+    private Coroutine timeoutCoroutine;
+    private bool hasHitSomething = false;
 
     // Layer management
     private const int PLAYER_LAYER = 8;
@@ -43,6 +45,10 @@ public class ThrownItem : MonoBehaviour
             rb.linearDamping = 0f; // Ensure no drag while flying
             rb.angularDamping = 0f;
         }
+
+        // Start timeout coroutine - if no collision happens within timeout, make trigger
+        float timeout = data != null ? data.triggerTimeoutDuration : 3f;
+        timeoutCoroutine = StartCoroutine(TriggerTimeoutCoroutine(timeout));
     }
 
     public void SetThrower(GameObject newThrower)
@@ -56,6 +62,22 @@ public class ThrownItem : MonoBehaviour
 
         // Ignore thrower
         if (thrower != null && collision.gameObject == thrower) return;
+
+        // Cancel timeout coroutine since we hit something
+        if (timeoutCoroutine != null)
+        {
+            StopCoroutine(timeoutCoroutine);
+            timeoutCoroutine = null;
+        }
+
+        // Mark that we've hit something
+        if (!hasHitSomething)
+        {
+            hasHitSomething = true;
+            // Start delayed trigger activation
+            float delay = data != null ? data.triggerDelayAfterHit : 0.2f;
+            StartCoroutine(EnableTriggerAfterDelay(delay));
+        }
 
         // Check if target is an enemy that can catch weapons
         if (collision.gameObject.TryGetComponent<EnemyAI>(out var enemyAI) &&
@@ -227,6 +249,73 @@ public class ThrownItem : MonoBehaviour
             col.isTrigger = true;
         }
 
+        Destroy(this);
+    }
+
+    /// <summary>
+    /// Coroutine that enables trigger mode after a delay following a collision
+    /// </summary>
+    private IEnumerator EnableTriggerAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        // Make collider a trigger
+        if (itemCollider != null)
+        {
+            itemCollider.isTrigger = true;
+        }
+
+        // Restore exclude layers
+        if (itemCollider != null)
+        {
+            itemCollider.excludeLayers = (1 << PLAYER_LAYER) | (1 << ENEMY_LAYER);
+        }
+
+        // Re-enable pickup
+        if (TryGetComponent<PickupableItem>(out var pickup))
+        {
+            pickup.enabled = true;
+        }
+
+        // Clean up this component
+        Destroy(this);
+    }
+
+    /// <summary>
+    /// Coroutine that enables trigger mode if no collision happens within timeout duration
+    /// </summary>
+    private IEnumerator TriggerTimeoutCoroutine(float timeout)
+    {
+        yield return new WaitForSeconds(timeout);
+
+        // Timeout reached without collision - make it a trigger
+        if (itemCollider != null)
+        {
+            itemCollider.isTrigger = true;
+        }
+
+        // Restore exclude layers
+        if (itemCollider != null)
+        {
+            itemCollider.excludeLayers = (1 << PLAYER_LAYER) | (1 << ENEMY_LAYER);
+        }
+
+        // Stop the item's movement
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+            rb.linearDamping = 10f;
+            rb.angularDamping = 10f;
+        }
+
+        // Re-enable pickup
+        if (TryGetComponent<PickupableItem>(out var pickup))
+        {
+            pickup.enabled = true;
+        }
+
+        // Clean up this component
         Destroy(this);
     }
 }
