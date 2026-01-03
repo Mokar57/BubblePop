@@ -12,6 +12,7 @@ public class MeleeWeapon : Weapon
     
     // Attack state tracking
     private bool isAttacking = false;
+    private bool hasReducedDurabilityThisAttack = false; // Track if durability was reduced in this attack
     private HashSet<GameObject> hitTargets = new HashSet<GameObject>(); // Track hit targets to avoid multiple hits per attack
 
     public override void Initialize(WeaponDataSO data)
@@ -46,6 +47,7 @@ public class MeleeWeapon : Weapon
 
         // Start attack state
         isAttacking = true;
+        hasReducedDurabilityThisAttack = false;
         hitTargets.Clear();
 
         // Trigger rotation animation for melee weapon
@@ -69,6 +71,7 @@ public class MeleeWeapon : Weapon
     private void EndAttack()
     {
         isAttacking = false;
+        hasReducedDurabilityThisAttack = false;
         hitTargets.Clear();
     }
 
@@ -115,14 +118,18 @@ public class MeleeWeapon : Weapon
             // Mark target as hit
             hitTargets.Add(other.gameObject);
 
+            // Reduce durability only once per attack (on first hit)
+            if (!hasReducedDurabilityThisAttack)
+            {
+                ReduceDurability();
+                hasReducedDurabilityThisAttack = true;
+            }
+
             // Show hit effect at collision point
             if (meleeData.showHitEffect)
             {
                 SpawnHitEffect(other.ClosestPoint(transform.position), dirToTarget);
             }
-
-            // Reduce durability
-            ReduceDurability();
         }
     }
 
